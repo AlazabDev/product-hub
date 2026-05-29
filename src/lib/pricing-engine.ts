@@ -448,19 +448,18 @@ async function calculateMaterialsCost(design: DesignData, surfaceArea: number) {
   const breakdown: MaterialCost[] = [];
   let total = 0;
   const categories = { panels: 0, hardware: 0, accessories: 0, finishes: 0 };
-  
+  const prices = await fetchMaterialPrices();
+
   // حساب الالواح الرئيسية
   if (design.components) {
     for (const comp of design.components) {
       const materialCode = comp.material_code || getMaterialCodeForComponent(comp);
-      const material = MATERIAL_PRICES[materialCode];
-      
+      const material = requireMaterial(materialCode, prices);
       if (material) {
         let quantity = comp.quantity;
         if (comp.dimensions && material.unit === "m2") {
           quantity = (comp.dimensions.width * comp.dimensions.height / 10000) * comp.quantity;
         }
-        
         const cost = quantity * material.price;
         breakdown.push({
           material_code: materialCode,
@@ -469,20 +468,20 @@ async function calculateMaterialsCost(design: DesignData, surfaceArea: number) {
           unit: material.unit,
           unit_cost: material.price,
           total_cost: cost,
+          product_id: material.product_id,
+          supplier_id: material.supplier_id,
         });
-        
         total += cost;
         categories.panels += cost;
       }
     }
   }
-  
+
   // حساب الاكسسوارات
   if (design.accessories) {
     for (const acc of design.accessories) {
       const code = acc.code || getAccessoryCode(acc.type);
-      const material = MATERIAL_PRICES[code];
-      
+      const material = requireMaterial(code, prices);
       if (material) {
         const cost = acc.quantity * (acc.unit_cost || material.price);
         breakdown.push({
@@ -492,19 +491,19 @@ async function calculateMaterialsCost(design: DesignData, surfaceArea: number) {
           unit: material.unit,
           unit_cost: acc.unit_cost || material.price,
           total_cost: cost,
+          product_id: material.product_id,
+          supplier_id: material.supplier_id,
         });
-        
         total += cost;
         categories.accessories += cost;
       }
     }
   }
-  
+
   // حساب التشطيبات
   if (design.finishes?.coating_type) {
     const coatingCode = getCoatingCode(design.finishes.coating_type);
-    const coating = MATERIAL_PRICES[coatingCode];
-    
+    const coating = requireMaterial(coatingCode, prices);
     if (coating) {
       const cost = surfaceArea * coating.price;
       breakdown.push({
@@ -514,56 +513,56 @@ async function calculateMaterialsCost(design: DesignData, surfaceArea: number) {
         unit: coating.unit,
         unit_cost: coating.price,
         total_cost: cost,
+        product_id: coating.product_id,
+        supplier_id: coating.supplier_id,
       });
-      
       total += cost;
       categories.finishes += cost;
     }
   }
-  
+
   // حساب الحواف
   const edgeLength = calculateEdgeLength(design);
   if (edgeLength > 0) {
     const edgeCode = "EDGE-PVC";
-    const edge = MATERIAL_PRICES[edgeCode];
-    const cost = edgeLength * edge.price;
-    
-    breakdown.push({
-      material_code: edgeCode,
-      material_name: edge.name_ar,
-      quantity: edgeLength,
-      unit: edge.unit,
-      unit_cost: edge.price,
-      total_cost: cost,
-    });
-    
-    total += cost;
-    categories.finishes += cost;
+    const edge = requireMaterial(edgeCode, prices);
+    if (edge) {
+      const cost = edgeLength * edge.price;
+      breakdown.push({
+        material_code: edgeCode,
+        material_name: edge.name_ar,
+        quantity: edgeLength,
+        unit: edge.unit,
+        unit_cost: edge.price,
+        total_cost: cost,
+        product_id: edge.product_id,
+        supplier_id: edge.supplier_id,
+      });
+      total += cost;
+      categories.finishes += cost;
+    }
   }
-  
+
   return { breakdown, total, categories };
 }
 
-function calculateLaborCost(design: DesignData, surfaceArea: number, complexityFactor: number) {
+async function calculateLaborCost(design: DesignData, surfaceArea: number, complexityFactor: number) {
+  const rates = await fetchLaborRules();
   const breakdown = {
     cutting: 0,
     assembly: 0,
     finishing: 0,
     installation: 0,
   };
-  
-  // تقدير ساعات العمل بناء على المساحة والتعقيد
-  const baseHours = surfaceArea * 2; // ساعتين لكل متر مربع
-  
-  breakdown.cutting = baseHours * 0.25 * LABOR_RATES.cutting;
-  breakdown.assembly = baseHours * 0.35 * complexityFactor * LABOR_RATES.assembly;
-  breakdown.finishing = baseHours * 0.25 * LABOR_RATES.finishing;
-  breakdown.installation = baseHours * 0.15 * LABOR_RATES.installation;
-  
+  const baseHours = surfaceArea * 2;
+  breakdown.cutting = baseHours * 0.25 * rates.cutting;
+  breakdown.assembly = baseHours * 0.35 * complexityFactor * rates.assembly;
+  breakdown.finishing = baseHours * 0.25 * rates.finishing;
+  breakdown.installation = baseHours * 0.15 * rates.installation;
+
   const total = Object.values(breakdown).reduce((a, b) => a + b, 0);
   const hours = baseHours * complexityFactor;
   const avgRate = total / hours;
-  
   return { breakdown, total, hours, avgRate };
 }
 
