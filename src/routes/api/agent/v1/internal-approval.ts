@@ -117,8 +117,8 @@ export const Route = createFileRoute("/api/agent/v1/internal-approval")({
           }
 
           const pricing = (quote.pricing_breakdown ?? {}) as PricingSnapshot;
-          const unitPrice = Number(quote.quoted_price ?? pricing.selling_price ?? 0);
-          const qty = Number(quote.quantity ?? 1);
+          const unitPrice = Number(quote.selling_price ?? pricing.selling_price ?? 0);
+          const qty = 1;
 
           const { data: orderNumberData } = await supabaseAdmin.rpc("generate_order_number");
           const orderNumber = orderNumberData ?? `MO-${Date.now()}`;
@@ -132,9 +132,8 @@ export const Route = createFileRoute("/api/agent/v1/internal-approval")({
               customer_id: quote.customer_id ?? null,
               customer_name: quote.customer_name ?? null,
               customer_phone: quote.customer_phone ?? null,
-              delivery_address: quote.delivery_address ?? null,
               design_data: quote.design_data ?? null,
-              specifications: quote.specifications ?? null,
+              specifications: (quote.special_requirements ?? null) as never,
               quantity: qty,
               unit_price: unitPrice,
               total_price: unitPrice * qty,
