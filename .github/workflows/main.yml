@@ -1,0 +1,11 @@
+name: Index Repository
+on: [push]
+jobs:
+  index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build Search Index
+        run: |
+          npm install
+          node scripts/build-index.js
