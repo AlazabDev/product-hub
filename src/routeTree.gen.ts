@@ -45,6 +45,7 @@ import { Route as ApiPublicV1AssetsRouteImport } from './routes/api/public/v1/as
 import { Route as ApiAgentV1QuoteResponseRouteImport } from './routes/api/agent/v1/quote-response'
 import { Route as ApiAgentV1QuoteRequestRouteImport } from './routes/api/agent/v1/quote-request'
 import { Route as ApiAgentV1OrderStatusRouteImport } from './routes/api/agent/v1/order-status'
+import { Route as ApiAgentV1InternalApprovalRouteImport } from './routes/api/agent/v1/internal-approval'
 import { Route as ApiPublicV1ProductsAzCodeRouteImport } from './routes/api/public/v1/products/$azCode'
 
 const LoginRoute = LoginRouteImport.update({
@@ -247,6 +248,12 @@ const ApiAgentV1OrderStatusRoute = ApiAgentV1OrderStatusRouteImport.update({
   path: '/api/agent/v1/order-status',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAgentV1InternalApprovalRoute =
+  ApiAgentV1InternalApprovalRouteImport.update({
+    id: '/api/agent/v1/internal-approval',
+    path: '/api/agent/v1/internal-approval',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicV1ProductsAzCodeRoute =
   ApiPublicV1ProductsAzCodeRouteImport.update({
     id: '/$azCode',
@@ -283,6 +290,7 @@ export interface FileRoutesByFullPath {
   '/requests/': typeof AuthenticatedRequestsIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/suppliers/': typeof AuthenticatedSuppliersIndexRoute
+  '/api/agent/v1/internal-approval': typeof ApiAgentV1InternalApprovalRoute
   '/api/agent/v1/order-status': typeof ApiAgentV1OrderStatusRoute
   '/api/agent/v1/quote-request': typeof ApiAgentV1QuoteRequestRoute
   '/api/agent/v1/quote-response': typeof ApiAgentV1QuoteResponseRoute
@@ -321,6 +329,7 @@ export interface FileRoutesByTo {
   '/requests': typeof AuthenticatedRequestsIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/suppliers': typeof AuthenticatedSuppliersIndexRoute
+  '/api/agent/v1/internal-approval': typeof ApiAgentV1InternalApprovalRoute
   '/api/agent/v1/order-status': typeof ApiAgentV1OrderStatusRoute
   '/api/agent/v1/quote-request': typeof ApiAgentV1QuoteRequestRoute
   '/api/agent/v1/quote-response': typeof ApiAgentV1QuoteResponseRoute
@@ -361,6 +370,7 @@ export interface FileRoutesById {
   '/_authenticated/requests/': typeof AuthenticatedRequestsIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/suppliers/': typeof AuthenticatedSuppliersIndexRoute
+  '/api/agent/v1/internal-approval': typeof ApiAgentV1InternalApprovalRoute
   '/api/agent/v1/order-status': typeof ApiAgentV1OrderStatusRoute
   '/api/agent/v1/quote-request': typeof ApiAgentV1QuoteRequestRoute
   '/api/agent/v1/quote-response': typeof ApiAgentV1QuoteResponseRoute
@@ -401,6 +411,7 @@ export interface FileRouteTypes {
     | '/requests/'
     | '/settings/'
     | '/suppliers/'
+    | '/api/agent/v1/internal-approval'
     | '/api/agent/v1/order-status'
     | '/api/agent/v1/quote-request'
     | '/api/agent/v1/quote-response'
@@ -439,6 +450,7 @@ export interface FileRouteTypes {
     | '/requests'
     | '/settings'
     | '/suppliers'
+    | '/api/agent/v1/internal-approval'
     | '/api/agent/v1/order-status'
     | '/api/agent/v1/quote-request'
     | '/api/agent/v1/quote-response'
@@ -478,6 +490,7 @@ export interface FileRouteTypes {
     | '/_authenticated/requests/'
     | '/_authenticated/settings/'
     | '/_authenticated/suppliers/'
+    | '/api/agent/v1/internal-approval'
     | '/api/agent/v1/order-status'
     | '/api/agent/v1/quote-request'
     | '/api/agent/v1/quote-response'
@@ -492,6 +505,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
+  ApiAgentV1InternalApprovalRoute: typeof ApiAgentV1InternalApprovalRoute
   ApiAgentV1OrderStatusRoute: typeof ApiAgentV1OrderStatusRoute
   ApiAgentV1QuoteRequestRoute: typeof ApiAgentV1QuoteRequestRoute
   ApiAgentV1QuoteResponseRoute: typeof ApiAgentV1QuoteResponseRoute
@@ -755,6 +769,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAgentV1OrderStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/agent/v1/internal-approval': {
+      id: '/api/agent/v1/internal-approval'
+      path: '/api/agent/v1/internal-approval'
+      fullPath: '/api/agent/v1/internal-approval'
+      preLoaderRoute: typeof ApiAgentV1InternalApprovalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/v1/products/$azCode': {
       id: '/api/public/v1/products/$azCode'
       path: '/$azCode'
@@ -842,6 +863,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
+  ApiAgentV1InternalApprovalRoute: ApiAgentV1InternalApprovalRoute,
   ApiAgentV1OrderStatusRoute: ApiAgentV1OrderStatusRoute,
   ApiAgentV1QuoteRequestRoute: ApiAgentV1QuoteRequestRoute,
   ApiAgentV1QuoteResponseRoute: ApiAgentV1QuoteResponseRoute,
