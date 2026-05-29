@@ -107,11 +107,11 @@ export const Route = createFileRoute("/api/agent/v1/quote-request")({
             quote_request_id: data.id,
             interaction_type: "quote_sent",
             direction: "outbound",
-            payload: body,
+            payload: body as never,
             response_payload: {
               quote_id: data.id,
-              pricing: pricing,
-            },
+              pricing: pricing as unknown,
+            } as never,
             status: "sent",
             sent_at: new Date().toISOString(),
           });
