@@ -392,7 +392,7 @@ function Dashboard() {
               <div key={s.name} className="flex items-center gap-1 text-xs">
                 <div
                   className="size-2 rounded-full"
-                  style={{ backgroundColor: statusColors[s.name] || "#6b7280" }}
+                  style={{ backgroundColor: statusColors[s.name] || "var(--muted-foreground)" }}
                 />
                 <span>{statusLabels[s.name] || s.name}</span>
               </div>
