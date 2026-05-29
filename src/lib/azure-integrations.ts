@@ -3,13 +3,21 @@
 
 import { azureConfig } from './azure-config';
 
+export type AzureConfigValue =
+  | string
+  | number
+  | boolean
+  | string[]
+  | Record<string, unknown>
+  | Array<Record<string, unknown>>;
+
 export interface AzureIntegration {
   name: string;
   status: 'connected' | 'error' | 'pending';
   endpoint?: string;
   lastSyncTime?: Date;
   syncInterval?: number;
-  config: Record<string, string | boolean | number>;
+  config: Record<string, AzureConfigValue>;
 }
 
 export const azureIntegrations: Record<string, AzureIntegration> = {

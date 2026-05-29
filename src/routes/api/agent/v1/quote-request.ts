@@ -63,12 +63,12 @@ export const Route = createFileRoute("/api/agent/v1/quote-request")({
             design_file_type: body.design_file_type || "json",
             design_data: designData,
             design_preview_url: body.design_preview_url,
-            dimensions: designData.dimensions,
-            materials: pricing.materials_breakdown,
-            components: designData.components,
-            finishes: designData.finishes,
-            accessories: designData.accessories,
-            pricing_breakdown: pricing.breakdown,
+            dimensions: designData.dimensions as never,
+            materials: pricing.materials_breakdown as never,
+            components: designData.components as never,
+            finishes: (designData.finishes ?? null) as never,
+            accessories: (designData.accessories ?? null) as never,
+            pricing_breakdown: pricing.breakdown as never,
             materials_cost: pricing.materials_cost,
             labor_cost: pricing.labor_cost,
             overhead_cost: pricing.overhead_cost,
@@ -80,12 +80,12 @@ export const Route = createFileRoute("/api/agent/v1/quote-request")({
             quoted_at: new Date().toISOString(),
             quote_valid_until: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
             customer_notes: body.customer_notes,
-            special_requirements: body.special_requirements,
+            special_requirements: body.special_requirements as never,
           };
 
           const { data, error } = await supabaseAdmin
             .from("quote_requests")
-            .insert(quoteRequest)
+            .insert(quoteRequest as never)
             .select()
             .single();
 
@@ -107,11 +107,11 @@ export const Route = createFileRoute("/api/agent/v1/quote-request")({
             quote_request_id: data.id,
             interaction_type: "quote_sent",
             direction: "outbound",
-            payload: body,
+            payload: body as never,
             response_payload: {
               quote_id: data.id,
-              pricing: pricing,
-            },
+              pricing: pricing as unknown,
+            } as never,
             status: "sent",
             sent_at: new Date().toISOString(),
           });

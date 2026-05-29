@@ -14,6 +14,108 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_actions: {
+        Row: {
+          action_type: string
+          created_at: string
+          endpoint: string | null
+          error_message: string | null
+          id: string
+          payload: Json | null
+          result: Json | null
+          session_id: string | null
+          status: string | null
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          endpoint?: string | null
+          error_message?: string | null
+          id?: string
+          payload?: Json | null
+          result?: Json | null
+          session_id?: string | null
+          status?: string | null
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          endpoint?: string | null
+          error_message?: string | null
+          id?: string
+          payload?: Json | null
+          result?: Json | null
+          session_id?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
+      agent_decisions: {
+        Row: {
+          confidence: number | null
+          created_at: string
+          decision_type: string
+          id: string
+          input: Json | null
+          model: string | null
+          output: Json | null
+          session_id: string | null
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string
+          decision_type: string
+          id?: string
+          input?: Json | null
+          model?: string | null
+          output?: Json | null
+          session_id?: string | null
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string
+          decision_type?: string
+          id?: string
+          input?: Json | null
+          model?: string | null
+          output?: Json | null
+          session_id?: string | null
+        }
+        Relationships: []
+      }
+      agent_sessions: {
+        Row: {
+          channel: string | null
+          customer_id: string | null
+          ended_at: string | null
+          id: string
+          metadata: Json | null
+          session_id: string
+          started_at: string
+          status: string
+        }
+        Insert: {
+          channel?: string | null
+          customer_id?: string | null
+          ended_at?: string | null
+          id?: string
+          metadata?: Json | null
+          session_id: string
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          channel?: string | null
+          customer_id?: string | null
+          ended_at?: string | null
+          id?: string
+          metadata?: Json | null
+          session_id?: string
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
       api_consumers: {
         Row: {
           allowed_endpoints: string[] | null
@@ -312,6 +414,66 @@ export type Database = {
           },
         ]
       }
+      chatbot_interactions: {
+        Row: {
+          created_at: string
+          delivered_at: string | null
+          direction: string
+          error_message: string | null
+          id: string
+          interaction_type: string
+          manufacturing_order_id: string | null
+          payload: Json | null
+          quote_request_id: string | null
+          response_payload: Json | null
+          sent_at: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string
+          delivered_at?: string | null
+          direction: string
+          error_message?: string | null
+          id?: string
+          interaction_type: string
+          manufacturing_order_id?: string | null
+          payload?: Json | null
+          quote_request_id?: string | null
+          response_payload?: Json | null
+          sent_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string
+          delivered_at?: string | null
+          direction?: string
+          error_message?: string | null
+          id?: string
+          interaction_type?: string
+          manufacturing_order_id?: string | null
+          payload?: Json | null
+          quote_request_id?: string | null
+          response_payload?: Json | null
+          sent_at?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chatbot_interactions_manufacturing_order_id_fkey"
+            columns: ["manufacturing_order_id"]
+            isOneToOne: false
+            referencedRelation: "manufacturing_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chatbot_interactions_quote_request_id_fkey"
+            columns: ["quote_request_id"]
+            isOneToOne: false
+            referencedRelation: "quote_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       duplicate_group_items: {
         Row: {
           duplicate_group_id: string
@@ -493,6 +655,258 @@ export type Database = {
           valid_rows?: number | null
         }
         Relationships: []
+      }
+      integration_configs: {
+        Row: {
+          config: Json | null
+          created_at: string
+          created_by: string | null
+          id: string
+          last_error: string | null
+          last_sync_at: string | null
+          name: string | null
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          config?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          last_error?: string | null
+          last_sync_at?: string | null
+          name?: string | null
+          status?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          config?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          last_error?: string | null
+          last_sync_at?: string | null
+          name?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      manufacturing_orders: {
+        Row: {
+          actual_completion_date: string | null
+          actual_start_date: string | null
+          amount_paid: number | null
+          approval_id: string | null
+          created_at: string
+          currency: string | null
+          customer_id: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          delivery_address: string | null
+          delivery_date: string | null
+          delivery_notes: string | null
+          design_data: Json | null
+          discount_amount: number | null
+          discount_percent: number | null
+          estimated_completion_date: string | null
+          estimated_start_date: string | null
+          final_price: number | null
+          id: string
+          order_number: string
+          payment_status: string | null
+          priority: string
+          production_notes: string | null
+          quality_notes: string | null
+          quantity: number
+          quote_request_id: string | null
+          specifications: Json | null
+          status: string
+          total_price: number | null
+          unit_price: number | null
+          updated_at: string
+        }
+        Insert: {
+          actual_completion_date?: string | null
+          actual_start_date?: string | null
+          amount_paid?: number | null
+          approval_id?: string | null
+          created_at?: string
+          currency?: string | null
+          customer_id?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          delivery_address?: string | null
+          delivery_date?: string | null
+          delivery_notes?: string | null
+          design_data?: Json | null
+          discount_amount?: number | null
+          discount_percent?: number | null
+          estimated_completion_date?: string | null
+          estimated_start_date?: string | null
+          final_price?: number | null
+          id?: string
+          order_number: string
+          payment_status?: string | null
+          priority?: string
+          production_notes?: string | null
+          quality_notes?: string | null
+          quantity?: number
+          quote_request_id?: string | null
+          specifications?: Json | null
+          status?: string
+          total_price?: number | null
+          unit_price?: number | null
+          updated_at?: string
+        }
+        Update: {
+          actual_completion_date?: string | null
+          actual_start_date?: string | null
+          amount_paid?: number | null
+          approval_id?: string | null
+          created_at?: string
+          currency?: string | null
+          customer_id?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          delivery_address?: string | null
+          delivery_date?: string | null
+          delivery_notes?: string | null
+          design_data?: Json | null
+          discount_amount?: number | null
+          discount_percent?: number | null
+          estimated_completion_date?: string | null
+          estimated_start_date?: string | null
+          final_price?: number | null
+          id?: string
+          order_number?: string
+          payment_status?: string | null
+          priority?: string
+          production_notes?: string | null
+          quality_notes?: string | null
+          quantity?: number
+          quote_request_id?: string | null
+          specifications?: Json | null
+          status?: string
+          total_price?: number | null
+          unit_price?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manufacturing_orders_quote_request_id_fkey"
+            columns: ["quote_request_id"]
+            isOneToOne: false
+            referencedRelation: "quote_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      material_requisition_items: {
+        Row: {
+          created_at: string
+          id: string
+          issued_quantity: number | null
+          product_code: string | null
+          product_id: string | null
+          product_name: string | null
+          requested_quantity: number
+          requisition_id: string
+          status: string
+          supplier_id: string | null
+          supplier_name: string | null
+          total_cost: number | null
+          unit: string | null
+          unit_cost: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          issued_quantity?: number | null
+          product_code?: string | null
+          product_id?: string | null
+          product_name?: string | null
+          requested_quantity?: number
+          requisition_id: string
+          status?: string
+          supplier_id?: string | null
+          supplier_name?: string | null
+          total_cost?: number | null
+          unit?: string | null
+          unit_cost?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          issued_quantity?: number | null
+          product_code?: string | null
+          product_id?: string | null
+          product_name?: string | null
+          requested_quantity?: number
+          requisition_id?: string
+          status?: string
+          supplier_id?: string | null
+          supplier_name?: string | null
+          total_cost?: number | null
+          unit?: string | null
+          unit_cost?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_requisition_items_requisition_id_fkey"
+            columns: ["requisition_id"]
+            isOneToOne: false
+            referencedRelation: "material_requisitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      material_requisitions: {
+        Row: {
+          approval_id: string | null
+          created_at: string
+          id: string
+          issued_at: string | null
+          manufacturing_order_id: string | null
+          notes: string | null
+          requisition_number: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approval_id?: string | null
+          created_at?: string
+          id?: string
+          issued_at?: string | null
+          manufacturing_order_id?: string | null
+          notes?: string | null
+          requisition_number: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approval_id?: string | null
+          created_at?: string
+          id?: string
+          issued_at?: string | null
+          manufacturing_order_id?: string | null
+          notes?: string | null
+          requisition_number?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_requisitions_manufacturing_order_id_fkey"
+            columns: ["manufacturing_order_id"]
+            isOneToOne: false
+            referencedRelation: "manufacturing_orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
@@ -680,6 +1094,54 @@ export type Database = {
           },
         ]
       }
+      pricing_rules: {
+        Row: {
+          conditions: Json | null
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          priority: number
+          rule_type: string
+          updated_at: string
+          valid_from: string | null
+          valid_to: string | null
+          value: number
+        }
+        Insert: {
+          conditions?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          priority?: number
+          rule_type: string
+          updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+          value: number
+        }
+        Update: {
+          conditions?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          priority?: number
+          rule_type?: string
+          updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+          value?: number
+        }
+        Relationships: []
+      }
       product_assets: {
         Row: {
           asset_id: string
@@ -721,6 +1183,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      product_requests: {
+        Row: {
+          assigned_to: string | null
+          category: string | null
+          created_at: string
+          created_by: string | null
+          description: string
+          estimated_budget: number | null
+          id: string
+          notes: string | null
+          priority: string
+          quantity: number | null
+          request_type: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description: string
+          estimated_budget?: number | null
+          id?: string
+          notes?: string | null
+          priority?: string
+          quantity?: number | null
+          request_type: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          estimated_budget?: number | null
+          id?: string
+          notes?: string | null
+          priority?: string
+          quantity?: number | null
+          request_type?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       products: {
         Row: {
@@ -882,6 +1395,117 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      quote_requests: {
+        Row: {
+          accessories: Json | null
+          chatbot_session_id: string | null
+          components: Json | null
+          created_at: string
+          currency: string | null
+          customer_email: string | null
+          customer_id: string | null
+          customer_name: string | null
+          customer_notes: string | null
+          customer_phone: string | null
+          customer_response: string | null
+          customer_response_at: string | null
+          design_data: Json | null
+          design_file_type: string | null
+          design_file_url: string | null
+          design_preview_url: string | null
+          dimensions: Json | null
+          finishes: Json | null
+          id: string
+          labor_cost: number | null
+          materials: Json | null
+          materials_cost: number | null
+          overhead_cost: number | null
+          pricing_breakdown: Json | null
+          profit_margin: number | null
+          quote_valid_until: string | null
+          quoted_at: string | null
+          rejection_reason: string | null
+          request_id: string
+          selling_price: number | null
+          special_requirements: Json | null
+          status: string
+          total_cost: number | null
+          updated_at: string
+        }
+        Insert: {
+          accessories?: Json | null
+          chatbot_session_id?: string | null
+          components?: Json | null
+          created_at?: string
+          currency?: string | null
+          customer_email?: string | null
+          customer_id?: string | null
+          customer_name?: string | null
+          customer_notes?: string | null
+          customer_phone?: string | null
+          customer_response?: string | null
+          customer_response_at?: string | null
+          design_data?: Json | null
+          design_file_type?: string | null
+          design_file_url?: string | null
+          design_preview_url?: string | null
+          dimensions?: Json | null
+          finishes?: Json | null
+          id?: string
+          labor_cost?: number | null
+          materials?: Json | null
+          materials_cost?: number | null
+          overhead_cost?: number | null
+          pricing_breakdown?: Json | null
+          profit_margin?: number | null
+          quote_valid_until?: string | null
+          quoted_at?: string | null
+          rejection_reason?: string | null
+          request_id: string
+          selling_price?: number | null
+          special_requirements?: Json | null
+          status?: string
+          total_cost?: number | null
+          updated_at?: string
+        }
+        Update: {
+          accessories?: Json | null
+          chatbot_session_id?: string | null
+          components?: Json | null
+          created_at?: string
+          currency?: string | null
+          customer_email?: string | null
+          customer_id?: string | null
+          customer_name?: string | null
+          customer_notes?: string | null
+          customer_phone?: string | null
+          customer_response?: string | null
+          customer_response_at?: string | null
+          design_data?: Json | null
+          design_file_type?: string | null
+          design_file_url?: string | null
+          design_preview_url?: string | null
+          dimensions?: Json | null
+          finishes?: Json | null
+          id?: string
+          labor_cost?: number | null
+          materials?: Json | null
+          materials_cost?: number | null
+          overhead_cost?: number | null
+          pricing_breakdown?: Json | null
+          profit_margin?: number | null
+          quote_valid_until?: string | null
+          quoted_at?: string | null
+          rejection_reason?: string | null
+          request_id?: string
+          selling_price?: number | null
+          special_requirements?: Json | null
+          status?: string
+          total_cost?: number | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       supplier_inventory: {
         Row: {
@@ -1127,6 +1751,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_order_number: { Args: never; Returns: string }
+      generate_requisition_number: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
