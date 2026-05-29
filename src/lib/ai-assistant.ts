@@ -1,6 +1,6 @@
 /**
  * Alazab PAOP AI Assistant - Azure OpenAI Integration
- * 
+ *
  * This module provides the AI assistant functionality for the application
  * using Azure OpenAI custom fine-tuned model.
  */
@@ -172,13 +172,15 @@ const TOOLS = [
 ];
 
 // Tool implementations
-async function executeToolCall(
-  toolName: string,
-  args: Record<string, unknown>
-): Promise<string> {
+async function executeToolCall(toolName: string, args: Record<string, unknown>): Promise<string> {
   switch (toolName) {
     case "search_products": {
-      const { query, item_type, status, limit = 10 } = args as {
+      const {
+        query,
+        item_type,
+        status,
+        limit = 10,
+      } = args as {
         query: string;
         item_type?: string;
         status?: string;
@@ -202,7 +204,7 @@ async function executeToolCall(
       return `تم العثور على ${data.length} نتيجة:\n\n${data
         .map(
           (p) =>
-            `- **${p.name_ar}** (${p.az_code})\n  النوع: ${p.item_type} | الحالة: ${p.status} | العائلة: ${p.gpc_family || "غير محدد"}`
+            `- **${p.name_ar}** (${p.az_code})\n  النوع: ${p.item_type} | الحالة: ${p.status} | العائلة: ${p.gpc_family || "غير محدد"}`,
         )
         .join("\n\n")}`;
     }
@@ -295,10 +297,12 @@ ${
 
       const { data: prices, error } = await supabase
         .from("prices")
-        .select(`
+        .select(
+          `
           *,
           suppliers:supplier_id(name)
-        `)
+        `,
+        )
         .eq("product_id", productIdToUse)
         .order("created_at", { ascending: false });
 
@@ -315,7 +319,7 @@ ${prices
 - سعر التجزئة: ${p.retail_price || "-"} ${p.currency || "SAR"}
 - سعر الجملة: ${p.wholesale_price || "-"} ${p.currency || "SAR"}
 - هامش الربح: ${p.margin_percent ? `${p.margin_percent}%` : "-"}
-- الحالة: ${p.status || "غير محدد"}`
+- الحالة: ${p.status || "غير محدد"}`,
   )
   .join("\n\n")}`;
     }
@@ -347,7 +351,7 @@ ${prices
       return `تم العثور على ${data.length} مورد:\n\n${data
         .map(
           (s) =>
-            `- **${s.name}**\n  المستوى: ${tierLabels[s.supplier_tier || ""] || "غير محدد"} | التقييم: ${s.rating ? `${s.rating}/5` : "غير مقيم"} | الهاتف: ${s.phone || "غير متوفر"}`
+            `- **${s.name}**\n  المستوى: ${tierLabels[s.supplier_tier || ""] || "غير محدد"} | التقييم: ${s.rating ? `${s.rating}/5` : "غير مقيم"} | الهاتف: ${s.phone || "غير متوفر"}`,
         )
         .join("\n\n")}`;
     }
@@ -404,11 +408,12 @@ ${stats.prices ? `**سجلات التسعير:**\n- الاجمالي: ${(stats.p
 // Main chat function
 export async function sendChatMessage(
   messages: ChatMessage[],
-  onToolCall?: (toolName: string, args: Record<string, unknown>) => void
+  onToolCall?: (toolName: string, args: Record<string, unknown>) => void,
 ): Promise<AIResponse> {
   const endpoint = import.meta.env.VITE_AZURE_OPENAI_ENDPOINT;
   const apiKey = import.meta.env.VITE_AZURE_OPENAI_API_KEY;
-  const deploymentName = import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_NAME || "alazab-paop-assistant";
+  const deploymentName =
+    import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_NAME || "alazab-paop-assistant";
   const apiVersion = import.meta.env.VITE_AZURE_OPENAI_API_VERSION || "2024-02-01";
 
   if (!endpoint || !apiKey) {

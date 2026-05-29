@@ -3,7 +3,13 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, Save, X } from "lucide-react";
 import { toast } from "sonner";
@@ -128,9 +134,7 @@ export function PricingRuleEditor({
               <div className="flex items-start gap-3">
                 <div
                   className={`size-4 rounded border-2 mt-1 cursor-pointer transition-colors ${
-                    rule.enabled
-                      ? "bg-accent border-accent"
-                      : "border-border hover:border-accent"
+                    rule.enabled ? "bg-accent border-accent" : "border-border hover:border-accent"
                   }`}
                   onClick={() => toggleRule(idx)}
                 />
@@ -143,8 +147,7 @@ export function PricingRuleEditor({
                       {rule.condition.operator} {rule.condition.value}
                     </div>
                     <div>
-                      التعديل:{" "}
-                      {rule.adjustment.direction === "increase" ? "زيادة" : "انخفاض"}{" "}
+                      التعديل: {rule.adjustment.direction === "increase" ? "زيادة" : "انخفاض"}{" "}
                       {rule.adjustment.type === "percentage"
                         ? `${rule.adjustment.value}%`
                         : `${rule.adjustment.value}`}
@@ -183,12 +186,7 @@ export function PricingRuleEditor({
             <h3 className="font-bold">
               {editingIndex !== null ? "تعديل القاعدة" : "إضافة قاعدة جديدة"}
             </h3>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-6 w-6 p-0"
-              onClick={cancelEdit}
-            >
+            <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={cancelEdit}>
               <X className="size-4" />
             </Button>
           </div>
@@ -199,9 +197,7 @@ export function PricingRuleEditor({
               <Input
                 placeholder="مثال: تخفيض الكمية الكبيرة"
                 value={formData?.name || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               />
             </div>
 
@@ -214,7 +210,12 @@ export function PricingRuleEditor({
                     setFormData({
                       ...formData,
                       condition: {
-                        field: v as "product_code" | "quantity" | "supplier" | "category" | "season",
+                        field: v as
+                          | "product_code"
+                          | "quantity"
+                          | "supplier"
+                          | "category"
+                          | "season",
                         operator: formData?.condition?.operator || "equals",
                         value: formData?.condition?.value || "",
                       },
@@ -243,7 +244,12 @@ export function PricingRuleEditor({
                       ...formData,
                       condition: {
                         field: formData?.condition?.field || "quantity",
-                        operator: v as "equals" | "greater_than" | "less_than" | "between" | "contains",
+                        operator: v as
+                          | "equals"
+                          | "greater_than"
+                          | "less_than"
+                          | "between"
+                          | "contains",
                         value: formData?.condition?.value || "",
                       },
                     })
@@ -369,11 +375,7 @@ export function PricingRuleEditor({
           </div>
         </Card>
       ) : (
-        <Button
-          onClick={() => setFormData({})}
-          className="w-full gap-2"
-          variant="outline"
-        >
+        <Button onClick={() => setFormData({})} className="w-full gap-2" variant="outline">
           <Plus className="size-4" />
           إضافة قاعدة جديدة
         </Button>
@@ -382,17 +384,10 @@ export function PricingRuleEditor({
       {/* Save Button */}
       {onSave && (
         <div className="flex gap-2 justify-end pt-4 border-t">
-          <Button
-            variant="outline"
-            disabled={isSaving}
-          >
+          <Button variant="outline" disabled={isSaving}>
             إلغاء
           </Button>
-          <Button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="gap-2"
-          >
+          <Button onClick={handleSave} disabled={isSaving} className="gap-2">
             {isSaving && <Save className="size-4 animate-spin" />}
             حفظ جميع القواعس
           </Button>

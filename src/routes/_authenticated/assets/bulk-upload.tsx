@@ -6,7 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { uploadAndLinkAsset } from "@/lib/upload-assets";
-import { ArrowRight, FolderTree, Play, CheckCircle2, AlertCircle, X, FolderOpen } from "lucide-react";
+import {
+  ArrowRight,
+  FolderTree,
+  Play,
+  CheckCircle2,
+  AlertCircle,
+  X,
+  FolderOpen,
+} from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/assets/bulk-upload")({
@@ -73,7 +81,9 @@ function BulkUploadPage() {
         .from("products")
         .select("id, az_code, name_ar")
         .in("az_code", slice);
-      (data ?? []).forEach((p: any) => found.set(p.az_code.toUpperCase(), { id: p.id, name: p.name_ar }));
+      (data ?? []).forEach((p: any) =>
+        found.set(p.az_code.toUpperCase(), { id: p.id, name: p.name_ar }),
+      );
     }
 
     const entries: FolderEntry[] = Array.from(map.entries())
@@ -94,7 +104,9 @@ function BulkUploadPage() {
     setFolders(entries);
     setDone(0);
     const matched = entries.filter((e) => e.productId).length;
-    toast.success(`تم تحليل ${entries.length} مجلد — ${matched} مطابق، ${entries.length - matched} غير موجود`);
+    toast.success(
+      `تم تحليل ${entries.length} مجلد — ${matched} مطابق، ${entries.length - matched} غير موجود`,
+    );
   };
 
   const startUpload = async () => {
@@ -143,15 +155,18 @@ function BulkUploadPage() {
 
   return (
     <div className="p-6 space-y-6 max-w-[1400px] mx-auto">
-      <Link to="/assets" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
+      <Link
+        to="/assets"
+        className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+      >
         <ArrowRight className="size-3" /> العودة لإدارة الأصول
       </Link>
 
       <div>
         <h1 className="text-2xl font-bold">رفع مجلد صور المنتجات</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          اختر المجلد الرئيسي. النظام يقرأ كل مجلد فرعي على أنه AZ Code، ويربط الصور تلقائياً بالمنتج المطابق.
-          أول صورة (أبجدياً) = صورة رئيسية، والباقي = معرض.
+          اختر المجلد الرئيسي. النظام يقرأ كل مجلد فرعي على أنه AZ Code، ويربط الصور تلقائياً
+          بالمنتج المطابق. أول صورة (أبجدياً) = صورة رئيسية، والباقي = معرض.
         </p>
       </div>
 
@@ -163,7 +178,10 @@ function BulkUploadPage() {
           <div className="flex-1 min-w-[260px]">
             <div className="font-semibold mb-1">الخطوة 1 — اختر المجلد الرئيسي</div>
             <div className="text-xs text-muted-foreground mb-3">
-              البنية المتوقعة: <code className="num bg-muted px-1.5 py-0.5 rounded text-[11px]" dir="ltr">Root/AZ-ABR-01-25-1939/img.jpg</code>
+              البنية المتوقعة:{" "}
+              <code className="num bg-muted px-1.5 py-0.5 rounded text-[11px]" dir="ltr">
+                Root/AZ-ABR-01-25-1939/img.jpg
+              </code>
             </div>
             <input
               ref={inputRef}
@@ -177,7 +195,12 @@ function BulkUploadPage() {
               className="hidden"
             />
             <div className="flex flex-wrap gap-2">
-              <Button onClick={() => inputRef.current?.click()} disabled={running} variant="outline" className="gap-2">
+              <Button
+                onClick={() => inputRef.current?.click()}
+                disabled={running}
+                variant="outline"
+                className="gap-2"
+              >
                 <FolderOpen className="size-4" /> اختيار المجلد
               </Button>
               {folders.length > 0 && (
@@ -203,7 +226,9 @@ function BulkUploadPage() {
             <Card className="p-4 surface-elevated border-0">
               <div className="flex justify-between text-xs mb-2">
                 <span>جاري الرفع...</span>
-                <span className="num" dir="ltr">{done} / {matchedFiles} ({progress}%)</span>
+                <span className="num" dir="ltr">
+                  {done} / {matchedFiles} ({progress}%)
+                </span>
               </div>
               <Progress value={progress} />
             </Card>
@@ -223,14 +248,20 @@ function BulkUploadPage() {
                 <tbody>
                   {folders.map((f) => (
                     <tr key={f.azCode} className="border-t hover:bg-muted/30">
-                      <td className="p-3 num text-xs" dir="ltr">{f.azCode}</td>
+                      <td className="p-3 num text-xs" dir="ltr">
+                        {f.azCode}
+                      </td>
                       <td className="p-3 text-xs">
-                        {f.productName || <span className="text-warning">— لا يوجد منتج بهذا الكود —</span>}
+                        {f.productName || (
+                          <span className="text-warning">— لا يوجد منتج بهذا الكود —</span>
+                        )}
                       </td>
                       <td className="p-3 text-center num text-xs" dir="ltr">
                         {f.uploaded}/{f.files.length}
                       </td>
-                      <td className="p-3 text-center"><StatusBadge s={f} /></td>
+                      <td className="p-3 text-center">
+                        <StatusBadge s={f} />
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -247,15 +278,32 @@ function Stat({ label, value, cls = "" }: { label: string; value: number; cls?: 
   return (
     <Card className="p-4 surface-elevated border-0">
       <div className="text-xs text-muted-foreground">{label}</div>
-      <div className={`text-xl font-bold num mt-0.5 ${cls}`} dir="ltr">{value.toLocaleString("en")}</div>
+      <div className={`text-xl font-bold num mt-0.5 ${cls}`} dir="ltr">
+        {value.toLocaleString("en")}
+      </div>
     </Card>
   );
 }
 
 function StatusBadge({ s }: { s: FolderEntry }) {
-  if (s.status === "done") return <Badge className="bg-success/15 text-success hover:bg-success/15 gap-1"><CheckCircle2 className="size-3" /> تم</Badge>;
+  if (s.status === "done")
+    return (
+      <Badge className="bg-success/15 text-success hover:bg-success/15 gap-1">
+        <CheckCircle2 className="size-3" /> تم
+      </Badge>
+    );
   if (s.status === "uploading") return <Badge variant="secondary">جاري الرفع...</Badge>;
-  if (s.status === "error") return <Badge variant="destructive" className="gap-1" title={s.error}><AlertCircle className="size-3" /> خطأ</Badge>;
-  if (s.status === "skipped") return <Badge variant="outline" className="gap-1 text-warning"><X className="size-3" /> تخطّى</Badge>;
+  if (s.status === "error")
+    return (
+      <Badge variant="destructive" className="gap-1" title={s.error}>
+        <AlertCircle className="size-3" /> خطأ
+      </Badge>
+    );
+  if (s.status === "skipped")
+    return (
+      <Badge variant="outline" className="gap-1 text-warning">
+        <X className="size-3" /> تخطّى
+      </Badge>
+    );
   return <Badge variant="outline">جاهز</Badge>;
 }

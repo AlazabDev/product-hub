@@ -36,15 +36,30 @@ export const Route = createFileRoute("/api/agent/v1/internal-approval")({
         const endpoint = "/api/agent/v1/internal-approval";
         const auth = await requireApiKey(request, "/api/agent/v1/internal-approval");
         if ("error" in auth) {
-          await logCall({ consumer: null, request, endpoint, status: 401, startedAt: started, error: "auth" });
+          await logCall({
+            consumer: null,
+            request,
+            endpoint,
+            status: 401,
+            startedAt: started,
+            error: "auth",
+          });
           return auth.error;
         }
 
         try {
           const body = await request.json();
-          if (!body.approval_id || !body.decision || !["approved", "rejected"].includes(body.decision)) {
+          if (
+            !body.approval_id ||
+            !body.decision ||
+            !["approved", "rejected"].includes(body.decision)
+          ) {
             return json(
-              { success: false, error: "Missing approval_id or invalid decision", code: "invalid_input" },
+              {
+                success: false,
+                error: "Missing approval_id or invalid decision",
+                code: "invalid_input",
+              },
               400,
             );
           }
@@ -56,17 +71,28 @@ export const Route = createFileRoute("/api/agent/v1/internal-approval")({
             .eq("id", body.approval_id)
             .maybeSingle();
           if (aErr || !approval) {
-            return json({ success: false, error: "Approval not found", code: "approval_not_found" }, 404);
+            return json(
+              { success: false, error: "Approval not found", code: "approval_not_found" },
+              404,
+            );
           }
           if (approval.status !== "pending") {
             return json(
-              { success: false, error: `Approval already ${approval.status}`, code: "invalid_approval_state" },
+              {
+                success: false,
+                error: `Approval already ${approval.status}`,
+                code: "invalid_approval_state",
+              },
               400,
             );
           }
           if (approval.entity_type !== "quote_request") {
             return json(
-              { success: false, error: "Approval is not for a quote_request", code: "wrong_entity_type" },
+              {
+                success: false,
+                error: "Approval is not for a quote_request",
+                code: "wrong_entity_type",
+              },
               400,
             );
           }
@@ -148,7 +174,11 @@ export const Route = createFileRoute("/api/agent/v1/internal-approval")({
           if (moErr || !mo) {
             console.error("MO creation failed:", moErr);
             return json(
-              { success: false, error: "Failed to create manufacturing order", code: "mo_create_failed" },
+              {
+                success: false,
+                error: "Failed to create manufacturing order",
+                code: "mo_create_failed",
+              },
               500,
             );
           }
@@ -171,7 +201,11 @@ export const Route = createFileRoute("/api/agent/v1/internal-approval")({
           if (mrErr || !mr) {
             console.error("MR creation failed:", mrErr);
             return json(
-              { success: false, error: "Failed to create material requisition", code: "mr_create_failed" },
+              {
+                success: false,
+                error: "Failed to create material requisition",
+                code: "mr_create_failed",
+              },
               500,
             );
           }
@@ -192,7 +226,9 @@ export const Route = createFileRoute("/api/agent/v1/internal-approval")({
           }));
 
           if (items.length > 0) {
-            const { error: itemsErr } = await supabaseAdmin.from("material_requisition_items").insert(items);
+            const { error: itemsErr } = await supabaseAdmin
+              .from("material_requisition_items")
+              .insert(items);
             if (itemsErr) console.error("MR items insert failed:", itemsErr);
           }
 
@@ -227,7 +263,11 @@ export const Route = createFileRoute("/api/agent/v1/internal-approval")({
               approval_id: approval.id,
               decision: "approved",
               manufacturing_order: { id: mo.id, order_number: mo.order_number },
-              material_requisition: { id: mr.id, requisition_number: mr.requisition_number, items_count: items.length },
+              material_requisition: {
+                id: mr.id,
+                requisition_number: mr.requisition_number,
+                items_count: items.length,
+              },
             },
           });
         } catch (err) {
@@ -240,7 +280,10 @@ export const Route = createFileRoute("/api/agent/v1/internal-approval")({
             startedAt: started,
             error: String(err),
           });
-          return json({ success: false, error: "Internal server error", code: "internal_error" }, 500);
+          return json(
+            { success: false, error: "Internal server error", code: "internal_error" },
+            500,
+          );
         }
       },
     },

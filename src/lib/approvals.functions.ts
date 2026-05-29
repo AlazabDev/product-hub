@@ -10,8 +10,14 @@ function nextStage(s: Stage): Stage | null {
   return i >= 0 && i < STAGES.length - 1 ? STAGES[i + 1] : null;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function notify(supabase: any, userId: string | null, title: string, body: string, link?: string, kind = "info") {
+async function notify(
+  supabase: any,
+  userId: string | null,
+  title: string,
+  body: string,
+  link?: string,
+  kind = "info",
+) {
   if (!userId) return;
   await supabase.from("notifications").insert({ user_id: userId, title, body, link, kind });
 }
@@ -19,14 +25,16 @@ async function notify(supabase: any, userId: string | null, title: string, body:
 export const submitForApproval = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
-    z.object({
-      entityType: z.enum(["product", "price"]),
-      entityId: z.string().uuid(),
-      title: z.string().min(1).max(200),
-      priority: z.enum(["low", "normal", "high", "urgent"]).default("normal"),
-      notes: z.string().max(2000).optional(),
-      assignedTo: z.string().uuid().nullable().optional(),
-    }).parse(input),
+    z
+      .object({
+        entityType: z.enum(["product", "price"]),
+        entityId: z.string().uuid(),
+        title: z.string().min(1).max(200),
+        priority: z.enum(["low", "normal", "high", "urgent"]).default("normal"),
+        notes: z.string().max(2000).optional(),
+        assignedTo: z.string().uuid().nullable().optional(),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -60,7 +68,14 @@ export const submitForApproval = createServerFn({ method: "POST" })
       await supabase.from("products").update({ status: "needs_review" }).eq("id", data.entityId);
     }
 
-    await notify(supabase, data.assignedTo ?? null, "طلب موافقة جديد", data.title, `/approvals`, "approval_request");
+    await notify(
+      supabase,
+      data.assignedTo ?? null,
+      "طلب موافقة جديد",
+      data.title,
+      `/approvals`,
+      "approval_request",
+    );
 
     return approval;
   });
@@ -68,17 +83,22 @@ export const submitForApproval = createServerFn({ method: "POST" })
 export const decideApproval = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
-    z.object({
-      approvalId: z.string().uuid(),
-      decision: z.enum(["approved", "rejected", "changes_requested"]),
-      comment: z.string().max(2000).optional(),
-    }).parse(input),
+    z
+      .object({
+        approvalId: z.string().uuid(),
+        decision: z.enum(["approved", "rejected", "changes_requested"]),
+        comment: z.string().max(2000).optional(),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
     const { data: appr, error: e1 } = await supabase
-      .from("approvals").select("*").eq("id", data.approvalId).single();
+      .from("approvals")
+      .select("*")
+      .eq("id", data.approvalId)
+      .single();
     if (e1 || !appr) throw new Error(e1?.message ?? "Approval not found");
 
     let newStatus = appr.status as string;
@@ -107,7 +127,12 @@ export const decideApproval = createServerFn({ method: "POST" })
     const { error: e2 } = await supabase
       .from("approvals")
       .update({
-        status: newStatus as "approved" | "rejected" | "changes_requested" | "pending" | "cancelled",
+        status: newStatus as
+          | "approved"
+          | "rejected"
+          | "changes_requested"
+          | "pending"
+          | "cancelled",
         current_stage: newStage,
         decided_at: decidedAt,
         decided_by: decidedBy,
@@ -126,17 +151,34 @@ export const decideApproval = createServerFn({ method: "POST" })
     // Reflect on entity
     if (appr.entity_type === "product") {
       if (newStatus === "approved") {
-        await supabase.from("products").update({ status: "approved", approved_by: userId, approved_at: new Date().toISOString() }).eq("id", appr.entity_id);
+        await supabase
+          .from("products")
+          .update({
+            status: "approved",
+            approved_by: userId,
+            approved_at: new Date().toISOString(),
+          })
+          .eq("id", appr.entity_id);
       } else if (newStatus === "rejected") {
         await supabase.from("products").update({ status: "draft" }).eq("id", appr.entity_id);
       } else if (newStatus === "changes_requested") {
         await supabase.from("products").update({ status: "needs_review" }).eq("id", appr.entity_id);
       }
     } else if (appr.entity_type === "price" && newStatus === "approved") {
-      await supabase.from("prices").update({ status: "approved", approved_by: userId, approved_at: new Date().toISOString() }).eq("id", appr.entity_id);
+      await supabase
+        .from("prices")
+        .update({ status: "approved", approved_by: userId, approved_at: new Date().toISOString() })
+        .eq("id", appr.entity_id);
     }
 
-    await notify(supabase, appr.requested_by, `قرار على طلبك: ${data.decision}`, appr.title, `/approvals`, "approval_result");
+    await notify(
+      supabase,
+      appr.requested_by,
+      `قرار على طلبك: ${data.decision}`,
+      appr.title,
+      `/approvals`,
+      "approval_result",
+    );
 
     return { ok: true, status: newStatus, stage: newStage };
   });
@@ -146,27 +188,42 @@ export const cancelApproval = createServerFn({ method: "POST" })
   .inputValidator((input) => z.object({ approvalId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { error } = await supabase.from("approvals")
-      .update({ status: "cancelled" }).eq("id", data.approvalId);
+    const { error } = await supabase
+      .from("approvals")
+      .update({ status: "cancelled" })
+      .eq("id", data.approvalId);
     if (error) throw new Error(error.message);
     await supabase.from("approval_history").insert({
-      approval_id: data.approvalId, stage: "content_review",
-      action: "cancelled", actor: userId,
+      approval_id: data.approvalId,
+      stage: "content_review",
+      action: "cancelled",
+      actor: userId,
     });
     return { ok: true };
   });
 
 export const reassignApproval = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => z.object({
-    approvalId: z.string().uuid(),
-    assignedTo: z.string().uuid(),
-    comment: z.string().max(2000).optional(),
-  }).parse(input))
+  .inputValidator((input) =>
+    z
+      .object({
+        approvalId: z.string().uuid(),
+        assignedTo: z.string().uuid(),
+        comment: z.string().max(2000).optional(),
+      })
+      .parse(input),
+  )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { data: appr } = await supabase.from("approvals").select("title,current_stage").eq("id", data.approvalId).single();
-    const { error } = await supabase.from("approvals").update({ assigned_to: data.assignedTo }).eq("id", data.approvalId);
+    const { data: appr } = await supabase
+      .from("approvals")
+      .select("title,current_stage")
+      .eq("id", data.approvalId)
+      .single();
+    const { error } = await supabase
+      .from("approvals")
+      .update({ assigned_to: data.assignedTo })
+      .eq("id", data.approvalId);
     if (error) throw new Error(error.message);
     await supabase.from("approval_history").insert({
       approval_id: data.approvalId,
@@ -175,6 +232,13 @@ export const reassignApproval = createServerFn({ method: "POST" })
       comment: data.comment ?? null,
       actor: userId,
     });
-    await notify(supabase, data.assignedTo, "تم تكليفك بمراجعة طلب", appr?.title ?? "طلب موافقة", "/approvals", "approval_request");
+    await notify(
+      supabase,
+      data.assignedTo,
+      "تم تكليفك بمراجعة طلب",
+      appr?.title ?? "طلب موافقة",
+      "/approvals",
+      "approval_request",
+    );
     return { ok: true };
   });

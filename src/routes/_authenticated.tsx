@@ -23,14 +23,20 @@ function AuthLayout() {
           <header className="h-14 flex items-center justify-between border-b bg-card px-4 sticky top-0 z-10">
             <div className="flex items-center gap-3">
               <SidebarTrigger />
-              <div className="text-xs text-muted-foreground num" dir="ltr">/ {crumb}</div>
+              <div className="text-xs text-muted-foreground num" dir="ltr">
+                / {crumb}
+              </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="text-xs text-muted-foreground hidden md:block">منصة العزب — مركز إدارة الأصول والمنتجات</div>
+              <div className="text-xs text-muted-foreground hidden md:block">
+                منصة العزب — مركز إدارة الأصول والمنتجات
+              </div>
               <NotificationBell />
             </div>
           </header>
-          <main className="flex-1 overflow-auto"><Outlet /></main>
+          <main className="flex-1 overflow-auto">
+            <Outlet />
+          </main>
         </div>
       </div>
     </SidebarProvider>

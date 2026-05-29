@@ -127,7 +127,13 @@ export const generateProductImages = createServerFn({ method: "POST" })
       .in("id", data.productIds);
     if (error) throw new Error(error.message);
 
-    const summary: { productId: string; azCode: string; generated: number; failed: number; errors: string[] }[] = [];
+    const summary: {
+      productId: string;
+      azCode: string;
+      generated: number;
+      failed: number;
+      errors: string[];
+    }[] = [];
     for (const p of products ?? []) {
       const res = await processProduct(p as ProductRow, context.userId);
       const generated = res.filter((r) => r.ok).length;
@@ -137,7 +143,10 @@ export const generateProductImages = createServerFn({ method: "POST" })
         azCode: p.az_code,
         generated,
         failed,
-        errors: res.filter((r) => !r.ok).map((r) => r.error!).slice(0, 3),
+        errors: res
+          .filter((r) => !r.ok)
+          .map((r) => r.error!)
+          .slice(0, 3),
       });
     }
 

@@ -39,10 +39,7 @@ export function ProductCreateDialog({ onSuccess }: ProductCreateDialogProps) {
           </SheetDescription>
         </SheetHeader>
         <div className="mt-6">
-          <ProductForm
-            onSuccess={handleSuccess}
-            onCancel={() => setOpen(false)}
-          />
+          <ProductForm onSuccess={handleSuccess} onCancel={() => setOpen(false)} />
         </div>
       </SheetContent>
     </Sheet>

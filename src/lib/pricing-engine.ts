@@ -1,7 +1,7 @@
 /**
  * Alazab PAOP - Pricing Engine
  * محرك التسعير الذكي للوحدات الخشبية المخصصة
- * 
+ *
  * يقوم بـ:
  * 1. تحليل مكونات التصميم
  * 2. حساب تكلفة الخامات
@@ -20,38 +20,38 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 export interface DesignData {
   // الابعاد الرئيسية
   dimensions: {
-    width: number;      // العرض بالسنتيمتر
-    height: number;     // الارتفاع بالسنتيمتر
-    depth: number;      // العمق بالسنتيمتر
-    unit?: string;      // وحدة القياس (cm, mm, m)
+    width: number; // العرض بالسنتيمتر
+    height: number; // الارتفاع بالسنتيمتر
+    depth: number; // العمق بالسنتيمتر
+    unit?: string; // وحدة القياس (cm, mm, m)
   };
-  
+
   // المكونات الاساسية
   components: DesignComponent[];
-  
+
   // الخامات المطلوبة
   materials?: MaterialSpec[];
-  
+
   // التشطيبات
   finishes?: {
     color?: string;
     texture?: string;
-    coating?: string;      // طلاء، لميع، مطفي
+    coating?: string; // طلاء، لميع، مطفي
     coating_type?: string; // PU, melamine, lacquer
   };
-  
+
   // الاكسسوارات
   accessories?: AccessorySpec[];
-  
+
   // مستوى التعقيد
   complexity?: "simple" | "medium" | "complex";
-  
+
   // متطلبات اضافية
   special_requirements?: string[];
 }
 
 export interface DesignComponent {
-  type: string;           // door, drawer, shelf, panel, frame
+  type: string; // door, drawer, shelf, panel, frame
   name: string;
   quantity: number;
   dimensions?: {
@@ -67,14 +67,14 @@ export interface DesignComponent {
 export interface MaterialSpec {
   material_code: string;
   material_name: string;
-  material_type: string;  // wood, mdf, plywood, melamine, hardware
+  material_type: string; // wood, mdf, plywood, melamine, hardware
   quantity: number;
-  unit: string;           // m2, piece, meter, kg
+  unit: string; // m2, piece, meter, kg
   unit_cost?: number;
 }
 
 export interface AccessorySpec {
-  type: string;           // handle, hinge, rail, lock
+  type: string; // handle, hinge, rail, lock
   code?: string;
   name: string;
   quantity: number;
@@ -85,26 +85,26 @@ export interface PricingResult {
   // تفاصيل الخامات
   materials_breakdown: MaterialCost[];
   materials_cost: number;
-  
+
   // تكلفة العمالة
   labor_hours: number;
   labor_rate: number;
   labor_cost: number;
-  
+
   // التكاليف غير المباشرة
   overhead_percent: number;
   overhead_cost: number;
-  
+
   // الاجمالي قبل الربح
   total_cost: number;
-  
+
   // هامش الربح
   profit_margin: number;
   profit_amount: number;
-  
+
   // سعر البيع النهائي
   selling_price: number;
-  
+
   // تفاصيل التسعير
   breakdown: PricingBreakdown;
 }
@@ -180,7 +180,7 @@ const DEFAULT_MATERIAL_PRICES: Record<string, MaterialEntry> = {
   "LOCK-STD": { price: 45, unit: "piece", name_ar: "قفل عادي" },
   "PAINT-PU": { price: 120, unit: "m2", name_ar: "دهان PU" },
   "PAINT-LAC": { price: 150, unit: "m2", name_ar: "دهان لاكيه" },
-  "VENEER": { price: 180, unit: "m2", name_ar: "قشرة خشب" },
+  VENEER: { price: 180, unit: "m2", name_ar: "قشرة خشب" },
   "EDGE-PVC": { price: 8, unit: "meter", name_ar: "حافة PVC" },
   "EDGE-ABS": { price: 12, unit: "meter", name_ar: "حافة ABS" },
 };
@@ -271,7 +271,10 @@ async function fetchLaborRules(): Promise<typeof DEFAULT_LABOR_RATES> {
   }
 }
 
-function requireMaterial(code: string, prices: Record<string, MaterialEntry>): MaterialEntry | null {
+function requireMaterial(
+  code: string,
+  prices: Record<string, MaterialEntry>,
+): MaterialEntry | null {
   const m = prices[code];
   if (m) return m;
   if (isProd()) throw new Error(`material_price_missing: ${code}`);
@@ -279,72 +282,69 @@ function requireMaterial(code: string, prices: Record<string, MaterialEntry>): M
   return null;
 }
 
-
-
 // =====================================================
 // Pricing Engine
 // =====================================================
 
 export async function calculateQuotePrice(
   design: DesignData,
-  quantity: number = 1
+  quantity: number = 1,
 ): Promise<PricingResult> {
-  
   // جلب قواعد التسعير من قاعدة البيانات
   const rules = await fetchPricingRules();
-  
+
   // 1. حساب مساحة الوحدة
   const surfaceArea = calculateSurfaceArea(design.dimensions);
-  
+
   // 2. تحديد معامل التعقيد
   const complexityFactor = getComplexityFactor(design.complexity || "medium", rules);
-  
+
   // 3. حساب تكلفة الخامات
   const materialsCost = await calculateMaterialsCost(design, surfaceArea);
-  
+
   // 4. حساب تكلفة العمالة
   const laborCost = await calculateLaborCost(design, surfaceArea, complexityFactor);
-  
+
   // 5. التكاليف غير المباشرة
   const overheadPercent = getOverheadPercent(rules);
   const subtotal = materialsCost.total + laborCost.total;
   const overheadCost = subtotal * (overheadPercent / 100);
-  
+
   // 6. التكلفة الاجمالية
   const totalCost = subtotal + overheadCost;
-  
+
   // 7. هامش الربح
   const profitMargin = getProfitMargin(rules);
   const profitAmount = totalCost * (profitMargin / 100);
-  
+
   // 8. سعر البيع للوحدة الواحدة
-  let unitSellingPrice = totalCost + profitAmount;
-  
+  const unitSellingPrice = totalCost + profitAmount;
+
   // 9. خصم الكمية
   const volumeDiscount = getVolumeDiscount(quantity, rules);
   const totalBeforeDiscount = unitSellingPrice * quantity;
   const discountAmount = totalBeforeDiscount * (volumeDiscount / 100);
   const finalPrice = totalBeforeDiscount - discountAmount;
-  
+
   // 10. تجميع النتيجة
   const result: PricingResult = {
     materials_breakdown: materialsCost.breakdown,
     materials_cost: materialsCost.total,
-    
+
     labor_hours: laborCost.hours,
     labor_rate: laborCost.avgRate,
     labor_cost: laborCost.total,
-    
+
     overhead_percent: overheadPercent,
     overhead_cost: overheadCost,
-    
+
     total_cost: totalCost,
-    
+
     profit_margin: profitMargin,
     profit_amount: profitAmount,
-    
+
     selling_price: Math.round(finalPrice / quantity), // سعر الوحدة بعد الخصم
-    
+
     breakdown: {
       dimensions_factor: surfaceArea,
       complexity_factor: complexityFactor,
@@ -355,14 +355,14 @@ export async function calculateQuotePrice(
         finishes: materialsCost.categories.finishes,
       },
       labor: laborCost.breakdown,
-      applied_rules: rules.map(r => r.name),
+      applied_rules: rules.map((r) => r.name),
       discounts: {
         volume: volumeDiscount,
         special: 0,
       },
     },
   };
-  
+
   return result;
 }
 
@@ -395,47 +395,46 @@ function getDefaultRules() {
 
 function calculateSurfaceArea(dimensions: DesignData["dimensions"]): number {
   const { width, height, depth, unit } = dimensions;
-  
+
   // تحويل للمتر المربع
   let factor = 1;
   if (unit === "mm") factor = 0.001;
   else if (unit === "cm") factor = 0.01;
-  
+
   const w = width * factor;
   const h = height * factor;
   const d = depth * factor;
-  
+
   // حساب المساحة الكلية (الواجهة + الجوانب + القاع + السقف)
   const frontBack = 2 * w * h;
   const sides = 2 * d * h;
   const topBottom = 2 * w * d;
-  
+
   return frontBack + sides + topBottom;
 }
 
 function getComplexityFactor(complexity: string, rules: any[]): number {
   const rule = rules.find(
-    r => r.rule_type === "complexity_factor" && 
-    r.conditions?.complexity_level === complexity
+    (r) => r.rule_type === "complexity_factor" && r.conditions?.complexity_level === complexity,
   );
   return rule?.value || (complexity === "simple" ? 1.0 : complexity === "medium" ? 1.25 : 1.5);
 }
 
 function getOverheadPercent(rules: any[]): number {
-  const rule = rules.find(r => r.rule_type === "overhead_percent");
+  const rule = rules.find((r) => r.rule_type === "overhead_percent");
   return rule?.value || 15;
 }
 
 function getProfitMargin(rules: any[]): number {
-  const rule = rules.find(r => r.rule_type === "material_markup");
+  const rule = rules.find((r) => r.rule_type === "material_markup");
   return rule?.value || 25;
 }
 
 function getVolumeDiscount(quantity: number, rules: any[]): number {
   const discountRules = rules
-    .filter(r => r.rule_type === "volume_discount")
+    .filter((r) => r.rule_type === "volume_discount")
     .sort((a, b) => (b.conditions?.min_quantity || 0) - (a.conditions?.min_quantity || 0));
-  
+
   for (const rule of discountRules) {
     if (quantity >= (rule.conditions?.min_quantity || 0)) {
       return rule.value || 0;
@@ -458,7 +457,7 @@ async function calculateMaterialsCost(design: DesignData, surfaceArea: number) {
       if (material) {
         let quantity = comp.quantity;
         if (comp.dimensions && material.unit === "m2") {
-          quantity = (comp.dimensions.width * comp.dimensions.height / 10000) * comp.quantity;
+          quantity = ((comp.dimensions.width * comp.dimensions.height) / 10000) * comp.quantity;
         }
         const cost = quantity * material.price;
         breakdown.push({
@@ -546,7 +545,11 @@ async function calculateMaterialsCost(design: DesignData, surfaceArea: number) {
   return { breakdown, total, categories };
 }
 
-async function calculateLaborCost(design: DesignData, surfaceArea: number, complexityFactor: number) {
+async function calculateLaborCost(
+  design: DesignData,
+  surfaceArea: number,
+  complexityFactor: number,
+) {
   const rates = await fetchLaborRules();
   const breakdown = {
     cutting: 0,
@@ -595,12 +598,12 @@ function getCoatingCode(coatingType: string): string {
 
 function calculateEdgeLength(design: DesignData): number {
   if (!design.components) return 0;
-  
+
   let totalEdge = 0;
   for (const comp of design.components) {
     if (comp.dimensions) {
       // محيط المكون * عدد الوحدات
-      const perimeter = 2 * (comp.dimensions.width + comp.dimensions.height) / 100; // بالمتر
+      const perimeter = (2 * (comp.dimensions.width + comp.dimensions.height)) / 100; // بالمتر
       totalEdge += perimeter * comp.quantity;
     }
   }

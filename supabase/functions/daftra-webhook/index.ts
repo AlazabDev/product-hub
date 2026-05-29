@@ -50,13 +50,10 @@ serve(async (req) => {
       processed_at: new Date().toISOString(),
     });
 
-    return new Response(
-      JSON.stringify({ success: true, event: event }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      }
-    );
+    return new Response(JSON.stringify({ success: true, event: event }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200,
+    });
   } catch (error) {
     console.error("Webhook error:", error);
     return new Response(
@@ -67,7 +64,7 @@ serve(async (req) => {
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 400,
-      }
+      },
     );
   }
 });

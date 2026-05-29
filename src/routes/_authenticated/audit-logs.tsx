@@ -4,9 +4,26 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, History, FileText, Package, Truck, DollarSign, Image, User, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Search,
+  History,
+  FileText,
+  Package,
+  Truck,
+  DollarSign,
+  Image,
+  User,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 
@@ -103,12 +120,23 @@ function AuditLogsPage() {
             <Input
               placeholder="بحث بمعرف الكيان..."
               value={q}
-              onChange={(e) => { setQ(e.target.value); setPage(0); }}
+              onChange={(e) => {
+                setQ(e.target.value);
+                setPage(0);
+              }}
               className="pr-9"
             />
           </div>
-          <Select value={entityType} onValueChange={(v) => { setEntityType(v); setPage(0); }}>
-            <SelectTrigger className="w-[160px]"><SelectValue placeholder="نوع الكيان" /></SelectTrigger>
+          <Select
+            value={entityType}
+            onValueChange={(v) => {
+              setEntityType(v);
+              setPage(0);
+            }}
+          >
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="نوع الكيان" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">كل الانواع</SelectItem>
               <SelectItem value="product">منتج</SelectItem>
@@ -118,8 +146,16 @@ function AuditLogsPage() {
               <SelectItem value="category">فئة</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={actionFilter} onValueChange={(v) => { setActionFilter(v); setPage(0); }}>
-            <SelectTrigger className="w-[140px]"><SelectValue placeholder="الاجراء" /></SelectTrigger>
+          <Select
+            value={actionFilter}
+            onValueChange={(v) => {
+              setActionFilter(v);
+              setPage(0);
+            }}
+          >
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="الاجراء" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">كل الاجراءات</SelectItem>
               <SelectItem value="create">انشاء</SelectItem>
@@ -142,7 +178,10 @@ function AuditLogsPage() {
           )}
           {data?.rows.map((log) => {
             const action = actionLabels[log.action] ?? { label: log.action, color: "bg-secondary" };
-            const entity = entityLabels[log.entity_type] ?? { label: log.entity_type, icon: FileText };
+            const entity = entityLabels[log.entity_type] ?? {
+              label: log.entity_type,
+              icon: FileText,
+            };
             const EntityIcon = entity.icon;
             const isExpanded = expandedId === log.id;
 
@@ -176,16 +215,21 @@ function AuditLogsPage() {
                       )}
                     </div>
                   </div>
-                  {(log.old_value || log.new_value) && (
-                    isExpanded ? <ChevronUp className="size-4 text-muted-foreground" /> : <ChevronDown className="size-4 text-muted-foreground" />
-                  )}
+                  {(log.old_value || log.new_value) &&
+                    (isExpanded ? (
+                      <ChevronUp className="size-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="size-4 text-muted-foreground" />
+                    ))}
                 </button>
 
                 {isExpanded && (log.old_value || log.new_value) && (
                   <div className="px-4 pb-4 grid md:grid-cols-2 gap-4">
                     {log.old_value && (
                       <div className="p-3 rounded-lg bg-destructive/5 border border-destructive/20">
-                        <div className="text-xs font-semibold text-destructive mb-2">القيمة السابقة</div>
+                        <div className="text-xs font-semibold text-destructive mb-2">
+                          القيمة السابقة
+                        </div>
                         <pre className="text-xs num overflow-auto max-h-40" dir="ltr">
                           {JSON.stringify(log.old_value, null, 2)}
                         </pre>
@@ -193,7 +237,9 @@ function AuditLogsPage() {
                     )}
                     {log.new_value && (
                       <div className="p-3 rounded-lg bg-success/5 border border-success/20">
-                        <div className="text-xs font-semibold text-success mb-2">القيمة الجديدة</div>
+                        <div className="text-xs font-semibold text-success mb-2">
+                          القيمة الجديدة
+                        </div>
                         <pre className="text-xs num overflow-auto max-h-40" dir="ltr">
                           {JSON.stringify(log.new_value, null, 2)}
                         </pre>

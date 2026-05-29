@@ -61,7 +61,11 @@ function ApprovalsPage() {
   const { data: approvals = [], isLoading } = useQuery({
     queryKey: ["approvals", tab],
     queryFn: async () => {
-      let q = supabase.from("approvals").select("*").order("created_at", { ascending: false }).limit(200);
+      let q = supabase
+        .from("approvals")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(200);
       if (tab === "pending") q = q.in("status", ["pending", "changes_requested"]);
       else if (tab === "decided") q = q.in("status", ["approved", "rejected", "cancelled"]);
       const { data, error } = await q;
@@ -74,8 +78,10 @@ function ApprovalsPage() {
   const cancelFn = useServerFn(cancelApproval);
 
   const decide = useMutation({
-    mutationFn: (input: { approvalId: string; decision: "approved" | "rejected" | "changes_requested" }) =>
-      decideFn({ data: { ...input, comment: comment[input.approvalId] } }),
+    mutationFn: (input: {
+      approvalId: string;
+      decision: "approved" | "rejected" | "changes_requested";
+    }) => decideFn({ data: { ...input, comment: comment[input.approvalId] } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["approvals"] });
       toast.success("تم تسجيل القرار");
@@ -92,7 +98,9 @@ function ApprovalsPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const pendingCount = approvals.filter((a) => a.status === "pending" || a.status === "changes_requested").length;
+  const pendingCount = approvals.filter(
+    (a) => a.status === "pending" || a.status === "changes_requested",
+  ).length;
 
   return (
     <div className="p-6 space-y-6">
@@ -103,7 +111,8 @@ function ApprovalsPage() {
             مركز الموافقات
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            سير عمل اعتماد المنتجات والأسعار عبر ٣ مراحل: مراجعة المحتوى ← مراجعة المدير ← الاعتماد النهائي
+            سير عمل اعتماد المنتجات والأسعار عبر ٣ مراحل: مراجعة المحتوى ← مراجعة المدير ← الاعتماد
+            النهائي
           </p>
         </div>
         <Badge variant="secondary" className="gap-1 text-sm">
@@ -137,36 +146,52 @@ function ApprovalsPage() {
                   <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                        <Badge variant="outline" className="capitalize">{a.entity_type}</Badge>
+                        <Badge variant="outline" className="capitalize">
+                          {a.entity_type}
+                        </Badge>
                         <Badge variant={STATUS_VARIANT[a.status]}>{STATUS_LABEL[a.status]}</Badge>
                         {a.priority === "urgent" && (
-                          <Badge variant="destructive" className="gap-1"><AlertTriangle className="size-3" />عاجل</Badge>
+                          <Badge variant="destructive" className="gap-1">
+                            <AlertTriangle className="size-3" />
+                            عاجل
+                          </Badge>
                         )}
                         {a.priority === "high" && <Badge variant="secondary">أولوية عالية</Badge>}
                       </div>
                       <h3 className="font-bold text-base">{a.title}</h3>
                       {a.notes && <p className="text-sm text-muted-foreground mt-1">{a.notes}</p>}
                       <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2 flex-wrap">
-                        <span>المرحلة الحالية: <span className="font-medium text-foreground">{STAGE_LABEL[a.current_stage]}</span></span>
-                        <span dir="ltr" className="num">{new Date(a.created_at).toLocaleString("en-GB")}</span>
+                        <span>
+                          المرحلة الحالية:{" "}
+                          <span className="font-medium text-foreground">
+                            {STAGE_LABEL[a.current_stage]}
+                          </span>
+                        </span>
+                        <span dir="ltr" className="num">
+                          {new Date(a.created_at).toLocaleString("en-GB")}
+                        </span>
                       </div>
                     </div>
                   </div>
 
                   {/* Stage progress */}
                   <div className="flex items-center gap-1 mb-4">
-                    {(["content_review", "manager_review", "final_approval"] as const).map((s, idx) => {
-                      const stages = ["content_review", "manager_review", "final_approval"];
-                      const currentIdx = stages.indexOf(a.current_stage);
-                      const done = a.status === "approved" || idx < currentIdx;
-                      const active = idx === currentIdx && a.status !== "approved";
-                      return (
-                        <div key={s} className="flex-1 flex items-center gap-1">
-                          <div className={`h-1.5 flex-1 rounded-full ${done ? "bg-accent" : active ? "bg-accent/40" : "bg-muted"}`} />
-                          {idx < 2 && <div className="w-1" />}
-                        </div>
-                      );
-                    })}
+                    {(["content_review", "manager_review", "final_approval"] as const).map(
+                      (s, idx) => {
+                        const stages = ["content_review", "manager_review", "final_approval"];
+                        const currentIdx = stages.indexOf(a.current_stage);
+                        const done = a.status === "approved" || idx < currentIdx;
+                        const active = idx === currentIdx && a.status !== "approved";
+                        return (
+                          <div key={s} className="flex-1 flex items-center gap-1">
+                            <div
+                              className={`h-1.5 flex-1 rounded-full ${done ? "bg-accent" : active ? "bg-accent/40" : "bg-muted"}`}
+                            />
+                            {idx < 2 && <div className="w-1" />}
+                          </div>
+                        );
+                      },
+                    )}
                   </div>
 
                   {isPending && (
@@ -191,7 +216,9 @@ function ApprovalsPage() {
                           size="sm"
                           variant="outline"
                           className="gap-1.5"
-                          onClick={() => decide.mutate({ approvalId: a.id, decision: "changes_requested" })}
+                          onClick={() =>
+                            decide.mutate({ approvalId: a.id, decision: "changes_requested" })
+                          }
                           disabled={decide.isPending}
                         >
                           <MessageSquare className="size-4" />

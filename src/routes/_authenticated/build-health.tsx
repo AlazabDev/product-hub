@@ -95,7 +95,10 @@ function BuildHealthPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Link to="/dashboard" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
+          <Link
+            to="/dashboard"
+            className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+          >
             <ArrowRight className="size-3" /> لوحة التحكم
           </Link>
         </div>
@@ -111,7 +114,9 @@ function BuildHealthPage() {
               <AlertTriangle className="size-8 text-destructive" />
             )}
             <div>
-              <div className="text-2xl font-bold num" dir="ltr">{data.totalErrors}</div>
+              <div className="text-2xl font-bold num" dir="ltr">
+                {data.totalErrors}
+              </div>
               <div className="text-xs text-muted-foreground">أخطاء</div>
             </div>
           </CardContent>
@@ -120,7 +125,9 @@ function BuildHealthPage() {
           <CardContent className="p-4 flex items-center gap-3">
             <FileWarning className="size-8 text-warning" />
             <div>
-              <div className="text-2xl font-bold num" dir="ltr">{Object.keys(data.byFile).length}</div>
+              <div className="text-2xl font-bold num" dir="ltr">
+                {Object.keys(data.byFile).length}
+              </div>
               <div className="text-xs text-muted-foreground">ملفات متأثرة</div>
             </div>
           </CardContent>
@@ -129,7 +136,9 @@ function BuildHealthPage() {
           <CardContent className="p-4 flex items-center gap-3">
             <Lightbulb className="size-8 text-accent" />
             <div>
-              <div className="text-2xl font-bold num" dir="ltr">{Object.keys(data.byCategory).length}</div>
+              <div className="text-2xl font-bold num" dir="ltr">
+                {Object.keys(data.byCategory).length}
+              </div>
               <div className="text-xs text-muted-foreground">تصنيفات</div>
             </div>
           </CardContent>
@@ -159,7 +168,10 @@ function BuildHealthPage() {
             onClick={() => setActiveCat(null)}
             className="h-7 text-xs"
           >
-            الكل <span className="num mr-1" dir="ltr">({data.issues.length})</span>
+            الكل{" "}
+            <span className="num mr-1" dir="ltr">
+              ({data.issues.length})
+            </span>
           </Button>
           {Object.entries(data.byCategory)
             .sort((a, b) => b[1] - a[1])
@@ -171,7 +183,10 @@ function BuildHealthPage() {
                 onClick={() => setActiveCat(cat === activeCat ? null : cat)}
                 className="h-7 text-xs"
               >
-                {cat} <span className="num mr-1" dir="ltr">({n})</span>
+                {cat}{" "}
+                <span className="num mr-1" dir="ltr">
+                  ({n})
+                </span>
               </Button>
             ))}
         </CardContent>
@@ -198,13 +213,19 @@ function BuildHealthPage() {
       ) : (
         <Accordion type="multiple" className="space-y-2">
           {groupedByFile.map(([file, items]) => (
-            <AccordionItem key={file} value={file} className="border rounded-lg surface-elevated px-3">
+            <AccordionItem
+              key={file}
+              value={file}
+              className="border rounded-lg surface-elevated px-3"
+            >
               <AccordionTrigger className="hover:no-underline py-3">
                 <div className="flex items-center gap-3 flex-1 text-right">
                   <Badge variant="outline" className="num shrink-0" dir="ltr">
                     {items.length}
                   </Badge>
-                  <code className="text-xs truncate flex-1 text-right" dir="ltr">{file}</code>
+                  <code className="text-xs truncate flex-1 text-right" dir="ltr">
+                    {file}
+                  </code>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="space-y-2 pt-2 pb-3">
@@ -224,7 +245,9 @@ function BuildHealthPage() {
                         L{it.line}:C{it.column}
                       </code>
                     </div>
-                    <p className="text-xs leading-relaxed" dir="ltr">{it.message}</p>
+                    <p className="text-xs leading-relaxed" dir="ltr">
+                      {it.message}
+                    </p>
                     <div className="flex items-start gap-2 rounded bg-accent/5 border border-accent/20 p-2">
                       <Lightbulb className="size-4 text-accent shrink-0 mt-0.5" />
                       <div className="text-xs leading-relaxed">
@@ -245,14 +268,16 @@ function BuildHealthPage() {
           <div className="flex items-center gap-2 text-foreground font-semibold">
             <RefreshCw className="size-3" /> تحديث اللقطة
           </div>
-          <p>
-            هذه اللقطة ثابتة وتُجدَّد بتشغيل السكربت محلياً قبل النشر:
-          </p>
+          <p>هذه اللقطة ثابتة وتُجدَّد بتشغيل السكربت محلياً قبل النشر:</p>
           <code className="block bg-muted p-2 rounded num text-[11px]" dir="ltr">
             bun scripts/build-health.ts
           </code>
           <p>
-            تُكتب النتائج إلى <code className="num" dir="ltr">src/data/build-health.json</code> وتُعرض هنا تلقائياً.
+            تُكتب النتائج إلى{" "}
+            <code className="num" dir="ltr">
+              src/data/build-health.json
+            </code>{" "}
+            وتُعرض هنا تلقائياً.
           </p>
         </CardContent>
       </Card>

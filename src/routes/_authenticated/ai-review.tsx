@@ -7,9 +7,20 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import {
-  Sparkles, Send, Bot, User, Loader2, Search,
-  Package, Truck, DollarSign, BarChart3, RefreshCw,
-  MessageSquare, Lightbulb, Wrench,
+  Sparkles,
+  Send,
+  Bot,
+  User,
+  Loader2,
+  Search,
+  Package,
+  Truck,
+  DollarSign,
+  BarChart3,
+  RefreshCw,
+  MessageSquare,
+  Lightbulb,
+  Wrench,
 } from "lucide-react";
 import { sendChatMessage, type ChatMessage } from "@/lib/ai-assistant";
 import { cn } from "@/lib/utils";
@@ -149,8 +160,8 @@ function AIReview() {
               </div>
               <h2 className="text-lg font-bold mb-2">مرحبا بك في مساعد PAOP</h2>
               <p className="text-sm text-muted-foreground text-center max-w-md mb-6">
-                انا هنا لمساعدتك في ادارة كتالوج المنتجات. يمكنني البحث في المنتجات،
-                عرض الاسعار، معلومات الموردين، والمزيد.
+                انا هنا لمساعدتك في ادارة كتالوج المنتجات. يمكنني البحث في المنتجات، عرض الاسعار،
+                معلومات الموردين، والمزيد.
               </p>
 
               {/* Quick Actions */}
@@ -194,10 +205,7 @@ function AIReview() {
               {messages.map((message) => (
                 <div
                   key={message.id}
-                  className={cn(
-                    "flex gap-3",
-                    message.role === "user" ? "flex-row-reverse" : ""
-                  )}
+                  className={cn("flex gap-3", message.role === "user" ? "flex-row-reverse" : "")}
                 >
                   {/* Avatar */}
                   <div
@@ -205,7 +213,7 @@ function AIReview() {
                       "size-8 rounded-lg flex items-center justify-center shrink-0",
                       message.role === "user"
                         ? "bg-primary text-primary-foreground"
-                        : "bg-accent/10"
+                        : "bg-accent/10",
                     )}
                   >
                     {message.role === "user" ? (
@@ -217,24 +225,21 @@ function AIReview() {
 
                   {/* Message Content */}
                   <div
-                    className={cn(
-                      "flex-1 max-w-[80%]",
-                      message.role === "user" ? "text-end" : ""
-                    )}
+                    className={cn("flex-1 max-w-[80%]", message.role === "user" ? "text-end" : "")}
                   >
                     <div
                       className={cn(
                         "inline-block p-3 rounded-xl",
                         message.role === "user"
                           ? "bg-primary text-primary-foreground"
-                          : "bg-muted/50"
+                          : "bg-muted/50",
                       )}
                     >
                       {/* Render markdown-like content */}
                       <div
                         className={cn(
                           "prose prose-sm max-w-none",
-                          message.role === "user" ? "prose-invert" : ""
+                          message.role === "user" ? "prose-invert" : "",
                         )}
                         dangerouslySetInnerHTML={{
                           __html: formatMessage(message.content),
@@ -259,7 +264,7 @@ function AIReview() {
                     <div
                       className={cn(
                         "text-xs text-muted-foreground mt-1",
-                        message.role === "user" ? "text-end" : ""
+                        message.role === "user" ? "text-end" : "",
                       )}
                     >
                       {message.timestamp.toLocaleTimeString("ar", {
@@ -332,20 +337,22 @@ function AIReview() {
 
 // Helper function to format message content
 function formatMessage(content: string): string {
-  return content
-    // Bold
-    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-    // Headers
-    .replace(/^## (.*?)$/gm, '<h3 class="text-base font-bold mt-2 mb-1">$1</h3>')
-    .replace(/^### (.*?)$/gm, '<h4 class="text-sm font-bold mt-2 mb-1">$1</h4>')
-    // Lists
-    .replace(/^- (.*?)$/gm, '<li class="mr-4">$1</li>')
-    // Line breaks
-    .replace(/\n\n/g, "<br/><br/>")
-    .replace(/\n/g, "<br/>")
-    // Tables (basic)
-    .replace(
-      /\| (.*?) \| (.*?) \|/g,
-      '<div class="flex gap-4"><span class="font-medium">$1</span><span>$2</span></div>'
-    );
+  return (
+    content
+      // Bold
+      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+      // Headers
+      .replace(/^## (.*?)$/gm, '<h3 class="text-base font-bold mt-2 mb-1">$1</h3>')
+      .replace(/^### (.*?)$/gm, '<h4 class="text-sm font-bold mt-2 mb-1">$1</h4>')
+      // Lists
+      .replace(/^- (.*?)$/gm, '<li class="mr-4">$1</li>')
+      // Line breaks
+      .replace(/\n\n/g, "<br/><br/>")
+      .replace(/\n/g, "<br/>")
+      // Tables (basic)
+      .replace(
+        /\| (.*?) \| (.*?) \|/g,
+        '<div class="flex gap-4"><span class="font-medium">$1</span><span>$2</span></div>',
+      )
+  );
 }

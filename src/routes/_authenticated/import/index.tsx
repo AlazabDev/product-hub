@@ -6,8 +6,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { Upload, FileSpreadsheet, CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
 import { bulkUpsertProducts } from "@/lib/import.functions";
@@ -15,43 +28,80 @@ import { bulkUpsertProducts } from "@/lib/import.functions";
 export const Route = createFileRoute("/_authenticated/import/")({ component: ImportCenter });
 
 type Job = {
-  id: string; import_type: string; file_name: string; status: string;
-  total_rows: number; valid_rows: number; invalid_rows: number; created_at: string;
+  id: string;
+  import_type: string;
+  file_name: string;
+  status: string;
+  total_rows: number;
+  valid_rows: number;
+  invalid_rows: number;
+  created_at: string;
 };
 
 // Smart column mapping: accept Arabic/English headers from the official catalog file
 const COL_MAP: Record<string, string> = {
-  "az code": "az_code", "az_code": "az_code", "كود az": "az_code",
-  "كود egs": "egs_code", "egs": "egs_code", "egs_code": "egs_code",
-  "مصدر البند": "source", "source": "source",
-  "المسار التشغيلي": "operational_track", "operational_track": "operational_track",
-  "نوع البند": "item_type", "item_type": "item_type", "type": "item_type",
-  "حالة الاعتماد": "status", "status": "status",
-  "الاسم بالعربي": "name_ar", "name_ar": "name_ar",
-  "name in english": "name_en", "name_en": "name_en", "الاسم بالانجليزي": "name_en",
-  "الوصف بالعربي": "description_ar", "description_ar": "description_ar",
-  "description in english": "description_en", "description_en": "description_en",
-  "gpc brick code": "gs1_gpc_brick", "gs1_gpc_brick": "gs1_gpc_brick",
-  "gpc brick title": "gpc_brick_title", "gpc_brick_title": "gpc_brick_title",
-  "gpc class": "gpc_class", "gpc_class": "gpc_class",
-  "gpc family": "gpc_family", "gpc_family": "gpc_family",
-  "gpc segment": "gpc_segment", "gpc_segment": "gpc_segment",
-  "القطاع بالعربي": "sector_ar", "sector_ar": "sector_ar",
-  "مستوى الثقة": "confidence_level", "confidence_level": "confidence_level",
+  "az code": "az_code",
+  az_code: "az_code",
+  "كود az": "az_code",
+  "كود egs": "egs_code",
+  egs: "egs_code",
+  egs_code: "egs_code",
+  "مصدر البند": "source",
+  source: "source",
+  "المسار التشغيلي": "operational_track",
+  operational_track: "operational_track",
+  "نوع البند": "item_type",
+  item_type: "item_type",
+  type: "item_type",
+  "حالة الاعتماد": "status",
+  status: "status",
+  "الاسم بالعربي": "name_ar",
+  name_ar: "name_ar",
+  "name in english": "name_en",
+  name_en: "name_en",
+  "الاسم بالانجليزي": "name_en",
+  "الوصف بالعربي": "description_ar",
+  description_ar: "description_ar",
+  "description in english": "description_en",
+  description_en: "description_en",
+  "gpc brick code": "gs1_gpc_brick",
+  gs1_gpc_brick: "gs1_gpc_brick",
+  "gpc brick title": "gpc_brick_title",
+  gpc_brick_title: "gpc_brick_title",
+  "gpc class": "gpc_class",
+  gpc_class: "gpc_class",
+  "gpc family": "gpc_family",
+  gpc_family: "gpc_family",
+  "gpc segment": "gpc_segment",
+  gpc_segment: "gpc_segment",
+  "القطاع بالعربي": "sector_ar",
+  sector_ar: "sector_ar",
+  "مستوى الثقة": "confidence_level",
+  confidence_level: "confidence_level",
 };
 
 const TYPE_MAP: Record<string, string> = {
-  product: "product", "منتج": "product",
-  service: "service", "خدمة": "service",
-  work_item: "work_item", "عمل": "work_item",
-  material: "material", "مادة": "material",
-  bundle: "bundle", "حزمة": "bundle",
+  product: "product",
+  منتج: "product",
+  service: "service",
+  خدمة: "service",
+  work_item: "work_item",
+  عمل: "work_item",
+  material: "material",
+  مادة: "material",
+  bundle: "bundle",
+  حزمة: "bundle",
 };
 const STATUS_MAP: Record<string, string> = {
-  approved: "approved", "معتمد": "approved",
-  "needs review": "needs_review", needs_review: "needs_review", "يحتاج مراجعة": "needs_review",
-  draft: "draft", "مسودة": "draft",
-  rejected: "rejected", "مرفوض": "rejected",
+  approved: "approved",
+  معتمد: "approved",
+  "needs review": "needs_review",
+  needs_review: "needs_review",
+  "يحتاج مراجعة": "needs_review",
+  draft: "draft",
+  مسودة: "draft",
+  rejected: "rejected",
+  مرفوض: "rejected",
 };
 
 function normalizeRow(raw: Record<string, unknown>): Record<string, unknown> {
@@ -76,11 +126,13 @@ function parseSheet(file: File): Promise<Record<string, unknown>[]> {
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const wb = XLSX.read(data, { type: "array" });
         // pick "Catalog" sheet if exists, else first
-        const sheetName = wb.SheetNames.find((n) => /catalog|كتالوج|بنود/i.test(n)) ?? wb.SheetNames[0];
+        const sheetName =
+          wb.SheetNames.find((n) => /catalog|كتالوج|بنود/i.test(n)) ?? wb.SheetNames[0];
         const ws = wb.Sheets[sheetName];
         // Try header row 0; if first row looks like banner, try row 2
         let rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: "" });
-        const looksMapped = rows.length && Object.keys(rows[0]).some((k) => COL_MAP[k.trim().toLowerCase()]);
+        const looksMapped =
+          rows.length && Object.keys(rows[0]).some((k) => COL_MAP[k.trim().toLowerCase()]);
         if (!looksMapped) {
           rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: "", range: 2 });
         }
@@ -101,15 +153,26 @@ function ImportCenter() {
   const [allRows, setAllRows] = useState<Record<string, unknown>[]>([]);
   const [fileName, setFileName] = useState("");
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<{ inserted: number; updated: number; invalid: number; errors: { row: number; az_code?: string; message: string }[] } | null>(null);
+  const [result, setResult] = useState<{
+    inserted: number;
+    updated: number;
+    invalid: number;
+    errors: { row: number; az_code?: string; message: string }[];
+  } | null>(null);
 
   const bulk = useServerFn(bulkUpsertProducts);
 
   const load = async () => {
-    const { data } = await supabase.from("import_jobs").select("*").order("created_at", { ascending: false }).limit(30);
+    const { data } = await supabase
+      .from("import_jobs")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(30);
     setJobs((data as Job[]) ?? []);
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   const handleFile = async (file: File) => {
     setFileName(file.name);
@@ -141,11 +204,16 @@ function ImportCenter() {
       if (dryRun) toast.success(`فحص: ${res.valid} صالح، ${res.invalid} خطأ`);
       else toast.success(`اكتمل: ${res.inserted} جديد، ${res.updated} محدّث، ${res.invalid} خطأ`);
       if (!dryRun) {
-        setPreview(null); setAllRows([]); setFileName(""); load();
+        setPreview(null);
+        setAllRows([]);
+        setFileName("");
+        load();
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "فشل");
-    } finally { setBusy(false); }
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -153,42 +221,69 @@ function ImportCenter() {
       <div>
         <h1 className="text-2xl font-bold">مركز الاستيراد</h1>
         <p className="text-sm text-muted-foreground">
-          ارفع ملف Excel/CSV — يتم التعرف التلقائي على الأعمدة (عربي وإنجليزي) ومزامنة المنتجات والخدمات عبر AZ Code.
+          ارفع ملف Excel/CSV — يتم التعرف التلقائي على الأعمدة (عربي وإنجليزي) ومزامنة المنتجات
+          والخدمات عبر AZ Code.
         </p>
       </div>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">رفع ملف</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-base">رفع ملف</CardTitle>
+        </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center gap-3 flex-wrap">
             <Select value={importType} onValueChange={setImportType}>
-              <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-48">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="products">المنتجات والخدمات</SelectItem>
-                <SelectItem value="suppliers" disabled>الموردون (قريباً)</SelectItem>
+                <SelectItem value="suppliers" disabled>
+                  الموردون (قريباً)
+                </SelectItem>
               </SelectContent>
             </Select>
             <label className="cursor-pointer">
-              <input type="file" accept=".xlsx,.xls,.csv" className="hidden"
-                onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
+              <input
+                type="file"
+                accept=".xlsx,.xls,.csv"
+                className="hidden"
+                onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+              />
               <Button variant="outline" asChild>
-                <span><FileSpreadsheet className="size-4 ml-2" /> اختيار ملف</span>
+                <span>
+                  <FileSpreadsheet className="size-4 ml-2" /> اختيار ملف
+                </span>
               </Button>
             </label>
-            {fileName && <span className="text-sm text-muted-foreground">{fileName} — {allRows.length} بند</span>}
+            {fileName && (
+              <span className="text-sm text-muted-foreground">
+                {fileName} — {allRows.length} بند
+              </span>
+            )}
           </div>
 
           {preview && preview.length > 0 && (
             <>
               <div className="border rounded overflow-auto max-h-96">
                 <Table>
-                  <TableHeader><TableRow>
-                    {Object.keys(preview[0]).map((h) => <TableHead key={h} className="text-xs">{h}</TableHead>)}
-                  </TableRow></TableHeader>
+                  <TableHeader>
+                    <TableRow>
+                      {Object.keys(preview[0]).map((h) => (
+                        <TableHead key={h} className="text-xs">
+                          {h}
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  </TableHeader>
                   <TableBody>
                     {preview.map((r, i) => (
                       <TableRow key={i}>
-                        {Object.values(r).map((v, j) => <TableCell key={j} className="text-xs max-w-[260px] truncate">{String(v ?? "")}</TableCell>)}
+                        {Object.values(r).map((v, j) => (
+                          <TableCell key={j} className="text-xs max-w-[260px] truncate">
+                            {String(v ?? "")}
+                          </TableCell>
+                        ))}
                       </TableRow>
                     ))}
                   </TableBody>
@@ -196,11 +291,19 @@ function ImportCenter() {
               </div>
               <div className="flex gap-2">
                 <Button onClick={() => runImport(true)} disabled={busy} variant="outline">
-                  {busy ? <Loader2 className="size-4 ml-2 animate-spin" /> : <CheckCircle2 className="size-4 ml-2" />}
+                  {busy ? (
+                    <Loader2 className="size-4 ml-2 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="size-4 ml-2" />
+                  )}
                   فحص بدون حفظ
                 </Button>
                 <Button onClick={() => runImport(false)} disabled={busy}>
-                  {busy ? <Loader2 className="size-4 ml-2 animate-spin" /> : <Upload className="size-4 ml-2" />}
+                  {busy ? (
+                    <Loader2 className="size-4 ml-2 animate-spin" />
+                  ) : (
+                    <Upload className="size-4 ml-2" />
+                  )}
                   تنفيذ الاستيراد ({allRows.length})
                 </Button>
               </div>
@@ -219,7 +322,9 @@ function ImportCenter() {
                   {result.errors.map((e, i) => (
                     <div key={i} className="flex items-start gap-2 text-destructive">
                       <AlertTriangle className="size-3 mt-0.5 shrink-0" />
-                      <span>صف {e.row} {e.az_code ? `(${e.az_code})` : ""}: {e.message}</span>
+                      <span>
+                        صف {e.row} {e.az_code ? `(${e.az_code})` : ""}: {e.message}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -230,26 +335,55 @@ function ImportCenter() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">سجل عمليات الاستيراد</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-base">سجل عمليات الاستيراد</CardTitle>
+        </CardHeader>
         <CardContent className="p-0">
           <Table>
-            <TableHeader><TableRow>
-              <TableHead>الوقت</TableHead><TableHead>النوع</TableHead><TableHead>الملف</TableHead>
-              <TableHead>الإجمالي</TableHead><TableHead>صحيح</TableHead><TableHead>خطأ</TableHead><TableHead>الحالة</TableHead>
-            </TableRow></TableHeader>
+            <TableHeader>
+              <TableRow>
+                <TableHead>الوقت</TableHead>
+                <TableHead>النوع</TableHead>
+                <TableHead>الملف</TableHead>
+                <TableHead>الإجمالي</TableHead>
+                <TableHead>صحيح</TableHead>
+                <TableHead>خطأ</TableHead>
+                <TableHead>الحالة</TableHead>
+              </TableRow>
+            </TableHeader>
             <TableBody>
               {jobs.map((j) => (
                 <TableRow key={j.id}>
-                  <TableCell className="text-xs num">{new Date(j.created_at).toLocaleString("ar-EG")}</TableCell>
+                  <TableCell className="text-xs num">
+                    {new Date(j.created_at).toLocaleString("ar-EG")}
+                  </TableCell>
                   <TableCell>{j.import_type}</TableCell>
                   <TableCell className="text-xs">{j.file_name}</TableCell>
                   <TableCell className="num">{j.total_rows}</TableCell>
                   <TableCell className="num text-green-600">{j.valid_rows}</TableCell>
                   <TableCell className="num text-destructive">{j.invalid_rows}</TableCell>
-                  <TableCell><Badge variant={j.status === "completed" ? "default" : j.status === "failed" ? "destructive" : "secondary"}>{j.status}</Badge></TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        j.status === "completed"
+                          ? "default"
+                          : j.status === "failed"
+                            ? "destructive"
+                            : "secondary"
+                      }
+                    >
+                      {j.status}
+                    </Badge>
+                  </TableCell>
                 </TableRow>
               ))}
-              {!jobs.length && <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">لا توجد عمليات بعد</TableCell></TableRow>}
+              {!jobs.length && (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                    لا توجد عمليات بعد
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>

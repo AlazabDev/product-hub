@@ -9,7 +9,9 @@ import { Sparkles, AlertTriangle, CheckCircle2, Loader2, Wand2 } from "lucide-re
 import { reviewProduct, applyAISuggestions } from "@/lib/ai-review.functions";
 import { toast } from "sonner";
 
-interface Props { productId: string }
+interface Props {
+  productId: string;
+}
 
 export function ProductAIReviewTab({ productId }: Props) {
   const qc = useQueryClient();
@@ -65,7 +67,11 @@ export function ProductAIReviewTab({ productId }: Props) {
             </div>
           </div>
           <Button onClick={() => review.mutate()} disabled={review.isPending} className="gap-2">
-            {review.isPending ? <Loader2 className="size-4 animate-spin" /> : <Wand2 className="size-4" />}
+            {review.isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Wand2 className="size-4" />
+            )}
             تشغيل المراجعة
           </Button>
         </div>
@@ -74,18 +80,33 @@ export function ProductAIReviewTab({ productId }: Props) {
       {result && (
         <>
           <div className="grid sm:grid-cols-3 gap-3">
-            <StatCard label="جودة المحتوى" value={`${result.suggestions?.quality_score ?? "—"}/100`} />
-            <StatCard label="حقول حرجة ناقصة" value={String(result.missingCritical.length)} variant={result.missingCritical.length ? "danger" : "ok"} />
-            <StatCard label="حقول ثانوية ناقصة" value={String(result.missingSoft.length)} variant={result.missingSoft.length >= 4 ? "warn" : "ok"} />
+            <StatCard
+              label="جودة المحتوى"
+              value={`${result.suggestions?.quality_score ?? "—"}/100`}
+            />
+            <StatCard
+              label="حقول حرجة ناقصة"
+              value={String(result.missingCritical.length)}
+              variant={result.missingCritical.length ? "danger" : "ok"}
+            />
+            <StatCard
+              label="حقول ثانوية ناقصة"
+              value={String(result.missingSoft.length)}
+              variant={result.missingSoft.length >= 4 ? "warn" : "ok"}
+            />
           </div>
 
           <Card className="p-5 surface-elevated border-0">
             <div className="flex items-center justify-between mb-3">
               <h4 className="font-bold">الحالة بعد المراجعة</h4>
-              <Badge variant="outline">{result.previousStatus} → <span className="font-bold mx-1">{result.newStatus}</span></Badge>
+              <Badge variant="outline">
+                {result.previousStatus} → <span className="font-bold mx-1">{result.newStatus}</span>
+              </Badge>
             </div>
             {result.suggestions?.notes && (
-              <p className="text-sm text-muted-foreground border-r-2 border-accent pr-3">{result.suggestions.notes}</p>
+              <p className="text-sm text-muted-foreground border-r-2 border-accent pr-3">
+                {result.suggestions.notes}
+              </p>
             )}
           </Card>
 
@@ -97,7 +118,9 @@ export function ProductAIReviewTab({ productId }: Props) {
               </div>
               <div className="flex flex-wrap gap-2">
                 {result.missingCritical.map((f) => (
-                  <Badge key={f.field} variant="destructive">{f.label}</Badge>
+                  <Badge key={f.field} variant="destructive">
+                    {f.label}
+                  </Badge>
                 ))}
               </div>
             </Card>
@@ -108,7 +131,9 @@ export function ProductAIReviewTab({ productId }: Props) {
               <h4 className="font-bold mb-3">حقول ثانوية ناقصة</h4>
               <div className="flex flex-wrap gap-2">
                 {result.missingSoft.map((f) => (
-                  <Badge key={f.field} variant="secondary">{f.label}</Badge>
+                  <Badge key={f.field} variant="secondary">
+                    {f.label}
+                  </Badge>
                 ))}
               </div>
             </Card>
@@ -117,7 +142,14 @@ export function ProductAIReviewTab({ productId }: Props) {
           {result.suggestions && (
             <Card className="p-5 surface-elevated border-0 space-y-4">
               <h4 className="font-bold">اقتراحات الذكاء الاصطناعي</h4>
-              {(["short_description_ar","short_description_en","marketing_content","technical_content"] as const).map((k) => (
+              {(
+                [
+                  "short_description_ar",
+                  "short_description_en",
+                  "marketing_content",
+                  "technical_content",
+                ] as const
+              ).map((k) =>
                 editable[k] !== undefined && editable[k].length > 0 ? (
                   <div key={k} className="space-y-2">
                     <div className="text-xs text-muted-foreground">{k}</div>
@@ -126,25 +158,37 @@ export function ProductAIReviewTab({ productId }: Props) {
                       onChange={(e) => setEditable((s) => ({ ...s, [k]: e.target.value }))}
                       rows={3}
                     />
-                    <Button size="sm" variant="outline" className="gap-2"
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-2"
                       onClick={() => apply.mutate({ [k]: editable[k] })}
                       disabled={apply.isPending}
                     >
                       <CheckCircle2 className="size-3.5" /> تطبيق هذا الحقل
                     </Button>
                   </div>
-                ) : null
-              ))}
+                ) : null,
+              )}
 
               {(result.suggestions.tags?.length ?? 0) > 0 && (
                 <div className="space-y-2">
                   <div className="text-xs text-muted-foreground">وسوم مقترحة</div>
                   <div className="flex flex-wrap gap-1.5">
-                    {result.suggestions.tags!.map((t) => <Badge key={t} variant="outline">{t}</Badge>)}
+                    {result.suggestions.tags!.map((t) => (
+                      <Badge key={t} variant="outline">
+                        {t}
+                      </Badge>
+                    ))}
                   </div>
-                  <Button size="sm" variant="outline"
+                  <Button
+                    size="sm"
+                    variant="outline"
                     onClick={() => apply.mutate({ tags: result.suggestions!.tags })}
-                    disabled={apply.isPending}>تطبيق الوسوم</Button>
+                    disabled={apply.isPending}
+                  >
+                    تطبيق الوسوم
+                  </Button>
                 </div>
               )}
 
@@ -152,11 +196,22 @@ export function ProductAIReviewTab({ productId }: Props) {
                 <div className="space-y-2">
                   <div className="text-xs text-muted-foreground">كلمات بحث مقترحة</div>
                   <div className="flex flex-wrap gap-1.5">
-                    {result.suggestions.search_keywords!.map((t) => <Badge key={t} variant="outline">{t}</Badge>)}
+                    {result.suggestions.search_keywords!.map((t) => (
+                      <Badge key={t} variant="outline">
+                        {t}
+                      </Badge>
+                    ))}
                   </div>
-                  <Button size="sm" variant="outline"
-                    onClick={() => apply.mutate({ search_keywords: result.suggestions!.search_keywords })}
-                    disabled={apply.isPending}>تطبيق الكلمات</Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      apply.mutate({ search_keywords: result.suggestions!.search_keywords })
+                    }
+                    disabled={apply.isPending}
+                  >
+                    تطبيق الكلمات
+                  </Button>
                 </div>
               )}
             </Card>
@@ -167,8 +222,21 @@ export function ProductAIReviewTab({ productId }: Props) {
   );
 }
 
-function StatCard({ label, value, variant }: { label: string; value: string; variant?: "ok" | "warn" | "danger" }) {
-  const cls = variant === "danger" ? "text-destructive" : variant === "warn" ? "text-warning" : "text-success";
+function StatCard({
+  label,
+  value,
+  variant,
+}: {
+  label: string;
+  value: string;
+  variant?: "ok" | "warn" | "danger";
+}) {
+  const cls =
+    variant === "danger"
+      ? "text-destructive"
+      : variant === "warn"
+        ? "text-warning"
+        : "text-success";
   return (
     <Card className="p-4 surface-elevated border-0">
       <div className="text-xs text-muted-foreground">{label}</div>

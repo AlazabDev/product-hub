@@ -65,8 +65,8 @@ export function AssetUploadZone({
         prev.map((u, idx) =>
           idx >= prev.length - validFiles.length
             ? { ...u, status: "done" as const, progress: 100 }
-            : u
-        )
+            : u,
+        ),
       );
     } catch (error: any) {
       setUploads((prev) =>
@@ -77,8 +77,8 @@ export function AssetUploadZone({
                 status: "error" as const,
                 error: error.message || "Upload failed",
               }
-            : u
-        )
+            : u,
+        ),
       );
     }
   };
@@ -112,9 +112,7 @@ export function AssetUploadZone({
       {/* Upload Zone */}
       <Card
         className={`p-8 border-2 border-dashed transition-all cursor-pointer surface-elevated ${
-          isDragActive
-            ? "border-accent bg-accent/5"
-            : "border-border hover:border-accent/50"
+          isDragActive ? "border-accent bg-accent/5" : "border-border hover:border-accent/50"
         }`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
@@ -138,16 +136,12 @@ export function AssetUploadZone({
           </div>
           <div>
             <h3 className="font-semibold">اسحب الملفات هنا</h3>
-            <p className="text-xs text-muted-foreground mt-1">
-              أو انقر لاختيار ملفات من جهازك
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">أو انقر لاختيار ملفات من جهازك</p>
           </div>
           <div className="flex gap-2 justify-center flex-wrap text-xs text-muted-foreground">
             <Badge variant="outline">صور</Badge>
             <Badge variant="outline">PDF</Badge>
-            <Badge variant="outline">
-              حتى {formatFileSize(maxSize)}
-            </Badge>
+            <Badge variant="outline">حتى {formatFileSize(maxSize)}</Badge>
           </div>
         </div>
       </Card>
@@ -158,11 +152,7 @@ export function AssetUploadZone({
           <div className="flex items-center justify-between">
             <h3 className="font-semibold">الملفات المرفوعة</h3>
             {uploads.every((u) => u.status !== "pending" && u.status !== "uploading") && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={clearUploads}
-              >
+              <Button size="sm" variant="ghost" onClick={clearUploads}>
                 <X className="size-4 mr-1" />
                 مسح الكل
               </Button>
@@ -179,8 +169,7 @@ export function AssetUploadZone({
                   {upload.status === "error" && (
                     <AlertCircle className="size-4 text-destructive shrink-0" />
                   )}
-                  {(upload.status === "pending" ||
-                    upload.status === "uploading") && (
+                  {(upload.status === "pending" || upload.status === "uploading") && (
                     <div className="size-4 rounded-full border-2 border-accent border-t-transparent animate-spin shrink-0" />
                   )}
 
@@ -191,9 +180,7 @@ export function AssetUploadZone({
                     </p>
                   </div>
 
-                  {upload.error && (
-                    <span className="text-xs text-destructive">{upload.error}</span>
-                  )}
+                  {upload.error && <span className="text-xs text-destructive">{upload.error}</span>}
 
                   <Button
                     size="sm"

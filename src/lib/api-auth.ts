@@ -7,7 +7,10 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 function parseAllowedOrigins(): string[] {
   const raw = (process.env.ALLOWED_ORIGINS ?? "").trim();
   if (!raw) return [];
-  return raw.split(",").map((s) => s.trim()).filter(Boolean);
+  return raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
 function isDev() {
@@ -27,7 +30,7 @@ export function corsHeaders(request: Request): Record<string, string> {
   }
   return {
     "Access-Control-Allow-Origin": originHeader,
-    "Vary": "Origin",
+    Vary: "Origin",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, x-api-key, Authorization",
     "Access-Control-Max-Age": "86400",
@@ -58,15 +61,27 @@ const RATE_LIMIT_PER_MINUTE = Number(process.env.API_RATE_LIMIT_PER_MINUTE ?? 12
 
 export async function requireApiKey(request: Request, endpoint?: string) {
   const key = request.headers.get("x-api-key");
-  if (!key) return { error: json({ success: false, error: "Missing x-api-key header", code: "missing_api_key" }, 401) };
+  if (!key)
+    return {
+      error: json(
+        { success: false, error: "Missing x-api-key header", code: "missing_api_key" },
+        401,
+      ),
+    };
 
   const { data, error } = await supabaseAdmin
     .from("api_consumers")
     .select("id, name, channel, is_active, allowed_endpoints, total_requests")
     .eq("api_key", key)
     .maybeSingle();
-  if (error || !data) return { error: json({ success: false, error: "Invalid API key", code: "invalid_api_key" }, 401) };
-  if (!data.is_active) return { error: json({ success: false, error: "API key disabled", code: "api_key_disabled" }, 403) };
+  if (error || !data)
+    return {
+      error: json({ success: false, error: "Invalid API key", code: "invalid_api_key" }, 401),
+    };
+  if (!data.is_active)
+    return {
+      error: json({ success: false, error: "API key disabled", code: "api_key_disabled" }, 403),
+    };
 
   // Endpoint whitelist (empty list = allow all)
   if (endpoint && Array.isArray(data.allowed_endpoints) && data.allowed_endpoints.length > 0) {
@@ -77,7 +92,16 @@ export async function requireApiKey(request: Request, endpoint?: string) {
       return false;
     });
     if (!allowed) {
-      return { error: json({ success: false, error: "Endpoint not allowed for this API key", code: "endpoint_forbidden" }, 403) };
+      return {
+        error: json(
+          {
+            success: false,
+            error: "Endpoint not allowed for this API key",
+            code: "endpoint_forbidden",
+          },
+          403,
+        ),
+      };
     }
   }
 
@@ -90,7 +114,9 @@ export async function requireApiKey(request: Request, endpoint?: string) {
       .eq("consumer_id", data.id)
       .gte("created_at", since);
     if ((count ?? 0) >= RATE_LIMIT_PER_MINUTE) {
-      return { error: json({ success: false, error: "Rate limit exceeded", code: "rate_limited" }, 429) };
+      return {
+        error: json({ success: false, error: "Rate limit exceeded", code: "rate_limited" }, 429),
+      };
     }
   } catch (e) {
     console.warn("rate limit check failed", e);
@@ -117,7 +143,8 @@ export async function logCall(opts: {
       endpoint: opts.endpoint,
       method: opts.request.method,
       status_code: opts.status,
-      ip_address: opts.request.headers.get("cf-connecting-ip") ?? opts.request.headers.get("x-forwarded-for"),
+      ip_address:
+        opts.request.headers.get("cf-connecting-ip") ?? opts.request.headers.get("x-forwarded-for"),
       user_agent: opts.request.headers.get("user-agent"),
       request_payload: (opts.payload ?? null) as never,
       error_message: opts.error ?? null,
@@ -126,7 +153,10 @@ export async function logCall(opts: {
     if (opts.consumer) {
       await supabaseAdmin
         .from("api_consumers")
-        .update({ total_requests: opts.consumer.total_requests + 1, last_used_at: new Date().toISOString() })
+        .update({
+          total_requests: opts.consumer.total_requests + 1,
+          last_used_at: new Date().toISOString(),
+        })
         .eq("id", opts.consumer.id);
     }
   } catch (e) {

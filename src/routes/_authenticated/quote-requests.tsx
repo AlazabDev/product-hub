@@ -25,8 +25,17 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  FileText, Clock, CheckCircle2, XCircle, AlertCircle,
-  Search, Filter, Eye, DollarSign, Calendar, User,
+  FileText,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  Search,
+  Filter,
+  Eye,
+  DollarSign,
+  Calendar,
+  User,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -43,16 +52,15 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }>
 };
 
 async function fetchQuoteRequests(filters: { status?: string; search?: string }) {
-  let query = supabase
-    .from("quote_requests")
-    .select("*")
-    .order("created_at", { ascending: false });
+  let query = supabase.from("quote_requests").select("*").order("created_at", { ascending: false });
 
   if (filters.status && filters.status !== "all") {
     query = query.eq("status", filters.status);
   }
   if (filters.search) {
-    query = query.or(`request_id.ilike.%${filters.search}%,customer_name.ilike.%${filters.search}%`);
+    query = query.or(
+      `request_id.ilike.%${filters.search}%,customer_name.ilike.%${filters.search}%`,
+    );
   }
 
   const { data, error } = await query;
@@ -148,7 +156,9 @@ function QuoteRequestsPage() {
             <SelectContent>
               <SelectItem value="all">جميع الحالات</SelectItem>
               {Object.entries(STATUS_CONFIG).map(([key, { label }]) => (
-                <SelectItem key={key} value={key}>{label}</SelectItem>
+                <SelectItem key={key} value={key}>
+                  {label}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -158,9 +168,7 @@ function QuoteRequestsPage() {
       {/* Quotes Grid */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         {isLoading ? (
-          <div className="col-span-full p-8 text-center text-muted-foreground">
-            جاري التحميل...
-          </div>
+          <div className="col-span-full p-8 text-center text-muted-foreground">جاري التحميل...</div>
         ) : quotes.length === 0 ? (
           <div className="col-span-full p-8 text-center text-muted-foreground">
             لا توجد طلبات عروض
@@ -248,9 +256,9 @@ function QuoteRequestsPage() {
 
 function QuoteDetails({ quote }: { quote: any }) {
   const dimensions = quote.dimensions as any;
-  const materials = quote.materials as any[] || [];
-  const pricing = quote.pricing_breakdown as any || {};
-  const finishes = quote.finishes as any || {};
+  const materials = (quote.materials as any[]) || [];
+  const pricing = (quote.pricing_breakdown as any) || {};
+  const finishes = (quote.finishes as any) || {};
 
   return (
     <div className="space-y-6">
@@ -324,7 +332,9 @@ function QuoteDetails({ quote }: { quote: any }) {
                 {materials.map((mat: any, i: number) => (
                   <tr key={i}>
                     <td className="p-2">{mat.material_name}</td>
-                    <td className="p-2">{mat.quantity} {mat.unit}</td>
+                    <td className="p-2">
+                      {mat.quantity} {mat.unit}
+                    </td>
                     <td className="p-2">{mat.unit_cost?.toLocaleString()}</td>
                     <td className="p-2 font-medium">{mat.total_cost?.toLocaleString()}</td>
                   </tr>
@@ -368,19 +378,27 @@ function QuoteDetails({ quote }: { quote: any }) {
         <div className="space-y-2 p-4 bg-muted/50 rounded-lg">
           <div className="flex justify-between">
             <span>تكلفة الخامات</span>
-            <span>{quote.materials_cost?.toLocaleString()} {quote.currency}</span>
+            <span>
+              {quote.materials_cost?.toLocaleString()} {quote.currency}
+            </span>
           </div>
           <div className="flex justify-between">
             <span>تكلفة العمالة</span>
-            <span>{quote.labor_cost?.toLocaleString()} {quote.currency}</span>
+            <span>
+              {quote.labor_cost?.toLocaleString()} {quote.currency}
+            </span>
           </div>
           <div className="flex justify-between">
             <span>تكاليف غير مباشرة</span>
-            <span>{quote.overhead_cost?.toLocaleString()} {quote.currency}</span>
+            <span>
+              {quote.overhead_cost?.toLocaleString()} {quote.currency}
+            </span>
           </div>
           <div className="flex justify-between border-t pt-2">
             <span>التكلفة الاجمالية</span>
-            <span>{quote.total_cost?.toLocaleString()} {quote.currency}</span>
+            <span>
+              {quote.total_cost?.toLocaleString()} {quote.currency}
+            </span>
           </div>
           <div className="flex justify-between text-emerald-600">
             <span>هامش الربح ({quote.profit_margin}%)</span>
@@ -388,7 +406,9 @@ function QuoteDetails({ quote }: { quote: any }) {
           </div>
           <div className="flex justify-between font-bold text-lg border-t pt-2">
             <span>سعر البيع</span>
-            <span>{quote.selling_price?.toLocaleString()} {quote.currency}</span>
+            <span>
+              {quote.selling_price?.toLocaleString()} {quote.currency}
+            </span>
           </div>
         </div>
       </div>
@@ -397,7 +417,13 @@ function QuoteDetails({ quote }: { quote: any }) {
       {quote.customer_response && (
         <div className="p-4 border rounded-lg">
           <h4 className="font-medium mb-2">رد العميل</h4>
-          <Badge className={quote.customer_response === "accepted" ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"}>
+          <Badge
+            className={
+              quote.customer_response === "accepted"
+                ? "bg-emerald-100 text-emerald-800"
+                : "bg-red-100 text-red-800"
+            }
+          >
             {quote.customer_response === "accepted" ? "مقبول" : "مرفوض"}
           </Badge>
           {quote.rejection_reason && (
@@ -410,9 +436,7 @@ function QuoteDetails({ quote }: { quote: any }) {
       {(quote.customer_notes || quote.special_requirements) && (
         <div>
           <h4 className="font-medium mb-2">ملاحظات</h4>
-          {quote.customer_notes && (
-            <p className="text-sm mb-2">{quote.customer_notes}</p>
-          )}
+          {quote.customer_notes && <p className="text-sm mb-2">{quote.customer_notes}</p>}
           {quote.special_requirements && (
             <p className="text-sm text-muted-foreground">{quote.special_requirements}</p>
           )}

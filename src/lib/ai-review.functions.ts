@@ -71,18 +71,22 @@ async function callLovableAI(product: Record<string, unknown>): Promise<AISugges
   if (!apiKey) throw new Error("LOVABLE_API_KEY not configured");
 
   const systemPrompt = `أنت مدقق محتوى لكتالوج منتجات صناعية (شركة العزب). مهمتك مراجعة بيانات منتج واقتراح تحسينات للحقول الناقصة أو الضعيفة. أعد JSON فقط عبر tool call.`;
-  const userPrompt = `بيانات البند:\n${JSON.stringify({
-    az_code: product.az_code,
-    name_ar: product.name_ar,
-    name_en: product.name_en,
-    description_ar: product.description_ar,
-    description_en: product.description_en,
-    short_description_ar: product.short_description_ar,
-    short_description_en: product.short_description_en,
-    item_type: product.item_type,
-    gpc_family: product.gpc_family,
-    tags: product.tags,
-  }, null, 2)}\n\nاقترح تحسينات للحقول الناقصة فقط. لا تختلق معلومات تقنية لا تعرفها.`;
+  const userPrompt = `بيانات البند:\n${JSON.stringify(
+    {
+      az_code: product.az_code,
+      name_ar: product.name_ar,
+      name_en: product.name_en,
+      description_ar: product.description_ar,
+      description_en: product.description_en,
+      short_description_ar: product.short_description_ar,
+      short_description_en: product.short_description_en,
+      item_type: product.item_type,
+      gpc_family: product.gpc_family,
+      tags: product.tags,
+    },
+    null,
+    2,
+  )}\n\nاقترح تحسينات للحقول الناقصة فقط. لا تختلق معلومات تقنية لا تعرفها.`;
 
   const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
@@ -93,28 +97,43 @@ async function callLovableAI(product: Record<string, unknown>): Promise<AISugges
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
-      tools: [{
-        type: "function",
-        function: {
-          name: "submit_review",
-          description: "تقديم مراجعة المحتوى للمنتج",
-          parameters: {
-            type: "object",
-            properties: {
-              short_description_ar: { type: "string", description: "وصف مختصر مقترح بالعربية (1-2 جملة)" },
-              short_description_en: { type: "string", description: "Suggested short description in English" },
-              marketing_content: { type: "string", description: "نص تسويقي مقترح (فقرة قصيرة)" },
-              technical_content: { type: "string", description: "نص فني مقترح إن أمكن استنتاجه" },
-              tags: { type: "array", items: { type: "string" }, description: "وسوم مقترحة" },
-              search_keywords: { type: "array", items: { type: "string" }, description: "كلمات بحث مقترحة" },
-              quality_score: { type: "number", description: "تقييم جودة المحتوى الحالي من 0 إلى 100" },
-              notes: { type: "string", description: "ملاحظات للمراجع البشري" },
+      tools: [
+        {
+          type: "function",
+          function: {
+            name: "submit_review",
+            description: "تقديم مراجعة المحتوى للمنتج",
+            parameters: {
+              type: "object",
+              properties: {
+                short_description_ar: {
+                  type: "string",
+                  description: "وصف مختصر مقترح بالعربية (1-2 جملة)",
+                },
+                short_description_en: {
+                  type: "string",
+                  description: "Suggested short description in English",
+                },
+                marketing_content: { type: "string", description: "نص تسويقي مقترح (فقرة قصيرة)" },
+                technical_content: { type: "string", description: "نص فني مقترح إن أمكن استنتاجه" },
+                tags: { type: "array", items: { type: "string" }, description: "وسوم مقترحة" },
+                search_keywords: {
+                  type: "array",
+                  items: { type: "string" },
+                  description: "كلمات بحث مقترحة",
+                },
+                quality_score: {
+                  type: "number",
+                  description: "تقييم جودة المحتوى الحالي من 0 إلى 100",
+                },
+                notes: { type: "string", description: "ملاحظات للمراجع البشري" },
+              },
+              required: ["quality_score", "notes"],
+              additionalProperties: false,
             },
-            required: ["quality_score", "notes"],
-            additionalProperties: false,
           },
         },
-      }],
+      ],
       tool_choice: { type: "function", function: { name: "submit_review" } },
     }),
   });
@@ -141,10 +160,15 @@ export const reviewProduct = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase } = context;
     const { data: product, error } = await supabase
-      .from("products").select("*").eq("id", data.productId).single();
+      .from("products")
+      .select("*")
+      .eq("id", data.productId)
+      .single();
     if (error || !product) throw new Error("البند غير موجود");
 
-    const missingCritical = CRITICAL_FIELDS.filter((f) => isEmpty((product as Record<string, unknown>)[f]));
+    const missingCritical = CRITICAL_FIELDS.filter((f) =>
+      isEmpty((product as Record<string, unknown>)[f]),
+    );
     const missingSoft = SOFT_FIELDS.filter((f) => isEmpty((product as Record<string, unknown>)[f]));
 
     let aiSuggestions: AISuggestions | null = null;
@@ -169,9 +193,11 @@ export const reviewProduct = createServerFn({ method: "POST" })
       }
     }
 
-
     if (newStatus && newStatus !== currentStatus) {
-      await supabase.from("products").update({ status: newStatus as never }).eq("id", product.id);
+      await supabase
+        .from("products")
+        .update({ status: newStatus as never })
+        .eq("id", product.id);
     }
 
     // Audit
@@ -211,7 +237,10 @@ export const applyAISuggestions = createServerFn({ method: "POST" })
       }
     }
     if (Object.keys(update).length === 0) return { updated: false };
-    const { error } = await supabase.from("products").update(update as never).eq("id", data.productId);
+    const { error } = await supabase
+      .from("products")
+      .update(update as never)
+      .eq("id", data.productId);
     if (error) throw new Error(error.message);
     await supabase.from("audit_logs").insert({
       entity_type: "product",
@@ -231,7 +260,9 @@ export const scanAllForReview = createServerFn({ method: "POST" })
     const limit = Math.min(data.limit ?? 50, 200);
     const { data: products, error } = await supabase
       .from("products")
-      .select("id, az_code, name_ar, name_en, description_ar, description_en, short_description_ar, short_description_en, marketing_content, technical_content, warranty_info, unit_id, category_id, family_id, gpc_segment, gpc_family, gpc_class, gs1_gpc_brick, tags, search_keywords, status")
+      .select(
+        "id, az_code, name_ar, name_en, description_ar, description_en, short_description_ar, short_description_en, marketing_content, technical_content, warranty_info, unit_id, category_id, family_id, gpc_segment, gpc_family, gpc_class, gs1_gpc_brick, tags, search_keywords, status",
+      )
       .in("status", ["draft", "needs_review", "content_incomplete"] as never)
       .limit(limit);
     if (error) throw new Error(error.message);
@@ -257,14 +288,21 @@ export const scanAllForReview = createServerFn({ method: "POST" })
     }
 
     for (const u of updates) {
-      await supabase.from("products").update({ status: u.status as never }).eq("id", u.id);
+      await supabase
+        .from("products")
+        .update({ status: u.status as never })
+        .eq("id", u.id);
     }
 
     await supabase.from("audit_logs").insert({
       entity_type: "products",
       entity_id: null,
       action: "AI_BULK_REVIEW",
-      new_value: { scanned: products?.length ?? 0, flagged_incomplete: flaggedIncomplete, flagged_review: flaggedReview },
+      new_value: {
+        scanned: products?.length ?? 0,
+        flagged_incomplete: flaggedIncomplete,
+        flagged_review: flaggedReview,
+      },
     });
 
     return {

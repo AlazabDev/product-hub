@@ -9,7 +9,9 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null);
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -27,14 +29,24 @@ export function useUserRole() {
   const [role, setRole] = useState<UserRole | null>(null);
 
   useEffect(() => {
-    if (!user) { setRole(null); return; }
-    supabase.from("user_roles").select("role").eq("user_id", user.id).then(({ data }) => {
-      if (!data?.length) { setRole(null); return; }
-      const roles = data.map((r) => r.role as UserRole);
-      if (roles.includes("admin")) setRole("admin");
-      else if (roles.includes("editor")) setRole("editor");
-      else setRole("viewer");
-    });
+    if (!user) {
+      setRole(null);
+      return;
+    }
+    supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .then(({ data }) => {
+        if (!data?.length) {
+          setRole(null);
+          return;
+        }
+        const roles = data.map((r) => r.role as UserRole);
+        if (roles.includes("admin")) setRole("admin");
+        else if (roles.includes("editor")) setRole("editor");
+        else setRole("viewer");
+      });
   }, [user]);
 
   return role;

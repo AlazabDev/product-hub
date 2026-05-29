@@ -37,7 +37,7 @@ serve(async (req) => {
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
-      }
+      },
     );
   } catch (error) {
     console.error("Duplicate check error:", error);
@@ -49,16 +49,12 @@ serve(async (req) => {
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 400,
-      }
+      },
     );
   }
 });
 
-async function findDuplicates(
-  supabase: any,
-  productId: string,
-  productData: any
-) {
+async function findDuplicates(supabase: any, productId: string, productData: any) {
   const duplicates: any[] = [];
 
   // Get the product being checked

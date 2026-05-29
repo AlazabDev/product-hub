@@ -6,7 +6,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -15,9 +21,24 @@ const productSchema = z.object({
   name_ar: z.string().min(2, "الاسم العربي مطلوب"),
   name_en: z.string().min(2, "الاسم الانجليزي مطلوب"),
   az_code: z.string().min(1, "رمز AZ مطلوب"),
-  item_type: z.enum(["product", "service", "work_item", "material", "tool", "spare_part", "finish_item", "custom_unit", "supplier_item", "package", "bundle"], {
-    errorMap: () => ({ message: "نوع البند مطلوب" }),
-  }),
+  item_type: z.enum(
+    [
+      "product",
+      "service",
+      "work_item",
+      "material",
+      "tool",
+      "spare_part",
+      "finish_item",
+      "custom_unit",
+      "supplier_item",
+      "package",
+      "bundle",
+    ],
+    {
+      errorMap: () => ({ message: "نوع البند مطلوب" }),
+    },
+  ),
   gpc_family: z.string().optional(),
   sector_ar: z.string().optional(),
   description_ar: z.string().optional(),
@@ -36,7 +57,17 @@ type SupabaseProductInsert = {
   sector_ar?: string;
   description_ar?: string;
   description_en?: string;
-  status: "draft" | "needs_review" | "duplicate_suspected" | "content_incomplete" | "pricing_incomplete" | "supplier_pending" | "approved" | "rejected" | "exported" | "archived";
+  status:
+    | "draft"
+    | "needs_review"
+    | "duplicate_suspected"
+    | "content_incomplete"
+    | "pricing_incomplete"
+    | "supplier_pending"
+    | "approved"
+    | "rejected"
+    | "exported"
+    | "archived";
 };
 
 interface ProductFormProps {
@@ -83,10 +114,7 @@ export function ProductForm({
 
       if (initialData?.id) {
         // Update existing
-        const { error } = await supabase
-          .from("products")
-          .update(payload)
-          .eq("id", initialData.id);
+        const { error } = await supabase.from("products").update(payload).eq("id", initialData.id);
 
         if (error) throw error;
         toast.success("تم تحديث البند بنجاح");
@@ -123,9 +151,7 @@ export function ProductForm({
             {...register("name_ar")}
             disabled={loading}
           />
-          {errors.name_ar && (
-            <p className="text-xs text-destructive">{errors.name_ar.message}</p>
-          )}
+          {errors.name_ar && <p className="text-xs text-destructive">{errors.name_ar.message}</p>}
         </div>
 
         <div className="space-y-2">
@@ -137,9 +163,7 @@ export function ProductForm({
             disabled={loading}
             dir="ltr"
           />
-          {errors.name_en && (
-            <p className="text-xs text-destructive">{errors.name_en.message}</p>
-          )}
+          {errors.name_en && <p className="text-xs text-destructive">{errors.name_en.message}</p>}
         </div>
       </div>
 
@@ -153,9 +177,7 @@ export function ProductForm({
             disabled={loading}
             dir="ltr"
           />
-          {errors.az_code && (
-            <p className="text-xs text-destructive">{errors.az_code.message}</p>
-          )}
+          {errors.az_code && <p className="text-xs text-destructive">{errors.az_code.message}</p>}
         </div>
 
         <div className="space-y-2">
@@ -231,12 +253,7 @@ export function ProductForm({
       </div>
 
       <div className="flex gap-3 justify-end pt-4 border-t">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          disabled={loading}
-        >
+        <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
           إلغاء
         </Button>
         <Button type="submit" disabled={loading} className="gap-2">

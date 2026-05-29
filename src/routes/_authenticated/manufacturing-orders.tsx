@@ -25,9 +25,22 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  Factory, Package, Clock, CheckCircle2, Truck, XCircle,
-  Search, Filter, Eye, PlayCircle, PauseCircle, ChevronDown,
-  FileText, Boxes, Calendar, DollarSign,
+  Factory,
+  Package,
+  Clock,
+  CheckCircle2,
+  Truck,
+  XCircle,
+  Search,
+  Filter,
+  Eye,
+  PlayCircle,
+  PauseCircle,
+  ChevronDown,
+  FileText,
+  Boxes,
+  Calendar,
+  DollarSign,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -55,18 +68,22 @@ const PRIORITY_CONFIG: Record<string, { label: string; color: string }> = {
 async function fetchOrders(filters: { status?: string; search?: string }) {
   let query = supabase
     .from("manufacturing_orders")
-    .select(`
+    .select(
+      `
       *,
       quote_requests(request_id, design_preview_url, customer_name),
       material_requisitions(id, requisition_number, status)
-    `)
+    `,
+    )
     .order("created_at", { ascending: false });
 
   if (filters.status && filters.status !== "all") {
     query = query.eq("status", filters.status);
   }
   if (filters.search) {
-    query = query.or(`order_number.ilike.%${filters.search}%,customer_name.ilike.%${filters.search}%`);
+    query = query.or(
+      `order_number.ilike.%${filters.search}%,customer_name.ilike.%${filters.search}%`,
+    );
   }
 
   const { data, error } = await query;
@@ -110,13 +127,12 @@ function ManufacturingOrdersPage() {
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       const updates: any = { status };
-      if (status === "in_production") updates.actual_start_date = new Date().toISOString().split("T")[0];
-      if (status === "delivered") updates.actual_completion_date = new Date().toISOString().split("T")[0];
-      
-      const { error } = await supabase
-        .from("manufacturing_orders")
-        .update(updates)
-        .eq("id", id);
+      if (status === "in_production")
+        updates.actual_start_date = new Date().toISOString().split("T")[0];
+      if (status === "delivered")
+        updates.actual_completion_date = new Date().toISOString().split("T")[0];
+
+      const { error } = await supabase.from("manufacturing_orders").update(updates).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -128,7 +144,12 @@ function ManufacturingOrdersPage() {
   const statCards = [
     { label: "اجمالي الاوامر", value: stats?.total || 0, icon: FileText, color: "text-primary" },
     { label: "في الانتظار", value: stats?.pending || 0, icon: Clock, color: "text-amber-600" },
-    { label: "قيد التصنيع", value: stats?.in_production || 0, icon: Factory, color: "text-purple-600" },
+    {
+      label: "قيد التصنيع",
+      value: stats?.in_production || 0,
+      icon: Factory,
+      color: "text-purple-600",
+    },
     { label: "جاهز للتسليم", value: stats?.ready || 0, icon: Package, color: "text-emerald-600" },
   ];
 
@@ -182,7 +203,9 @@ function ManufacturingOrdersPage() {
             <SelectContent>
               <SelectItem value="all">جميع الحالات</SelectItem>
               {Object.entries(STATUS_CONFIG).map(([key, { label }]) => (
-                <SelectItem key={key} value={key}>{label}</SelectItem>
+                <SelectItem key={key} value={key}>
+                  {label}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -248,9 +271,7 @@ function ManufacturingOrdersPage() {
                         <div className="font-medium">
                           {order.final_price?.toLocaleString()} {order.currency}
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          {order.quantity} وحدة
-                        </div>
+                        <div className="text-xs text-muted-foreground">{order.quantity} وحدة</div>
                       </td>
                       <td className="p-4">
                         <div className="flex items-center gap-1 text-sm">
@@ -283,10 +304,12 @@ function ManufacturingOrdersPage() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => updateStatusMutation.mutate({
-                                id: order.id,
-                                status: "materials_requested"
-                              })}
+                              onClick={() =>
+                                updateStatusMutation.mutate({
+                                  id: order.id,
+                                  status: "materials_requested",
+                                })
+                              }
                             >
                               <Boxes className="size-4 ml-1" />
                               طلب خامات
@@ -295,10 +318,12 @@ function ManufacturingOrdersPage() {
                           {order.status === "materials_requested" && (
                             <Button
                               size="sm"
-                              onClick={() => updateStatusMutation.mutate({
-                                id: order.id,
-                                status: "in_production"
-                              })}
+                              onClick={() =>
+                                updateStatusMutation.mutate({
+                                  id: order.id,
+                                  status: "in_production",
+                                })
+                              }
                             >
                               <PlayCircle className="size-4 ml-1" />
                               بدء التصنيع
@@ -307,10 +332,12 @@ function ManufacturingOrdersPage() {
                           {order.status === "in_production" && (
                             <Button
                               size="sm"
-                              onClick={() => updateStatusMutation.mutate({
-                                id: order.id,
-                                status: "quality_check"
-                              })}
+                              onClick={() =>
+                                updateStatusMutation.mutate({
+                                  id: order.id,
+                                  status: "quality_check",
+                                })
+                              }
                             >
                               <CheckCircle2 className="size-4 ml-1" />
                               فحص الجودة
@@ -319,10 +346,12 @@ function ManufacturingOrdersPage() {
                           {order.status === "quality_check" && (
                             <Button
                               size="sm"
-                              onClick={() => updateStatusMutation.mutate({
-                                id: order.id,
-                                status: "ready"
-                              })}
+                              onClick={() =>
+                                updateStatusMutation.mutate({
+                                  id: order.id,
+                                  status: "ready",
+                                })
+                              }
                             >
                               <Package className="size-4 ml-1" />
                               جاهز
@@ -332,10 +361,12 @@ function ManufacturingOrdersPage() {
                             <Button
                               size="sm"
                               className="bg-emerald-600 hover:bg-emerald-700"
-                              onClick={() => updateStatusMutation.mutate({
-                                id: order.id,
-                                status: "delivered"
-                              })}
+                              onClick={() =>
+                                updateStatusMutation.mutate({
+                                  id: order.id,
+                                  status: "delivered",
+                                })
+                              }
                             >
                               <Truck className="size-4 ml-1" />
                               تسليم
@@ -405,7 +436,9 @@ function OrderDetails({ order }: { order: any }) {
             {specs.materials.map((mat: any, i: number) => (
               <div key={i} className="flex justify-between p-2 bg-muted/30 rounded">
                 <span>{mat.material_name}</span>
-                <span className="text-muted-foreground">{mat.quantity} {mat.unit}</span>
+                <span className="text-muted-foreground">
+                  {mat.quantity} {mat.unit}
+                </span>
               </div>
             ))}
           </div>
@@ -418,7 +451,9 @@ function OrderDetails({ order }: { order: any }) {
         <div className="space-y-2 p-3 bg-muted/50 rounded-lg">
           <div className="flex justify-between">
             <span>سعر الوحدة</span>
-            <span>{order.unit_price?.toLocaleString()} {order.currency}</span>
+            <span>
+              {order.unit_price?.toLocaleString()} {order.currency}
+            </span>
           </div>
           <div className="flex justify-between">
             <span>الكمية</span>
@@ -427,12 +462,16 @@ function OrderDetails({ order }: { order: any }) {
           {order.discount_amount > 0 && (
             <div className="flex justify-between text-emerald-600">
               <span>الخصم</span>
-              <span>-{order.discount_amount?.toLocaleString()} {order.currency}</span>
+              <span>
+                -{order.discount_amount?.toLocaleString()} {order.currency}
+              </span>
             </div>
           )}
           <div className="flex justify-between font-bold text-lg border-t pt-2">
             <span>الاجمالي</span>
-            <span>{order.final_price?.toLocaleString()} {order.currency}</span>
+            <span>
+              {order.final_price?.toLocaleString()} {order.currency}
+            </span>
           </div>
         </div>
       </div>

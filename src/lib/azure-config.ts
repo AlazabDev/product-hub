@@ -25,9 +25,7 @@ export const azureConfig = {
     apiKey: env("AZURE_OPENAI_API_KEY"),
     deployment: env("AZURE_OPENAI_DEPLOYMENT"),
     apiVersion: env("AZURE_OPENAI_API_VERSION") || "2024-08-01-preview",
-    resourceName: (env("AZURE_OPENAI_ENDPOINT") || "")
-      .replace(/^https?:\/\//, "")
-      .split(".")[0],
+    resourceName: (env("AZURE_OPENAI_ENDPOINT") || "").replace(/^https?:\/\//, "").split(".")[0],
   },
   search: {
     endpoint: env("AZURE_SEARCH_ENDPOINT"),

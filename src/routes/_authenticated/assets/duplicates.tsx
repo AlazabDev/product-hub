@@ -35,18 +35,25 @@ function DuplicateAssets() {
 
   return (
     <div className="p-6 space-y-5 max-w-[1500px] mx-auto">
-      <Link to="/assets" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
+      <Link
+        to="/assets"
+        className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+      >
         <ArrowRight className="size-3" /> العودة لإدارة الأصول
       </Link>
       <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2"><Copy className="size-6 text-warning" /> أصول مكررة</h1>
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <Copy className="size-6 text-warning" /> أصول مكررة
+        </h1>
         <p className="text-sm text-muted-foreground mt-1">مجموعات الملفات بنفس الاسم والحجم</p>
       </div>
 
       <Card className="p-5 surface-elevated border-0 space-y-5">
         {isLoading ? (
           <div className="space-y-4">
-            {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-40 w-full" />)}
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-40 w-full" />
+            ))}
           </div>
         ) : !data?.length ? (
           <div className="py-12 text-center text-muted-foreground text-sm">
@@ -54,20 +61,34 @@ function DuplicateAssets() {
           </div>
         ) : (
           <>
-            <div className="text-xs text-muted-foreground num" dir="ltr">{data.length} duplicate groups</div>
+            <div className="text-xs text-muted-foreground num" dir="ltr">
+              {data.length} duplicate groups
+            </div>
             {data.map((g) => (
               <div key={g.key} className="space-y-2 border-b pb-4 last:border-0">
                 <div className="flex items-center justify-between">
                   <div className="text-sm font-semibold truncate">{g.items[0].file_name}</div>
-                  <div className="text-xs num text-muted-foreground" dir="ltr">×{g.items.length}</div>
+                  <div className="text-xs num text-muted-foreground" dir="ltr">
+                    ×{g.items.length}
+                  </div>
                 </div>
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
                   {g.items.map((a: any) => (
-                    <div key={a.id} className="aspect-square rounded overflow-hidden bg-muted border">
+                    <div
+                      key={a.id}
+                      className="aspect-square rounded overflow-hidden bg-muted border"
+                    >
                       {a.file_type?.startsWith("image/") ? (
-                        <img src={a.file_url} alt={a.file_name} loading="lazy" className="size-full object-cover" />
+                        <img
+                          src={a.file_url}
+                          alt={a.file_name}
+                          loading="lazy"
+                          className="size-full object-cover"
+                        />
                       ) : (
-                        <div className="size-full grid place-items-center text-[10px] text-muted-foreground p-2 text-center">{a.file_name}</div>
+                        <div className="size-full grid place-items-center text-[10px] text-muted-foreground p-2 text-center">
+                          {a.file_name}
+                        </div>
                       )}
                     </div>
                   ))}

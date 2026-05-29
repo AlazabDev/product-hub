@@ -1,9 +1,9 @@
 /**
  * Alazab PAOP - Training Data Generator for Azure OpenAI Fine-tuning
- * 
+ *
  * This script generates JSONL training data from Supabase database
  * to create a custom AI model specialized in products and services.
- * 
+ *
  * Usage: npx tsx scripts/azure-openai/02-generate-training-data.ts
  */
 
@@ -38,26 +38,25 @@ interface TrainingExample {
 }
 
 // System prompt for all training examples
-const SYSTEM_PROMPT = fs.readFileSync(
-  path.join(__dirname, "system-prompt.md"),
-  "utf-8"
-);
+const SYSTEM_PROMPT = fs.readFileSync(path.join(__dirname, "system-prompt.md"), "utf-8");
 
 /**
  * Generate training examples for product queries
  */
 async function generateProductExamples(): Promise<TrainingExample[]> {
   console.log("Generating product training examples...");
-  
+
   const { data: products, error } = await supabase
     .from("products")
-    .select(`
+    .select(
+      `
       *,
       suppliers:default_supplier_id(name, supplier_tier),
       prices!prices_product_id_fkey(
         purchase_price, selling_price, retail_price, currency
       )
-    `)
+    `,
+    )
     .limit(500);
 
   if (error) {
@@ -130,10 +129,7 @@ async function generateProductExamples(): Promise<TrainingExample[]> {
 async function generateSupplierExamples(): Promise<TrainingExample[]> {
   console.log("Generating supplier training examples...");
 
-  const { data: suppliers, error } = await supabase
-    .from("suppliers")
-    .select("*")
-    .limit(100);
+  const { data: suppliers, error } = await supabase.from("suppliers").select("*").limit(100);
 
   if (error) {
     console.error("Error fetching suppliers:", error);
@@ -456,11 +452,7 @@ async function main() {
     const generalExamples = generateGeneralExamples();
 
     // Combine all examples
-    const allExamples = [
-      ...productExamples,
-      ...supplierExamples,
-      ...generalExamples,
-    ];
+    const allExamples = [...productExamples, ...supplierExamples, ...generalExamples];
 
     // Shuffle examples
     const shuffled = allExamples.sort(() => Math.random() - 0.5);

@@ -39,7 +39,7 @@ export function AssetGallery({
   const filtered = assets.filter(
     (a) =>
       a.file_name.toLowerCase().includes(search.toLowerCase()) ||
-      a.folder_path.toLowerCase().includes(search.toLowerCase())
+      a.folder_path.toLowerCase().includes(search.toLowerCase()),
   );
 
   const formatFileSize = (bytes: number) => {
@@ -58,10 +58,7 @@ export function AssetGallery({
         {Array(8)
           .fill(0)
           .map((_, i) => (
-            <div
-              key={i}
-              className="aspect-square rounded-lg bg-secondary animate-pulse"
-            />
+            <div key={i} className="aspect-square rounded-lg bg-secondary animate-pulse" />
           ))}
       </div>
     );
@@ -126,9 +123,7 @@ export function AssetGallery({
 
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors opacity-0 group-hover:opacity-100 flex items-end p-2">
                 <div className="space-y-1 w-full">
-                  <div className="text-[10px] text-white truncate">
-                    {asset.file_name}
-                  </div>
+                  <div className="text-[10px] text-white truncate">{asset.file_name}</div>
                   <div className="flex gap-1">
                     {onLink && (
                       <Button
@@ -172,10 +167,7 @@ export function AssetGallery({
               </thead>
               <tbody>
                 {filtered.map((asset) => (
-                  <tr
-                    key={asset.id}
-                    className="border-t hover:bg-secondary/30 transition-colors"
-                  >
+                  <tr key={asset.id} className="border-t hover:bg-secondary/30 transition-colors">
                     <td className="p-3">
                       <div className="flex items-center gap-2">
                         {isImage(asset.file_type) && (

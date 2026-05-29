@@ -8,8 +8,7 @@ export const getAzureStatus = createServerFn({ method: "POST" })
   .handler(async () => {
     const status = azureStatus();
     const ready =
-      Object.values(status.openai).every(Boolean) &&
-      Object.values(status.search).every(Boolean);
+      Object.values(status.openai).every(Boolean) && Object.values(status.search).every(Boolean);
     return { ready, status };
   });
 
@@ -23,14 +22,18 @@ export const azureAgentRun = createServerFn({ method: "POST" })
     if (data.useRag) {
       try {
         const docs = await azureSearch(data.prompt, 5);
-        context = docs.map((d: any, i: number) => `[#${i + 1}] ${JSON.stringify(d).slice(0, 400)}`).join("\n");
+        context = docs
+          .map((d: any, i: number) => `[#${i + 1}] ${JSON.stringify(d).slice(0, 400)}`)
+          .join("\n");
       } catch (e: any) {
         context = `(RAG unavailable: ${e.message})`;
       }
     }
     const reply = await azureChat([
       { role: "system", content: "أنت وكيل AZ Catalog. أجب بدقة وباللغة العربية عند الإمكان." },
-      ...(context ? [{ role: "system" as const, content: `سياق من Azure Search:\n${context}` }] : []),
+      ...(context
+        ? [{ role: "system" as const, content: `سياق من Azure Search:\n${context}` }]
+        : []),
       { role: "user", content: data.prompt },
     ]);
     return { reply, ragUsed: !!data.useRag, ragChars: context.length };

@@ -15,23 +15,35 @@ export const Route = createFileRoute("/_authenticated/support")({
   component: SupportPage,
 });
 
-interface Msg { role: "user" | "assistant"; content: string; source?: { azCode: string; name?: string } | null }
+interface Msg {
+  role: "user" | "assistant";
+  content: string;
+  source?: { azCode: string; name?: string } | null;
+}
 
 function SupportPage() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Msg[]>([
-    { role: "assistant", content: "مرحباً، أنا وكيل دعم العزب. اسألني عن أي منتج باستخدام رمز AZ Code أو اسم المنتج." },
+    {
+      role: "assistant",
+      content: "مرحباً، أنا وكيل دعم العزب. اسألني عن أي منتج باستخدام رمز AZ Code أو اسم المنتج.",
+    },
   ]);
   const fn = useServerFn(askSupportAgent);
 
   const send = useMutation({
     mutationFn: async (text: string) => {
       const next: Msg[] = [...messages, { role: "user", content: text }];
-      const res = await fn({ data: { messages: next.map((m) => ({ role: m.role, content: m.content })) } });
+      const res = await fn({
+        data: { messages: next.map((m) => ({ role: m.role, content: m.content })) },
+      });
       return { reply: res.reply, source: res.source };
     },
     onSuccess: (res) => {
-      setMessages((prev) => [...prev, { role: "assistant", content: res.reply, source: res.source }]);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: res.reply, source: res.source },
+      ]);
     },
     onError: (e: any) => {
       toast.error(e.message || "خطأ في الاتصال بالوكيل");
@@ -55,7 +67,9 @@ function SupportPage() {
           </div>
           <div>
             <div className="font-bold">وكيل دعم المنتجات</div>
-            <div className="text-[10px] text-muted-foreground">مدعوم بـ Azure AI Search + Azure OpenAI</div>
+            <div className="text-[10px] text-muted-foreground">
+              مدعوم بـ Azure AI Search + Azure OpenAI
+            </div>
           </div>
           <div className="mr-auto text-[10px] text-muted-foreground flex items-center gap-1">
             <Sparkles className="size-3" /> gpt-4o-mini
@@ -66,16 +80,27 @@ function SupportPage() {
           {messages.map((m, i) => (
             <div key={i} className={`flex gap-3 ${m.role === "user" ? "flex-row-reverse" : ""}`}>
               <Avatar className="size-8 shrink-1">
-                <AvatarFallback className={m.role === "user" ? "bg-muted text-muted-foreground" : "bg-accent text-accent-foreground"}>
+                <AvatarFallback
+                  className={
+                    m.role === "user"
+                      ? "bg-muted text-muted-foreground"
+                      : "bg-accent text-accent-foreground"
+                  }
+                >
                   {m.role === "user" ? <User className="size-4" /> : <Bot className="size-4" />}
                 </AvatarFallback>
               </Avatar>
-              <div className={`max-w-[80%] rounded-xl px-4 py-2.5 text-sm leading-loose whitespace-pre-wrap ${
-                m.role === "user" ? "bg-accent text-accent-foreground mr-2" : "bg-muted"
-              }`}>
+              <div
+                className={`max-w-[80%] rounded-xl px-4 py-2.5 text-sm leading-loose whitespace-pre-wrap ${
+                  m.role === "user" ? "bg-accent text-accent-foreground mr-2" : "bg-muted"
+                }`}
+              >
                 {m.content}
                 {m.source && (
-                  <div className="mt-2 pt-2 border-t border-border/50 text-[10px] text-muted-foreground num" dir="ltr">
+                  <div
+                    className="mt-2 pt-2 border-t border-border/50 text-[10px] text-muted-foreground num"
+                    dir="ltr"
+                  >
                     Source: {m.source.name} — {m.source.azCode}
                   </div>
                 )}
@@ -84,8 +109,14 @@ function SupportPage() {
           ))}
           {send.isPending && (
             <div className="flex gap-3">
-              <Avatar className="size-8 shrink-1"><AvatarFallback className="bg-accent text-accent-foreground"><Bot className="size-4" /></AvatarFallback></Avatar>
-              <div className="bg-muted rounded-xl px-4 py-2.5 text-sm animate-pulse">جاري التفكير…</div>
+              <Avatar className="size-8 shrink-1">
+                <AvatarFallback className="bg-accent text-accent-foreground">
+                  <Bot className="size-4" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="bg-muted rounded-xl px-4 py-2.5 text-sm animate-pulse">
+                جاري التفكير…
+              </div>
             </div>
           )}
         </div>
