@@ -303,7 +303,7 @@ export async function calculateQuotePrice(
   const materialsCost = await calculateMaterialsCost(design, surfaceArea);
   
   // 4. حساب تكلفة العمالة
-  const laborCost = calculateLaborCost(design, surfaceArea, complexityFactor);
+  const laborCost = await calculateLaborCost(design, surfaceArea, complexityFactor);
   
   // 5. التكاليف غير المباشرة
   const overheadPercent = getOverheadPercent(rules);
@@ -612,12 +612,13 @@ function calculateEdgeLength(design: DesignData): number {
 // =====================================================
 
 export async function getMaterialPrices() {
-  return MATERIAL_PRICES;
+  return fetchMaterialPrices();
 }
 
 export async function updateMaterialPrice(code: string, price: number) {
-  if (MATERIAL_PRICES[code]) {
-    MATERIAL_PRICES[code].price = price;
+  const cache = await fetchMaterialPrices();
+  if (cache[code]) {
+    cache[code].price = price;
     return true;
   }
   return false;
