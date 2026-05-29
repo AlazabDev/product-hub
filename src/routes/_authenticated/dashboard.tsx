@@ -149,12 +149,13 @@ function Dashboard() {
     queryFn: fetchRecentAuditLogs,
   });
 
+  // Use design tokens so colors track theme (light/dark)
   const statusColors: Record<string, string> = {
-    approved: "#10b981",
-    draft: "#6b7280",
-    needs_review: "#f59e0b",
-    rejected: "#ef4444",
-    archived: "#9ca3af",
+    approved: "var(--success)",
+    draft: "var(--muted-foreground)",
+    needs_review: "var(--warning)",
+    rejected: "var(--destructive)",
+    archived: "var(--muted-foreground)",
   };
 
   const statusLabels: Record<string, string> = {
@@ -189,7 +190,7 @@ function Dashboard() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         <KPICard
           label="اجمالي البنود"
           value={stats?.products}
@@ -321,17 +322,18 @@ function Dashboard() {
               <AreaChart data={monthlyActivity ?? []}>
                 <defs>
                   <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#c9a227" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#c9a227" stopOpacity={0} />
+                    <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="var(--accent)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
-                <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis dataKey="month" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
+                <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#fff",
-                    border: "1px solid #e5e5e5",
+                    backgroundColor: "var(--popover)",
+                    color: "var(--popover-foreground)",
+                    border: "1px solid var(--border)",
                     borderRadius: "8px",
                   }}
                   labelStyle={{ fontWeight: "bold" }}
@@ -339,7 +341,8 @@ function Dashboard() {
                 <Area
                   type="monotone"
                   dataKey="count"
-                  stroke="#c9a227"
+                  stroke="var(--accent)"
+                  strokeWidth={2}
                   fillOpacity={1}
                   fill="url(#colorCount)"
                   name="عدد البنود"
@@ -366,14 +369,18 @@ function Dashboard() {
                   nameKey="name"
                 >
                   {(statusDist ?? []).map((entry: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={statusColors[entry.name] || "#6b7280"} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={statusColors[entry.name] || "var(--muted-foreground)"}
+                    />
                   ))}
                 </Pie>
                 <Tooltip
                   formatter={(value: number, name: string) => [value, statusLabels[name] || name]}
                   contentStyle={{
-                    backgroundColor: "#fff",
-                    border: "1px solid #e5e5e5",
+                    backgroundColor: "var(--popover)",
+                    color: "var(--popover-foreground)",
+                    border: "1px solid var(--border)",
                     borderRadius: "8px",
                   }}
                 />
