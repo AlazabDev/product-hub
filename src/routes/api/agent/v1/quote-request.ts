@@ -22,7 +22,7 @@ export const Route = createFileRoute("/api/agent/v1/quote-request")({
       // POST - استقبال طلب تسعير جديد
       POST: async ({ request }) => {
         const started = Date.now();
-        const auth = await requireApiKey(request);
+        const auth = await requireApiKey(request, "/api/agent/v1/quote-request");
         if ("error" in auth) {
           await logCall({ 
             consumer: null, 
@@ -167,7 +167,7 @@ export const Route = createFileRoute("/api/agent/v1/quote-request")({
       // GET - الحصول على حالة طلب
       GET: async ({ request }) => {
         const started = Date.now();
-        const auth = await requireApiKey(request);
+        const auth = await requireApiKey(request, "/api/agent/v1/quote-request");
         if ("error" in auth) return auth.error;
 
         const url = new URL(request.url);

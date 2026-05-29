@@ -14,7 +14,7 @@ export const Route = createFileRoute("/api/agent/v1/order-status")({
       
       GET: async ({ request }) => {
         const started = Date.now();
-        const auth = await requireApiKey(request);
+        const auth = await requireApiKey(request, "/api/agent/v1/order-status");
         if ("error" in auth) return auth.error;
 
         const url = new URL(request.url);
@@ -108,7 +108,7 @@ export const Route = createFileRoute("/api/agent/v1/order-status")({
       // PATCH - تحديث حالة الطلب (للاستخدام الداخلي)
       PATCH: async ({ request }) => {
         const started = Date.now();
-        const auth = await requireApiKey(request);
+        const auth = await requireApiKey(request, "/api/agent/v1/order-status");
         if ("error" in auth) return auth.error;
 
         try {

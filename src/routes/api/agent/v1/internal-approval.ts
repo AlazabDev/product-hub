@@ -34,7 +34,7 @@ export const Route = createFileRoute("/api/agent/v1/internal-approval")({
       POST: async ({ request }) => {
         const started = Date.now();
         const endpoint = "/api/agent/v1/internal-approval";
-        const auth = await requireApiKey(request);
+        const auth = await requireApiKey(request, "/api/agent/v1/internal-approval");
         if ("error" in auth) {
           await logCall({ consumer: null, request, endpoint, status: 401, startedAt: started, error: "auth" });
           return auth.error;
