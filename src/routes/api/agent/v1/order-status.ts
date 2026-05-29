@@ -11,10 +11,10 @@ export const Route = createFileRoute("/api/agent/v1/order-status")({
   server: {
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
-      
+
       GET: async ({ request }) => {
         const started = Date.now();
-        const auth = await requireApiKey(request);
+        const auth = await requireApiKey(request, "/api/agent/v1/order-status");
         if ("error" in auth) return auth.error;
 
         const url = new URL(request.url);
@@ -23,15 +23,16 @@ export const Route = createFileRoute("/api/agent/v1/order-status")({
         const customerId = url.searchParams.get("customer_id");
 
         if (!orderId && !orderNumber && !customerId) {
-          return json({ 
-            success: false, 
-            error: "Missing order_id, order_number, or customer_id" 
-          }, 400);
+          return json(
+            {
+              success: false,
+              error: "Missing order_id, order_number, or customer_id",
+            },
+            400,
+          );
         }
 
-        let query = supabaseAdmin
-          .from("manufacturing_orders")
-          .select(`
+        let query = supabaseAdmin.from("manufacturing_orders").select(`
             *,
             quote_requests(request_id, design_preview_url),
             material_requisitions(id, requisition_number, status)
@@ -45,9 +46,7 @@ export const Route = createFileRoute("/api/agent/v1/order-status")({
           query = query.eq("customer_id", customerId).order("created_at", { ascending: false });
         }
 
-        const { data, error } = orderId || orderNumber 
-          ? await query.maybeSingle()
-          : await query;
+        const { data, error } = orderId || orderNumber ? await query.maybeSingle() : await query;
 
         if (error) {
           return json({ success: false, error: error.message }, 500);
@@ -57,12 +56,12 @@ export const Route = createFileRoute("/api/agent/v1/order-status")({
           return json({ success: false, error: "Order not found" }, 404);
         }
 
-        await logCall({ 
-          consumer: auth.consumer, 
-          request, 
-          endpoint: "/api/agent/v1/order-status", 
-          status: 200, 
-          startedAt: started 
+        await logCall({
+          consumer: auth.consumer,
+          request,
+          endpoint: "/api/agent/v1/order-status",
+          status: 200,
+          startedAt: started,
         });
 
         const formatOrder = (order: any) => ({
@@ -92,10 +91,12 @@ export const Route = createFileRoute("/api/agent/v1/order-status")({
             amount_paid: order.amount_paid,
             remaining: order.final_price - order.amount_paid,
           },
-          materials: order.material_requisitions?.[0] ? {
-            requisition_number: order.material_requisitions[0].requisition_number,
-            status: order.material_requisitions[0].status,
-          } : null,
+          materials: order.material_requisitions?.[0]
+            ? {
+                requisition_number: order.material_requisitions[0].requisition_number,
+                status: order.material_requisitions[0].status,
+              }
+            : null,
           design_preview: order.quote_requests?.design_preview_url,
         });
 
@@ -108,12 +109,12 @@ export const Route = createFileRoute("/api/agent/v1/order-status")({
       // PATCH - تحديث حالة الطلب (للاستخدام الداخلي)
       PATCH: async ({ request }) => {
         const started = Date.now();
-        const auth = await requireApiKey(request);
+        const auth = await requireApiKey(request, "/api/agent/v1/order-status");
         if ("error" in auth) return auth.error;
 
         try {
           const body = await request.json();
-          
+
           if (!body.order_id && !body.order_number) {
             return json({ success: false, error: "Missing order_id or order_number" }, 400);
           }
@@ -121,7 +122,8 @@ export const Route = createFileRoute("/api/agent/v1/order-status")({
           const updates: any = {};
           if (body.status) updates.status = body.status;
           if (body.actual_start_date) updates.actual_start_date = body.actual_start_date;
-          if (body.actual_completion_date) updates.actual_completion_date = body.actual_completion_date;
+          if (body.actual_completion_date)
+            updates.actual_completion_date = body.actual_completion_date;
           if (body.delivery_date) updates.delivery_date = body.delivery_date;
           if (body.payment_status) updates.payment_status = body.payment_status;
           if (body.amount_paid !== undefined) updates.amount_paid = body.amount_paid;
@@ -157,12 +159,12 @@ export const Route = createFileRoute("/api/agent/v1/order-status")({
             });
           }
 
-          await logCall({ 
-            consumer: auth.consumer, 
-            request, 
-            endpoint: "/api/agent/v1/order-status", 
-            status: 200, 
-            startedAt: started 
+          await logCall({
+            consumer: auth.consumer,
+            request,
+            endpoint: "/api/agent/v1/order-status",
+            status: 200,
+            startedAt: started,
           });
 
           return json({
@@ -172,9 +174,8 @@ export const Route = createFileRoute("/api/agent/v1/order-status")({
               order_number: data.order_number,
               status: data.status,
               updated_at: data.updated_at,
-            }
+            },
           });
-
         } catch (err) {
           return json({ success: false, error: "Internal server error" }, 500);
         }

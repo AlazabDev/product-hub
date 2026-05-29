@@ -6,10 +6,32 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Copy, CheckCircle, XCircle, Eye, Merge, Trash2, AlertTriangle, ScanSearch, Loader2 } from "lucide-react";
+import {
+  Copy,
+  CheckCircle,
+  XCircle,
+  Eye,
+  Merge,
+  Trash2,
+  AlertTriangle,
+  ScanSearch,
+  Loader2,
+} from "lucide-react";
 import { scanDuplicates } from "@/lib/duplicate-detection.functions";
 
 export const Route = createFileRoute("/_authenticated/duplicates/")({
@@ -69,7 +91,8 @@ function DuplicatesPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("duplicate_group_items")
-        .select(`
+        .select(
+          `
           id,
           product_id,
           similarity_reason,
@@ -81,7 +104,8 @@ function DuplicatesPage() {
             status,
             gpc_family
           )
-        `)
+        `,
+        )
         .eq("duplicate_group_id", selectedGroup!.id);
 
       if (error) throw error;
@@ -90,7 +114,15 @@ function DuplicatesPage() {
   });
 
   const resolveMutation = useMutation({
-    mutationFn: async ({ groupId, action, primaryId }: { groupId: string; action: "merge" | "dismiss"; primaryId?: string }) => {
+    mutationFn: async ({
+      groupId,
+      action,
+      primaryId,
+    }: {
+      groupId: string;
+      action: "merge" | "dismiss";
+      primaryId?: string;
+    }) => {
       if (action === "merge" && primaryId) {
         // Mark group as resolved
         const { error } = await supabase
@@ -98,14 +130,11 @@ function DuplicatesPage() {
           .update({ status: "resolved" })
           .eq("id", groupId);
         if (error) throw error;
-        
+
         // Archive non-primary products
-        const items = groupItems?.filter(item => item.product_id !== primaryId) ?? [];
+        const items = groupItems?.filter((item) => item.product_id !== primaryId) ?? [];
         for (const item of items) {
-          await supabase
-            .from("products")
-            .update({ status: "archived" })
-            .eq("id", item.product_id);
+          await supabase.from("products").update({ status: "archived" }).eq("id", item.product_id);
         }
       } else {
         // Dismiss - just mark as ignored
@@ -131,12 +160,13 @@ function DuplicatesPage() {
   const scanMutation = useMutation({
     mutationFn: () => runScan({ data: undefined as any }),
     onSuccess: (res: any) => {
-      toast.success(`تم الفحص: ${res.productGroups} مجموعة منتجات، ${res.flaggedProducts} عنصر مشكوك فيه`);
+      toast.success(
+        `تم الفحص: ${res.productGroups} مجموعة منتجات، ${res.flaggedProducts} عنصر مشكوك فيه`,
+      );
       queryClient.invalidateQueries({ queryKey: ["duplicate-groups"] });
     },
     onError: (e: any) => toast.error(e?.message ?? "فشل الفحص"),
   });
-
 
   const statusColors: Record<string, string> = {
     open: "bg-warning/15 text-warning",
@@ -168,11 +198,17 @@ function DuplicatesPage() {
             disabled={scanMutation.isPending}
             variant="default"
           >
-            {scanMutation.isPending ? <Loader2 className="size-4 ml-1 animate-spin" /> : <ScanSearch className="size-4 ml-1" />}
+            {scanMutation.isPending ? (
+              <Loader2 className="size-4 ml-1 animate-spin" />
+            ) : (
+              <ScanSearch className="size-4 ml-1" />
+            )}
             فحص التكرارات الآن
           </Button>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[160px]"><SelectValue placeholder="الحالة" /></SelectTrigger>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="الحالة" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">كل الحالات</SelectItem>
               <SelectItem value="open">مفتوح</SelectItem>
@@ -248,7 +284,7 @@ function DuplicatesPage() {
             <p className="text-sm text-muted-foreground">
               اختر البند الاساسي للاحتفاظ به، سيتم ارشفة البنود الاخرى
             </p>
-            
+
             {groupItems?.map((item) => (
               <Card
                 key={item.id}
@@ -260,9 +296,13 @@ function DuplicatesPage() {
                 onClick={() => setSelectedPrimary(item.product_id)}
               >
                 <div className="flex items-start gap-3">
-                  <div className={`size-5 rounded-full border-2 grid place-items-center shrink-0 mt-0.5 ${
-                    selectedPrimary === item.product_id ? "border-accent bg-accent" : "border-muted-foreground"
-                  }`}>
+                  <div
+                    className={`size-5 rounded-full border-2 grid place-items-center shrink-0 mt-0.5 ${
+                      selectedPrimary === item.product_id
+                        ? "border-accent bg-accent"
+                        : "border-muted-foreground"
+                    }`}
+                  >
                     {selectedPrimary === item.product_id && (
                       <CheckCircle className="size-3 text-accent-foreground" />
                     )}
@@ -282,7 +322,9 @@ function DuplicatesPage() {
                     <div className="flex items-center gap-2 mt-2 text-xs">
                       <Badge variant="outline">{item.product?.gpc_family ?? "غير مصنف"}</Badge>
                       {item.similarity_reason && (
-                        <span className="text-muted-foreground">سبب التشابه: {item.similarity_reason}</span>
+                        <span className="text-muted-foreground">
+                          سبب التشابه: {item.similarity_reason}
+                        </span>
                       )}
                     </div>
                     <Link

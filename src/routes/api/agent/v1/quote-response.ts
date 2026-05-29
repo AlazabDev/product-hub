@@ -21,9 +21,16 @@ export const Route = createFileRoute("/api/agent/v1/quote-response")({
       POST: async ({ request }) => {
         const started = Date.now();
         const endpoint = "/api/agent/v1/quote-response";
-        const auth = await requireApiKey(request);
+        const auth = await requireApiKey(request, "/api/agent/v1/quote-response");
         if ("error" in auth) {
-          await logCall({ consumer: null, request, endpoint, status: 401, startedAt: started, error: "auth" });
+          await logCall({
+            consumer: null,
+            request,
+            endpoint,
+            status: 401,
+            startedAt: started,
+            error: "auth",
+          });
           return auth.error;
         }
 
@@ -31,18 +38,31 @@ export const Route = createFileRoute("/api/agent/v1/quote-response")({
           const body = await request.json();
 
           if (!body.quote_id && !body.request_id) {
-            return json({ success: false, error: "Missing quote_id or request_id", code: "missing_identifier" }, 400);
+            return json(
+              {
+                success: false,
+                error: "Missing quote_id or request_id",
+                code: "missing_identifier",
+              },
+              400,
+            );
           }
           if (!body.response || !["accepted", "rejected"].includes(body.response)) {
             return json(
-              { success: false, error: "Invalid response. Must be 'accepted' or 'rejected'", code: "invalid_response" },
+              {
+                success: false,
+                error: "Invalid response. Must be 'accepted' or 'rejected'",
+                code: "invalid_response",
+              },
               400,
             );
           }
 
           // Fetch the quote
           let query = supabaseAdmin.from("quote_requests").select("*");
-          query = body.quote_id ? query.eq("id", body.quote_id) : query.eq("request_id", body.request_id);
+          query = body.quote_id
+            ? query.eq("id", body.quote_id)
+            : query.eq("request_id", body.request_id);
           const { data: quote, error: quoteError } = await query.maybeSingle();
 
           if (quoteError || !quote) {
@@ -50,12 +70,19 @@ export const Route = createFileRoute("/api/agent/v1/quote-response")({
           }
           if (quote.status !== "quoted") {
             return json(
-              { success: false, error: `Quote already ${quote.status}`, code: "invalid_quote_state" },
+              {
+                success: false,
+                error: `Quote already ${quote.status}`,
+                code: "invalid_quote_state",
+              },
               400,
             );
           }
           if (quote.quote_valid_until && new Date(quote.quote_valid_until) < new Date()) {
-            await supabaseAdmin.from("quote_requests").update({ status: "expired" }).eq("id", quote.id);
+            await supabaseAdmin
+              .from("quote_requests")
+              .update({ status: "expired" })
+              .eq("id", quote.id);
             return json({ success: false, error: "Quote has expired", code: "quote_expired" }, 400);
           }
 
@@ -131,7 +158,11 @@ export const Route = createFileRoute("/api/agent/v1/quote-response")({
           if (approvalError || !approval) {
             console.error("Failed to create approval:", approvalError);
             return json(
-              { success: false, error: "Failed to create internal approval", code: "approval_create_failed" },
+              {
+                success: false,
+                error: "Failed to create internal approval",
+                code: "approval_create_failed",
+              },
               500,
             );
           }
@@ -180,7 +211,10 @@ export const Route = createFileRoute("/api/agent/v1/quote-response")({
             startedAt: started,
             error: String(err),
           });
-          return json({ success: false, error: "Internal server error", code: "internal_error" }, 500);
+          return json(
+            { success: false, error: "Internal server error", code: "internal_error" },
+            500,
+          );
         }
       },
     },

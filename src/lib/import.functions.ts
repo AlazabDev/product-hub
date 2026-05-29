@@ -3,8 +3,31 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { z } from "zod";
 
-const ITEM_TYPES = ["product", "service", "work_item", "material", "tool", "spare_part", "finish_item", "custom_unit", "supplier_item", "package", "bundle"] as const;
-const STATUSES = ["draft", "needs_review", "duplicate_suspected", "content_incomplete", "pricing_incomplete", "supplier_pending", "approved", "rejected", "exported", "archived"] as const;
+const ITEM_TYPES = [
+  "product",
+  "service",
+  "work_item",
+  "material",
+  "tool",
+  "spare_part",
+  "finish_item",
+  "custom_unit",
+  "supplier_item",
+  "package",
+  "bundle",
+] as const;
+const STATUSES = [
+  "draft",
+  "needs_review",
+  "duplicate_suspected",
+  "content_incomplete",
+  "pricing_incomplete",
+  "supplier_pending",
+  "approved",
+  "rejected",
+  "exported",
+  "archived",
+] as const;
 
 const RowSchema = z.object({
   az_code: z.string().min(1).max(80),
@@ -46,24 +69,48 @@ export const bulkUpsertProducts = createServerFn({ method: "POST" })
     data.rows.forEach((raw, i) => {
       const parsed = RowSchema.safeParse(raw);
       if (parsed.success) valid.push(parsed.data);
-      else errors.push({ row: i + 2, az_code: (raw as { az_code?: string })?.az_code, message: parsed.error.issues.map((iss) => iss.message).join("; ") });
+      else
+        errors.push({
+          row: i + 2,
+          az_code: (raw as { az_code?: string })?.az_code,
+          message: parsed.error.issues.map((iss) => iss.message).join("; "),
+        });
     });
 
     if (data.dryRun) {
-      return { total: data.rows.length, valid: valid.length, invalid: errors.length, errors: errors.slice(0, 50), inserted: 0, updated: 0 };
+      return {
+        total: data.rows.length,
+        valid: valid.length,
+        invalid: errors.length,
+        errors: errors.slice(0, 50),
+        inserted: 0,
+        updated: 0,
+      };
     }
 
     const { data: job } = await supabaseAdmin
       .from("import_jobs")
-      .insert({ import_type: "products", file_name: data.fileName, total_rows: data.rows.length, valid_rows: valid.length, invalid_rows: errors.length, status: "processing", created_by: userId })
-      .select("id").single();
+      .insert({
+        import_type: "products",
+        file_name: data.fileName,
+        total_rows: data.rows.length,
+        valid_rows: valid.length,
+        invalid_rows: errors.length,
+        status: "processing",
+        created_by: userId,
+      })
+      .select("id")
+      .single();
 
     let inserted = 0;
     let updated = 0;
 
     // Get existing AZ codes to compute insert vs update counts
     const codes = valid.map((v) => v.az_code);
-    const { data: existing } = await supabaseAdmin.from("products").select("az_code").in("az_code", codes);
+    const { data: existing } = await supabaseAdmin
+      .from("products")
+      .select("az_code")
+      .in("az_code", codes);
     const existingSet = new Set((existing ?? []).map((r) => r.az_code));
 
     // Chunked upsert
@@ -88,24 +135,37 @@ export const bulkUpsertProducts = createServerFn({ method: "POST" })
         sector_ar: r.sector_ar ?? null,
         confidence_level: r.confidence_level ?? null,
       }));
-      const { error } = await supabaseAdmin.from("products").upsert(slice, { onConflict: "az_code" });
+      const { error } = await supabaseAdmin
+        .from("products")
+        .upsert(slice, { onConflict: "az_code" });
       if (error) {
         errors.push({ row: i, message: error.message });
         continue;
       }
       for (const r of slice) {
-        if (existingSet.has(r.az_code)) updated++; else inserted++;
+        if (existingSet.has(r.az_code)) updated++;
+        else inserted++;
       }
     }
 
     if (job?.id) {
-      await supabaseAdmin.from("import_jobs").update({
-        status: errors.length === data.rows.length ? "failed" : "completed",
-        valid_rows: inserted + updated,
-        invalid_rows: errors.length,
-        error_log: errors.slice(0, 200),
-      }).eq("id", job.id);
+      await supabaseAdmin
+        .from("import_jobs")
+        .update({
+          status: errors.length === data.rows.length ? "failed" : "completed",
+          valid_rows: inserted + updated,
+          invalid_rows: errors.length,
+          error_log: errors.slice(0, 200),
+        })
+        .eq("id", job.id);
     }
 
-    return { total: data.rows.length, valid: valid.length, invalid: errors.length, inserted, updated, errors: errors.slice(0, 50) };
+    return {
+      total: data.rows.length,
+      valid: valid.length,
+      invalid: errors.length,
+      inserted,
+      updated,
+      errors: errors.slice(0, 50),
+    };
   });

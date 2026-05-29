@@ -23,7 +23,10 @@ export function azureStatus() {
   };
 }
 
-export async function azureChat(messages: Array<{ role: string; content: string }>, opts: { temperature?: number; maxTokens?: number } = {}) {
+export async function azureChat(
+  messages: Array<{ role: string; content: string }>,
+  opts: { temperature?: number; maxTokens?: number } = {},
+) {
   const endpoint = required("AZURE_OPENAI_ENDPOINT").replace(/\/$/, "");
   const apiKey = required("AZURE_OPENAI_API_KEY");
   const deployment = required("AZURE_OPENAI_DEPLOYMENT");

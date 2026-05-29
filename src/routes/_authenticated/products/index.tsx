@@ -6,12 +6,27 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Search, Download, Filter, X, FileSpreadsheet, FileJson, Sparkles, Loader2 } from "lucide-react";
+import {
+  Search,
+  Download,
+  Filter,
+  X,
+  FileSpreadsheet,
+  FileJson,
+  Sparkles,
+  Loader2,
+} from "lucide-react";
 import { ProductCreateDialog } from "@/components/product-create-dialog";
 import { generateProductImages } from "@/lib/product-image-gen.functions";
 
@@ -19,7 +34,6 @@ export const Route = createFileRoute("/_authenticated/products/")({
   head: () => ({ meta: [{ title: "المنتجات والخدمات — Alazab PAOP" }] }),
   component: ProductsList,
 });
-
 
 const PAGE = 50;
 
@@ -45,12 +59,16 @@ function ProductsList() {
   const [showFilters, setShowFilters] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
   const [selectedColumns, setSelectedColumns] = useState<string[]>([
-    "az_code", "name_ar", "name_en", "status", "gpc_family", "sector_ar"
+    "az_code",
+    "name_ar",
+    "name_en",
+    "status",
+    "gpc_family",
+    "sector_ar",
   ]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [genLoading, setGenLoading] = useState(false);
   const genFn = useServerFn(generateProductImages);
-
 
   // Fetch filter options
   const { data: filterOptions } = useQuery({
@@ -61,8 +79,12 @@ function ProductsList() {
         supabase.from("products").select("sector_ar").not("sector_ar", "is", null),
       ]);
 
-      const uniqueFamilies = [...new Set((families.data ?? []).map((r: any) => r.gpc_family))].filter(Boolean);
-      const uniqueSectors = [...new Set((sectors.data ?? []).map((r: any) => r.sector_ar))].filter(Boolean);
+      const uniqueFamilies = [
+        ...new Set((families.data ?? []).map((r: any) => r.gpc_family)),
+      ].filter(Boolean);
+      const uniqueSectors = [...new Set((sectors.data ?? []).map((r: any) => r.sector_ar))].filter(
+        Boolean,
+      );
 
       return { families: uniqueFamilies, sectors: uniqueSectors };
     },
@@ -73,11 +95,17 @@ function ProductsList() {
     queryFn: async () => {
       let query = supabase
         .from("products")
-        .select("id, az_code, egs_code, name_ar, name_en, item_type, status, gpc_family, sector_ar, confidence_level", { count: "exact" })
+        .select(
+          "id, az_code, egs_code, name_ar, name_en, item_type, status, gpc_family, sector_ar, confidence_level",
+          { count: "exact" },
+        )
         .order("created_at", { ascending: false })
         .range(page * PAGE, page * PAGE + PAGE - 1);
 
-      if (filters.q) query = query.or(`name_ar.ilike.%${filters.q}%,name_en.ilike.%${filters.q}%,az_code.ilike.%${filters.q}%`);
+      if (filters.q)
+        query = query.or(
+          `name_ar.ilike.%${filters.q}%,name_en.ilike.%${filters.q}%,az_code.ilike.%${filters.q}%`,
+        );
       if (filters.status !== "all") query = query.eq("status", filters.status as any);
       if (filters.itemType !== "all") query = query.eq("item_type", filters.itemType as any);
       if (filters.gpcFamily !== "all") query = query.eq("gpc_family", filters.gpcFamily);
@@ -94,7 +122,7 @@ function ProductsList() {
   const pages = Math.ceil(total / PAGE);
 
   const activeFiltersCount = Object.entries(filters).filter(
-    ([key, value]) => key !== "q" && value !== "all"
+    ([key, value]) => key !== "q" && value !== "all",
   ).length;
 
   const clearFilters = () => {
@@ -147,12 +175,12 @@ function ProductsList() {
       let mimeType: string;
 
       if (format === "csv") {
-        const headers = selectedColumns.map(col => 
-          exportColumns.find(c => c.key === col)?.label || col
+        const headers = selectedColumns.map(
+          (col) => exportColumns.find((c) => c.key === col)?.label || col,
         );
         const csvRows = [headers.join(",")];
         data.forEach((row: any) => {
-          const values = selectedColumns.map(col => {
+          const values = selectedColumns.map((col) => {
             const val = row[col];
             if (val === null || val === undefined) return "";
             const strVal = String(val).replace(/"/g, '""');
@@ -221,7 +249,7 @@ function ProductsList() {
                             if (checked) {
                               setSelectedColumns([...selectedColumns, col.key]);
                             } else {
-                              setSelectedColumns(selectedColumns.filter(c => c !== col.key));
+                              setSelectedColumns(selectedColumns.filter((c) => c !== col.key));
                             }
                           }}
                         />
@@ -263,12 +291,23 @@ function ProductsList() {
             <Input
               placeholder="بحث بالاسم او AZ Code..."
               value={filters.q}
-              onChange={(e) => { setFilters({ ...filters, q: e.target.value }); setPage(0); }}
+              onChange={(e) => {
+                setFilters({ ...filters, q: e.target.value });
+                setPage(0);
+              }}
               className="pr-9"
             />
           </div>
-          <Select value={filters.status} onValueChange={(v) => { setFilters({ ...filters, status: v }); setPage(0); }}>
-            <SelectTrigger className="w-[150px]"><SelectValue placeholder="الحالة" /></SelectTrigger>
+          <Select
+            value={filters.status}
+            onValueChange={(v) => {
+              setFilters({ ...filters, status: v });
+              setPage(0);
+            }}
+          >
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="الحالة" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">كل الحالات</SelectItem>
               <SelectItem value="approved">معتمد</SelectItem>
@@ -306,8 +345,16 @@ function ProductsList() {
                 <div className="space-y-3">
                   <div>
                     <Label className="text-xs">نوع البند</Label>
-                    <Select value={filters.itemType} onValueChange={(v) => { setFilters({ ...filters, itemType: v }); setPage(0); }}>
-                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                    <Select
+                      value={filters.itemType}
+                      onValueChange={(v) => {
+                        setFilters({ ...filters, itemType: v });
+                        setPage(0);
+                      }}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">الكل</SelectItem>
                         <SelectItem value="product">منتج</SelectItem>
@@ -319,12 +366,22 @@ function ProductsList() {
 
                   <div>
                     <Label className="text-xs">العائلة (GPC)</Label>
-                    <Select value={filters.gpcFamily} onValueChange={(v) => { setFilters({ ...filters, gpcFamily: v }); setPage(0); }}>
-                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                    <Select
+                      value={filters.gpcFamily}
+                      onValueChange={(v) => {
+                        setFilters({ ...filters, gpcFamily: v });
+                        setPage(0);
+                      }}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">كل العائلات</SelectItem>
                         {(filterOptions?.families ?? []).map((f) => (
-                          <SelectItem key={f} value={f}>{f}</SelectItem>
+                          <SelectItem key={f} value={f}>
+                            {f}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -332,12 +389,22 @@ function ProductsList() {
 
                   <div>
                     <Label className="text-xs">القطاع</Label>
-                    <Select value={filters.sector} onValueChange={(v) => { setFilters({ ...filters, sector: v }); setPage(0); }}>
-                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                    <Select
+                      value={filters.sector}
+                      onValueChange={(v) => {
+                        setFilters({ ...filters, sector: v });
+                        setPage(0);
+                      }}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">كل القطاعات</SelectItem>
                         {(filterOptions?.sectors ?? []).map((s) => (
-                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                          <SelectItem key={s} value={s}>
+                            {s}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -345,8 +412,16 @@ function ProductsList() {
 
                   <div>
                     <Label className="text-xs">مستوى الثقة</Label>
-                    <Select value={filters.confidence} onValueChange={(v) => { setFilters({ ...filters, confidence: v }); setPage(0); }}>
-                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                    <Select
+                      value={filters.confidence}
+                      onValueChange={(v) => {
+                        setFilters({ ...filters, confidence: v });
+                        setPage(0);
+                      }}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">الكل</SelectItem>
                         <SelectItem value="high">عالي</SelectItem>
@@ -387,7 +462,10 @@ function ProductsList() {
               size="sm"
               disabled={genLoading || selectedIds.size > 20}
               onClick={async () => {
-                if (selectedIds.size > 20) { toast.error("الحد الأقصى 20 بند في المرة"); return; }
+                if (selectedIds.size > 20) {
+                  toast.error("الحد الأقصى 20 بند في المرة");
+                  return;
+                }
                 setGenLoading(true);
                 try {
                   const res = await genFn({ data: { productIds: Array.from(selectedIds) } });
@@ -400,7 +478,11 @@ function ProductsList() {
                 }
               }}
             >
-              {genLoading ? <Loader2 className="size-4 ml-1 animate-spin" /> : <Sparkles className="size-4 ml-1" />}
+              {genLoading ? (
+                <Loader2 className="size-4 ml-1 animate-spin" />
+              ) : (
+                <Sparkles className="size-4 ml-1" />
+              )}
               توليد 3 صور لكل بند
             </Button>
           </div>
@@ -436,56 +518,103 @@ function ProductsList() {
               </tr>
             </thead>
             <tbody>
-              {isLoading && <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">جاري التحميل...</td></tr>}
+              {isLoading && (
+                <tr>
+                  <td colSpan={8} className="p-8 text-center text-muted-foreground">
+                    جاري التحميل...
+                  </td>
+                </tr>
+              )}
               {!isLoading && data?.rows.length === 0 && (
-                <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">لا توجد نتائج</td></tr>
+                <tr>
+                  <td colSpan={8} className="p-8 text-center text-muted-foreground">
+                    لا توجد نتائج
+                  </td>
+                </tr>
               )}
               {data?.rows.map((p: any) => (
-                <tr key={p.id} className={`border-t hover:bg-secondary/30 ${selectedIds.has(p.id) ? "bg-accent/5" : ""}`}>
+                <tr
+                  key={p.id}
+                  className={`border-t hover:bg-secondary/30 ${selectedIds.has(p.id) ? "bg-accent/5" : ""}`}
+                >
                   <td className="p-3">
                     <Checkbox
                       checked={selectedIds.has(p.id)}
                       onCheckedChange={(checked) => {
                         const next = new Set(selectedIds);
-                        if (checked) next.add(p.id); else next.delete(p.id);
+                        if (checked) next.add(p.id);
+                        else next.delete(p.id);
                         setSelectedIds(next);
                       }}
                     />
                   </td>
                   <td className="p-3 num text-xs" dir="ltr">
-                    <Link to="/products/$id" params={{ id: p.id }} className="text-accent hover:underline">{p.az_code}</Link>
+                    <Link
+                      to="/products/$id"
+                      params={{ id: p.id }}
+                      className="text-accent hover:underline"
+                    >
+                      {p.az_code}
+                    </Link>
                   </td>
-                  <td className="p-3"><Link to="/products/$id" params={{ id: p.id }} className="hover:underline">{p.name_ar}</Link></td>
-                  <td className="p-3 text-muted-foreground" dir="ltr">{p.name_en}</td>
+                  <td className="p-3">
+                    <Link to="/products/$id" params={{ id: p.id }} className="hover:underline">
+                      {p.name_ar}
+                    </Link>
+                  </td>
+                  <td className="p-3 text-muted-foreground" dir="ltr">
+                    {p.name_en}
+                  </td>
                   <td className="p-3 text-xs">{p.gpc_family || "—"}</td>
                   <td className="p-3 text-xs">{p.sector_ar || "—"}</td>
                   <td className="p-3 text-xs">
                     {p.confidence_level && (
-                      <span className={`px-2 py-0.5 rounded text-[10px] ${
-                        p.confidence_level === "high" ? "bg-success/15 text-success" :
-                        p.confidence_level === "medium" ? "bg-warning/15 text-warning" :
-                        "bg-destructive/15 text-destructive"
-                      }`}>
-                        {p.confidence_level === "high" ? "عالي" : p.confidence_level === "medium" ? "متوسط" : "منخفض"}
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] ${
+                          p.confidence_level === "high"
+                            ? "bg-success/15 text-success"
+                            : p.confidence_level === "medium"
+                              ? "bg-warning/15 text-warning"
+                              : "bg-destructive/15 text-destructive"
+                        }`}
+                      >
+                        {p.confidence_level === "high"
+                          ? "عالي"
+                          : p.confidence_level === "medium"
+                            ? "متوسط"
+                            : "منخفض"}
                       </span>
                     )}
                     {!p.confidence_level && "—"}
                   </td>
-                  <td className="p-3"><StatusBadge status={p.status} /></td>
+                  <td className="p-3">
+                    <StatusBadge status={p.status} />
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
 
-
         <div className="flex items-center justify-between p-3 border-t bg-secondary/30 text-xs">
           <div className="text-muted-foreground num" dir="ltr">
             Page {page + 1} / {pages || 1} - {total.toLocaleString("en-US")} rows
           </div>
           <div className="flex gap-2">
-            <button onClick={() => setPage(Math.max(0, page - 1))} disabled={page === 0} className="px-3 py-1 rounded border disabled:opacity-50">السابق</button>
-            <button onClick={() => setPage(Math.min(pages - 1, page + 1))} disabled={page >= pages - 1} className="px-3 py-1 rounded border disabled:opacity-50">التالي</button>
+            <button
+              onClick={() => setPage(Math.max(0, page - 1))}
+              disabled={page === 0}
+              className="px-3 py-1 rounded border disabled:opacity-50"
+            >
+              السابق
+            </button>
+            <button
+              onClick={() => setPage(Math.min(pages - 1, page + 1))}
+              disabled={page >= pages - 1}
+              className="px-3 py-1 rounded border disabled:opacity-50"
+            >
+              التالي
+            </button>
           </div>
         </div>
       </Card>

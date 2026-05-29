@@ -30,10 +30,7 @@ export const scanDuplicates = createServerFn({ method: "POST" })
     const { supabase } = context;
 
     // Reset previous open auto groups
-    await supabase
-      .from("duplicate_groups")
-      .delete()
-      .eq("status", "open");
+    await supabase.from("duplicate_groups").delete().eq("status", "open");
 
     // --- PRODUCTS ---
     const { data: products, error: pErr } = await supabase
@@ -144,7 +141,10 @@ export const scanDuplicates = createServerFn({ method: "POST" })
       const p = (products ?? []).find((x) => x.id === id);
       const tags = new Set<string>((p?.tags as string[] | null) ?? []);
       tags.add("duplicate_suspected");
-      await supabase.from("products").update({ tags: Array.from(tags) }).eq("id", id);
+      await supabase
+        .from("products")
+        .update({ tags: Array.from(tags) })
+        .eq("id", id);
     }
 
     // --- ASSETS (file name + size) ---

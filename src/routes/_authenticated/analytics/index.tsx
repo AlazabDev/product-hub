@@ -2,10 +2,30 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
-import { BarChart3, Package, DollarSign, Truck, Sparkles, CheckCircle2, Network, AlertTriangle } from "lucide-react";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line,
-  PieChart, Pie, Cell, CartesianGrid, Legend,
+  BarChart3,
+  Package,
+  DollarSign,
+  Truck,
+  Sparkles,
+  CheckCircle2,
+  Network,
+  AlertTriangle,
+} from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  CartesianGrid,
+  Legend,
 } from "recharts";
 
 export const Route = createFileRoute("/_authenticated/analytics/")({
@@ -23,7 +43,17 @@ const STATUS_COLORS: Record<string, string> = {
   duplicate_suspected: "hsl(var(--accent))",
 };
 
-function KPI({ icon: Icon, label, value, sub }: { icon: React.ElementType; label: string; value: string | number; sub?: string }) {
+function KPI({
+  icon: Icon,
+  label,
+  value,
+  sub,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string | number;
+  sub?: string;
+}) {
   return (
     <Card className="p-5 surface-elevated border-0">
       <div className="flex items-center justify-between">
@@ -31,7 +61,9 @@ function KPI({ icon: Icon, label, value, sub }: { icon: React.ElementType; label
           <Icon className="size-5 text-accent" />
         </div>
       </div>
-      <div className="mt-3 text-2xl font-bold num" dir="ltr">{value}</div>
+      <div className="mt-3 text-2xl font-bold num" dir="ltr">
+        {value}
+      </div>
       <div className="text-xs text-muted-foreground mt-1">{label}</div>
       {sub && <div className="text-[10px] text-muted-foreground/70 mt-0.5">{sub}</div>}
     </Card>
@@ -53,15 +85,36 @@ function AnalyticsPage() {
         { count: apiConsumers },
       ] = await Promise.all([
         supabase.from("products").select("*", { count: "exact", head: true }),
-        supabase.from("products").select("*", { count: "exact", head: true }).eq("status", "approved"),
-        supabase.from("products").select("*", { count: "exact", head: true }).in("status", ["needs_review", "content_incomplete"]),
+        supabase
+          .from("products")
+          .select("*", { count: "exact", head: true })
+          .eq("status", "approved"),
+        supabase
+          .from("products")
+          .select("*", { count: "exact", head: true })
+          .in("status", ["needs_review", "content_incomplete"]),
         supabase.from("suppliers").select("*", { count: "exact", head: true }),
         supabase.from("prices").select("*", { count: "exact", head: true }),
         supabase.from("assets").select("*", { count: "exact", head: true }),
-        supabase.from("approvals").select("*", { count: "exact", head: true }).eq("status", "pending"),
-        supabase.from("api_consumers").select("*", { count: "exact", head: true }).eq("is_active", true),
+        supabase
+          .from("approvals")
+          .select("*", { count: "exact", head: true })
+          .eq("status", "pending"),
+        supabase
+          .from("api_consumers")
+          .select("*", { count: "exact", head: true })
+          .eq("is_active", true),
       ]);
-      return { totalProducts, approvedProducts, needsReview, totalSuppliers, totalPrices, totalAssets, pendingApprovals, apiConsumers };
+      return {
+        totalProducts,
+        approvedProducts,
+        needsReview,
+        totalSuppliers,
+        totalPrices,
+        totalAssets,
+        pendingApprovals,
+        apiConsumers,
+      };
     },
   });
 
@@ -70,16 +123,24 @@ function AnalyticsPage() {
     queryFn: async () => {
       const { data } = await supabase.from("products").select("status").limit(5000);
       const counts: Record<string, number> = {};
-      (data ?? []).forEach((p) => { counts[p.status] = (counts[p.status] ?? 0) + 1; });
-      return Object.entries(counts).map(([name, value]) => ({ name, value, color: STATUS_COLORS[name] ?? "hsl(var(--primary))" }));
+      (data ?? []).forEach((p) => {
+        counts[p.status] = (counts[p.status] ?? 0) + 1;
+      });
+      return Object.entries(counts).map(([name, value]) => ({
+        name,
+        value,
+        color: STATUS_COLORS[name] ?? "hsl(var(--primary))",
+      }));
     },
   });
 
   const { data: priceTrend = [] } = useQuery({
     queryKey: ["analytics-price-trend"],
     queryFn: async () => {
-      const since = new Date(); since.setDate(since.getDate() - 30);
-      const { data } = await supabase.from("price_history")
+      const since = new Date();
+      since.setDate(since.getDate() - 30);
+      const { data } = await supabase
+        .from("price_history")
         .select("created_at, old_price, new_price")
         .gte("created_at", since.toISOString())
         .order("created_at", { ascending: true });
@@ -88,37 +149,60 @@ function AnalyticsPage() {
         const day = new Date(r.created_at).toISOString().slice(0, 10);
         const delta = Number(r.new_price ?? 0) - Number(r.old_price ?? 0);
         const ex = byDay[day] ?? { changes: 0, avg_delta: 0, total: 0 };
-        ex.changes++; ex.total += delta;
+        ex.changes++;
+        ex.total += delta;
         ex.avg_delta = ex.total / ex.changes;
         byDay[day] = ex;
       });
-      return Object.entries(byDay).map(([day, v]) => ({ day: day.slice(5), changes: v.changes, avg_delta: Math.round(v.avg_delta) }));
+      return Object.entries(byDay).map(([day, v]) => ({
+        day: day.slice(5),
+        changes: v.changes,
+        avg_delta: Math.round(v.avg_delta),
+      }));
     },
   });
 
   const { data: supplierPerf = [] } = useQuery({
     queryKey: ["analytics-suppliers"],
     queryFn: async () => {
-      const { data } = await supabase.from("prices")
-        .select("supplier_id, selling_price, suppliers(name)").not("supplier_id", "is", null).limit(2000);
+      const { data } = await supabase
+        .from("prices")
+        .select("supplier_id, selling_price, suppliers(name)")
+        .not("supplier_id", "is", null)
+        .limit(2000);
       const map: Record<string, { name: string; count: number; avg: number; total: number }> = {};
-      (data ?? []).forEach((r: { supplier_id: string | null; selling_price: number | null; suppliers: { name: string } | null }) => {
-        if (!r.supplier_id || !r.suppliers) return;
-        const ex = map[r.supplier_id] ?? { name: r.suppliers.name, count: 0, avg: 0, total: 0 };
-        ex.count++; ex.total += Number(r.selling_price ?? 0);
-        ex.avg = ex.total / ex.count;
-        map[r.supplier_id] = ex;
-      });
-      return Object.values(map).sort((a, b) => b.count - a.count).slice(0, 8)
-        .map((s) => ({ name: s.name.slice(0, 15), products: s.count, avg_price: Math.round(s.avg) }));
+      (data ?? []).forEach(
+        (r: {
+          supplier_id: string | null;
+          selling_price: number | null;
+          suppliers: { name: string } | null;
+        }) => {
+          if (!r.supplier_id || !r.suppliers) return;
+          const ex = map[r.supplier_id] ?? { name: r.suppliers.name, count: 0, avg: 0, total: 0 };
+          ex.count++;
+          ex.total += Number(r.selling_price ?? 0);
+          ex.avg = ex.total / ex.count;
+          map[r.supplier_id] = ex;
+        },
+      );
+      return Object.values(map)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 8)
+        .map((s) => ({
+          name: s.name.slice(0, 15),
+          products: s.count,
+          avg_price: Math.round(s.avg),
+        }));
     },
   });
 
   const { data: apiUsage = [] } = useQuery({
     queryKey: ["analytics-api"],
     queryFn: async () => {
-      const since = new Date(); since.setDate(since.getDate() - 14);
-      const { data } = await supabase.from("webhook_logs")
+      const since = new Date();
+      since.setDate(since.getDate() - 14);
+      const { data } = await supabase
+        .from("webhook_logs")
         .select("created_at, status_code")
         .gte("created_at", since.toISOString())
         .order("created_at", { ascending: true })
@@ -141,21 +225,42 @@ function AnalyticsPage() {
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <BarChart3 className="size-6 text-accent" /> لوحة التحليلات
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">نظرة شاملة على أداء الكتالوج والأسعار والموردين وحركة الـ API</p>
+        <p className="text-sm text-muted-foreground mt-1">
+          نظرة شاملة على أداء الكتالوج والأسعار والموردين وحركة الـ API
+        </p>
       </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <KPI icon={Package} label="إجمالي البنود" value={stats?.totalProducts ?? "—"} sub={`${stats?.approvedProducts ?? 0} معتمد`} />
-        <KPI icon={AlertTriangle} label="بحاجة لمراجعة" value={stats?.needsReview ?? "—"} sub="مسودات + مراجعة" />
+        <KPI
+          icon={Package}
+          label="إجمالي البنود"
+          value={stats?.totalProducts ?? "—"}
+          sub={`${stats?.approvedProducts ?? 0} معتمد`}
+        />
+        <KPI
+          icon={AlertTriangle}
+          label="بحاجة لمراجعة"
+          value={stats?.needsReview ?? "—"}
+          sub="مسودات + مراجعة"
+        />
         <KPI icon={Truck} label="الموردون" value={stats?.totalSuppliers ?? "—"} />
         <KPI icon={DollarSign} label="سجلات تسعير" value={stats?.totalPrices ?? "—"} />
         <KPI icon={Sparkles} label="أصول مرفوعة" value={stats?.totalAssets ?? "—"} />
-        <KPI icon={CheckCircle2} label="موافقات قيد المراجعة" value={stats?.pendingApprovals ?? "—"} />
+        <KPI
+          icon={CheckCircle2}
+          label="موافقات قيد المراجعة"
+          value={stats?.pendingApprovals ?? "—"}
+        />
         <KPI icon={Network} label="مستهلكو API نشطون" value={stats?.apiConsumers ?? "—"} />
         <KPI
-          icon={BarChart3} label="نسبة الاعتماد"
-          value={stats?.totalProducts ? `${Math.round((stats.approvedProducts! / stats.totalProducts) * 100)}%` : "—"}
+          icon={BarChart3}
+          label="نسبة الاعتماد"
+          value={
+            stats?.totalProducts
+              ? `${Math.round((stats.approvedProducts! / stats.totalProducts) * 100)}%`
+              : "—"
+          }
         />
       </div>
 
@@ -167,7 +272,9 @@ function AnalyticsPage() {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie data={statusBreakdown} dataKey="value" nameKey="name" outerRadius={80} label>
-                  {statusBreakdown.map((e, i) => <Cell key={i} fill={e.color} />)}
+                  {statusBreakdown.map((e, i) => (
+                    <Cell key={i} fill={e.color} />
+                  ))}
                 </Pie>
                 <Tooltip />
                 <Legend />
@@ -186,8 +293,18 @@ function AnalyticsPage() {
                 <YAxis fontSize={11} />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="changes" stroke="hsl(var(--accent))" name="عدد التغييرات" />
-                <Line type="monotone" dataKey="avg_delta" stroke="hsl(var(--primary))" name="متوسط الفرق" />
+                <Line
+                  type="monotone"
+                  dataKey="changes"
+                  stroke="hsl(var(--accent))"
+                  name="عدد التغييرات"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="avg_delta"
+                  stroke="hsl(var(--primary))"
+                  name="متوسط الفرق"
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>

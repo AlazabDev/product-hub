@@ -6,7 +6,10 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  uploadAndLinkAsset, deleteAssetLink, promoteToMain, reorderAssets,
+  uploadAndLinkAsset,
+  deleteAssetLink,
+  promoteToMain,
+  reorderAssets,
 } from "@/lib/upload-assets";
 import { Upload, Star, ImageOff, Maximize2 } from "lucide-react";
 import { toast } from "sonner";
@@ -39,7 +42,9 @@ export function ProductAssetsTab({ productId, azCode }: { productId: string; azC
     queryFn: async () => {
       const { data, error } = await supabase
         .from("product_assets")
-        .select("id, asset_role, sort_order, created_at, asset:assets(id, file_name, file_url, file_type, file_size)")
+        .select(
+          "id, asset_role, sort_order, created_at, asset:assets(id, file_name, file_url, file_type, file_size)",
+        )
         .eq("product_id", productId)
         .order("sort_order");
       if (error) throw error;
@@ -50,7 +55,7 @@ export function ProductAssetsTab({ productId, azCode }: { productId: string; azC
   const main = useMemo(() => rows?.find((r) => r.asset_role === "main_image") ?? null, [rows]);
   const gallery = useMemo(
     () => (rows ?? []).filter((r) => r.asset_role !== "main_image" && r.asset),
-    [rows]
+    [rows],
   );
 
   const gridItems: GridItem[] = useMemo(() => {
@@ -67,34 +72,44 @@ export function ProductAssetsTab({ productId, azCode }: { productId: string; azC
   }, [rows]);
 
   const lightboxItems = gridItems.map((g) => ({
-    linkId: g.linkId, src: g.url, alt: g.fileName, isMain: g.isMain,
+    linkId: g.linkId,
+    src: g.url,
+    alt: g.fileName,
+    isMain: g.isMain,
   }));
 
-  const upload = useCallback(async (files: File[]) => {
-    if (!files.length) return;
-    setBusy(true);
-    const existing = rows?.length ?? 0;
-    const hasMain = !!main;
-    let added = 0;
-    try {
-      for (let i = 0; i < files.length; i++) {
-        const f = files[i];
-        if (!f.type.startsWith("image/") && !f.type.startsWith("application/")) continue;
-        const isFirst = !hasMain && existing === 0 && i === 0;
-        await uploadAndLinkAsset({
-          file: f, productId, azCode,
-          role: isFirst ? "main_image" : "gallery",
-          sortOrder: existing + i,
-          folderPath: azCode,
-        });
-        added++;
+  const upload = useCallback(
+    async (files: File[]) => {
+      if (!files.length) return;
+      setBusy(true);
+      const existing = rows?.length ?? 0;
+      const hasMain = !!main;
+      let added = 0;
+      try {
+        for (let i = 0; i < files.length; i++) {
+          const f = files[i];
+          if (!f.type.startsWith("image/") && !f.type.startsWith("application/")) continue;
+          const isFirst = !hasMain && existing === 0 && i === 0;
+          await uploadAndLinkAsset({
+            file: f,
+            productId,
+            azCode,
+            role: isFirst ? "main_image" : "gallery",
+            sortOrder: existing + i,
+            folderPath: azCode,
+          });
+          added++;
+        }
+        toast.success(`تم رفع ${added} ملف`);
+        qc.invalidateQueries({ queryKey: ["product-assets", productId] });
+      } catch (e: any) {
+        toast.error(e.message ?? "فشل الرفع");
+      } finally {
+        setBusy(false);
       }
-      toast.success(`تم رفع ${added} ملف`);
-      qc.invalidateQueries({ queryKey: ["product-assets", productId] });
-    } catch (e: any) {
-      toast.error(e.message ?? "فشل الرفع");
-    } finally { setBusy(false); }
-  }, [rows, main, productId, azCode, qc]);
+    },
+    [rows, main, productId, azCode, qc],
+  );
 
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -107,7 +122,9 @@ export function ProductAssetsTab({ productId, azCode }: { productId: string; azC
       await promoteToMain(productId, linkId);
       qc.invalidateQueries({ queryKey: ["product-assets", productId] });
       toast.success("تم تعيين الصورة الرئيسية");
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) {
+      toast.error(e.message);
+    }
   };
 
   const onUnlink = async (linkId: string) => {
@@ -116,7 +133,9 @@ export function ProductAssetsTab({ productId, azCode }: { productId: string; azC
       qc.invalidateQueries({ queryKey: ["product-assets", productId] });
       setLightboxIdx(-1);
       toast.success("تم فك ربط الصورة");
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) {
+      toast.error(e.message);
+    }
   };
 
   const onReorder = async (next: GridItem[]) => {
@@ -138,7 +157,9 @@ export function ProductAssetsTab({ productId, azCode }: { productId: string; azC
       <div className="space-y-4">
         <Skeleton className="h-72 w-full" />
         <div className="grid grid-cols-4 gap-3">
-          {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="aspect-square" />)}
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} className="aspect-square" />
+          ))}
         </div>
       </div>
     );
@@ -168,7 +189,9 @@ export function ProductAssetsTab({ productId, azCode }: { productId: string; azC
               </div>
               <div className="p-3 text-right border-t bg-card">
                 <div className="text-sm font-semibold truncate">{main.asset.file_name}</div>
-                <div className="text-xs text-muted-foreground num" dir="ltr">{azCode}</div>
+                <div className="text-xs text-muted-foreground num" dir="ltr">
+                  {azCode}
+                </div>
               </div>
             </button>
           ) : (
@@ -181,7 +204,10 @@ export function ProductAssetsTab({ productId, azCode }: { productId: string; azC
 
         <Card
           onDrop={onDrop}
-          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragOver(true);
+          }}
           onDragLeave={() => setDragOver(false)}
           className={`p-6 surface-elevated border-2 border-dashed transition flex flex-col items-center justify-center text-center gap-3 ${dragOver ? "border-accent bg-accent/5" : "border-border"}`}
         >
@@ -193,14 +219,24 @@ export function ProductAssetsTab({ productId, azCode }: { productId: string; azC
             <div className="text-xs text-muted-foreground mt-1">أو اختر من الجهاز</div>
           </div>
           <input
-            ref={fileRef} type="file" multiple accept="image/*,application/pdf"
+            ref={fileRef}
+            type="file"
+            multiple
+            accept="image/*,application/pdf"
             className="hidden"
             onChange={(e) => upload(Array.from(e.target.files ?? []))}
           />
-          <Button onClick={() => fileRef.current?.click()} disabled={busy} variant="outline" size="sm">
+          <Button
+            onClick={() => fileRef.current?.click()}
+            disabled={busy}
+            variant="outline"
+            size="sm"
+          >
             {busy ? "جاري الرفع..." : "اختر ملفات"}
           </Button>
-          <div className="text-[10px] text-muted-foreground num" dir="ltr">{gridItems.length} ملف</div>
+          <div className="text-[10px] text-muted-foreground num" dir="ltr">
+            {gridItems.length} ملف
+          </div>
         </Card>
       </div>
 
@@ -208,7 +244,9 @@ export function ProductAssetsTab({ productId, azCode }: { productId: string; azC
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="font-bold">Gallery</h3>
-          <div className="text-xs text-muted-foreground num" dir="ltr">{gallery.length} items</div>
+          <div className="text-xs text-muted-foreground num" dir="ltr">
+            {gallery.length} items
+          </div>
         </div>
         {!gridItems.length ? (
           <Card className="p-10 surface-elevated border-0 text-center text-muted-foreground">

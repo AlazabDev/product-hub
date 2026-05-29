@@ -26,9 +26,11 @@ function ContentReviewPage() {
       const res = await Promise.all(
         TARGET_STATUSES.map(async (s) => {
           const { count } = await supabase
-            .from("products").select("id", { count: "exact", head: true }).eq("status", s as never);
+            .from("products")
+            .select("id", { count: "exact", head: true })
+            .eq("status", s as never);
           return [s, count ?? 0] as const;
-        })
+        }),
       );
       return Object.fromEntries(res) as Record<string, number>;
     },
@@ -70,7 +72,11 @@ function ContentReviewPage() {
           </p>
         </div>
         <Button onClick={() => scan.mutate()} disabled={scan.isPending} className="gap-2">
-          {scan.isPending ? <Loader2 className="size-4 animate-spin" /> : <ScanSearch className="size-4" />}
+          {scan.isPending ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <ScanSearch className="size-4" />
+          )}
           فحص شامل
         </Button>
       </div>
@@ -94,7 +100,9 @@ function ContentReviewPage() {
               className="flex items-center justify-between p-4 hover:bg-muted/30 transition"
             >
               <div className="min-w-0 flex-1">
-                <div className="num text-xs text-accent" dir="ltr">{p.az_code}</div>
+                <div className="num text-xs text-accent" dir="ltr">
+                  {p.az_code}
+                </div>
                 <div className="font-medium truncate">{p.name_ar}</div>
               </div>
               <div className="flex items-center gap-2">
@@ -114,8 +122,21 @@ function ContentReviewPage() {
   );
 }
 
-function StatCard({ label, value, tone }: { label: string; value: number; tone: "muted" | "warn" | "danger" }) {
-  const cls = tone === "danger" ? "text-destructive" : tone === "warn" ? "text-warning" : "text-muted-foreground";
+function StatCard({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone: "muted" | "warn" | "danger";
+}) {
+  const cls =
+    tone === "danger"
+      ? "text-destructive"
+      : tone === "warn"
+        ? "text-warning"
+        : "text-muted-foreground";
   return (
     <Card className="p-5 surface-elevated border-0">
       <div className="text-xs text-muted-foreground">{label}</div>
@@ -131,5 +152,9 @@ function StatusPill({ status }: { status: string }) {
     content_incomplete: { label: "محتوى ناقص", cls: "bg-destructive/15 text-destructive" },
   };
   const v = map[status] ?? { label: status, cls: "bg-secondary" };
-  return <Badge className={`${v.cls} border-0`} variant="secondary">{v.label}</Badge>;
+  return (
+    <Badge className={`${v.cls} border-0`} variant="secondary">
+      {v.label}
+    </Badge>
+  );
 }

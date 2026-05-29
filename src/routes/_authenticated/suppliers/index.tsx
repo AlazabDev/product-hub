@@ -134,9 +134,7 @@ function SuppliersList() {
                       >
                         {s.name_ar}
                       </Link>
-                      <div className="text-xs text-muted-foreground mt-0.5">
-                        {s.name_en}
-                      </div>
+                      <div className="text-xs text-muted-foreground mt-0.5">{s.name_en}</div>
                     </td>
                     <td className="p-3 text-xs num" dir="ltr">
                       {s.supplier_code || "—"}

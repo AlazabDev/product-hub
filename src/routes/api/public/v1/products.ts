@@ -8,9 +8,16 @@ export const Route = createFileRoute("/api/public/v1/products")({
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
       GET: async ({ request }) => {
         const started = Date.now();
-        const auth = await requireApiKey(request);
+        const auth = await requireApiKey(request, "/api/public/v1/products");
         if ("error" in auth) {
-          await logCall({ consumer: null, request, endpoint: "/api/public/v1/products", status: 401, startedAt: started, error: "auth" });
+          await logCall({
+            consumer: null,
+            request,
+            endpoint: "/api/public/v1/products",
+            status: 401,
+            startedAt: started,
+            error: "auth",
+          });
           return auth.error;
         }
         const url = new URL(request.url);
@@ -21,18 +28,37 @@ export const Route = createFileRoute("/api/public/v1/products")({
 
         let q = supabaseAdmin
           .from("products")
-          .select("id, az_code, egs_code, name_ar, name_en, short_description_ar, status, item_type, gpc_brick_title, tags, updated_at", { count: "exact" })
+          .select(
+            "id, az_code, egs_code, name_ar, name_en, short_description_ar, status, item_type, gpc_brick_title, tags, updated_at",
+            { count: "exact" },
+          )
           .order("updated_at", { ascending: false })
           .range(offset, offset + limit - 1);
         if (status) q = q.eq("status", status as "draft");
-        if (search) q = q.or(`name_ar.ilike.%${search}%,name_en.ilike.%${search}%,az_code.ilike.%${search}%,egs_code.ilike.%${search}%`);
+        if (search)
+          q = q.or(
+            `name_ar.ilike.%${search}%,name_en.ilike.%${search}%,az_code.ilike.%${search}%,egs_code.ilike.%${search}%`,
+          );
 
         const { data, error, count } = await q;
         if (error) {
-          await logCall({ consumer: auth.consumer, request, endpoint: "/api/public/v1/products", status: 500, startedAt: started, error: error.message });
+          await logCall({
+            consumer: auth.consumer,
+            request,
+            endpoint: "/api/public/v1/products",
+            status: 500,
+            startedAt: started,
+            error: error.message,
+          });
           return json({ error: error.message }, 500);
         }
-        await logCall({ consumer: auth.consumer, request, endpoint: "/api/public/v1/products", status: 200, startedAt: started });
+        await logCall({
+          consumer: auth.consumer,
+          request,
+          endpoint: "/api/public/v1/products",
+          status: 200,
+          startedAt: started,
+        });
         return json({ data, total: count, limit, offset });
       },
     },

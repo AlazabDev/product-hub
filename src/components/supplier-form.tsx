@@ -6,7 +6,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -63,7 +69,15 @@ export function SupplierForm({
         name_en: data.name_en,
         supplier_code: data.supplier_code,
         category: data.category,
-        tier: data.tier as "first_tier" | "second_tier" | "backup" | "local" | "imported" | "internal_workshop" | "factory" | "marketplace",
+        tier: data.tier as
+          | "first_tier"
+          | "second_tier"
+          | "backup"
+          | "local"
+          | "imported"
+          | "internal_workshop"
+          | "factory"
+          | "marketplace",
         contact_person: data.contact_person || null,
         email: data.email || null,
         phone: data.phone || null,
@@ -74,10 +88,7 @@ export function SupplierForm({
 
       if (initialData?.id) {
         // Update
-        const { error } = await supabase
-          .from("suppliers")
-          .update(payload)
-          .eq("id", initialData.id);
+        const { error } = await supabase.from("suppliers").update(payload).eq("id", initialData.id);
 
         if (error) throw error;
         toast.success("تم تحديث المورد بنجاح");
@@ -114,9 +125,7 @@ export function SupplierForm({
             {...register("name_ar")}
             disabled={loading}
           />
-          {errors.name_ar && (
-            <p className="text-xs text-destructive">{errors.name_ar.message}</p>
-          )}
+          {errors.name_ar && <p className="text-xs text-destructive">{errors.name_ar.message}</p>}
         </div>
 
         <div className="space-y-2">
@@ -128,9 +137,7 @@ export function SupplierForm({
             disabled={loading}
             dir="ltr"
           />
-          {errors.name_en && (
-            <p className="text-xs text-destructive">{errors.name_en.message}</p>
-          )}
+          {errors.name_en && <p className="text-xs text-destructive">{errors.name_en.message}</p>}
         </div>
       </div>
 
@@ -157,9 +164,7 @@ export function SupplierForm({
             {...register("category")}
             disabled={loading}
           />
-          {errors.category && (
-            <p className="text-xs text-destructive">{errors.category.message}</p>
-          )}
+          {errors.category && <p className="text-xs text-destructive">{errors.category.message}</p>}
         </div>
       </div>
 
@@ -180,9 +185,7 @@ export function SupplierForm({
             <SelectItem value="local">محلي</SelectItem>
           </SelectContent>
         </Select>
-        {errors.tier && (
-          <p className="text-xs text-destructive">{errors.tier.message}</p>
-        )}
+        {errors.tier && <p className="text-xs text-destructive">{errors.tier.message}</p>}
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
@@ -206,9 +209,7 @@ export function SupplierForm({
             disabled={loading}
             dir="ltr"
           />
-          {errors.email && (
-            <p className="text-xs text-destructive">{errors.email.message}</p>
-          )}
+          {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
         </div>
       </div>
 
@@ -247,12 +248,7 @@ export function SupplierForm({
       </div>
 
       <div className="flex gap-3 justify-end pt-4 border-t">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          disabled={loading}
-        >
+        <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
           إلغاء
         </Button>
         <Button type="submit" disabled={loading} className="gap-2">

@@ -33,35 +33,40 @@ async function callTranslationAI(
   const source = direction === "ar_to_en" ? "العربية" : "English";
   const target = direction === "ar_to_en" ? "English" : "العربية";
 
-  const payload = direction === "ar_to_en"
-    ? {
-        name_ar: product.name_ar,
-        short_description_ar: product.short_description_ar,
-        description_ar: product.description_ar,
-        marketing_content: product.marketing_content,
-        technical_content: product.technical_content,
-        warranty_info: product.warranty_info,
-      }
-    : {
-        name_en: product.name_en,
-        short_description_en: product.short_description_en,
-        description_en: product.description_en,
-      };
+  const payload =
+    direction === "ar_to_en"
+      ? {
+          name_ar: product.name_ar,
+          short_description_ar: product.short_description_ar,
+          description_ar: product.description_ar,
+          marketing_content: product.marketing_content,
+          technical_content: product.technical_content,
+          warranty_info: product.warranty_info,
+        }
+      : {
+          name_en: product.name_en,
+          short_description_en: product.short_description_en,
+          description_en: product.description_en,
+        };
 
-  const targetSchema = direction === "ar_to_en"
-    ? {
-        name_en: { type: "string" },
-        short_description_en: { type: "string" },
-        description_en: { type: "string" },
-        marketing_content: { type: "string", description: "ترجمة احترافية للمحتوى التسويقي إلى الإنجليزية" },
-        technical_content: { type: "string" },
-        warranty_info: { type: "string" },
-      }
-    : {
-        name_ar: { type: "string" },
-        short_description_ar: { type: "string" },
-        description_ar: { type: "string" },
-      };
+  const targetSchema =
+    direction === "ar_to_en"
+      ? {
+          name_en: { type: "string" },
+          short_description_en: { type: "string" },
+          description_en: { type: "string" },
+          marketing_content: {
+            type: "string",
+            description: "ترجمة احترافية للمحتوى التسويقي إلى الإنجليزية",
+          },
+          technical_content: { type: "string" },
+          warranty_info: { type: "string" },
+        }
+      : {
+          name_ar: { type: "string" },
+          short_description_ar: { type: "string" },
+          description_ar: { type: "string" },
+        };
 
   const systemPrompt = `أنت مترجم متخصص في كتالوجات منتجات صناعية لشركة العزب. ترجم من ${source} إلى ${target} بأسلوب احترافي تجاري. حافظ على المصطلحات الفنية وأسماء العلامات التجارية والوحدات وأرقام الموديل كما هي. لا تخترع معلومات. اترك الحقل فارغاً إذا كان المصدر فارغاً.`;
 
@@ -74,14 +79,16 @@ async function callTranslationAI(
         { role: "system", content: systemPrompt },
         { role: "user", content: `ترجم الحقول التالية:\n${JSON.stringify(payload, null, 2)}` },
       ],
-      tools: [{
-        type: "function",
-        function: {
-          name: "submit_translation",
-          description: "تقديم ترجمة الحقول",
-          parameters: { type: "object", properties: targetSchema, additionalProperties: false },
+      tools: [
+        {
+          type: "function",
+          function: {
+            name: "submit_translation",
+            description: "تقديم ترجمة الحقول",
+            parameters: { type: "object", properties: targetSchema, additionalProperties: false },
+          },
         },
-      }],
+      ],
       tool_choice: { type: "function", function: { name: "submit_translation" } },
     }),
   });
@@ -90,7 +97,11 @@ async function callTranslationAI(
   const data = await res.json();
   const args = data.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
   if (!args) return {};
-  try { return JSON.parse(args) as Translations; } catch { return {}; }
+  try {
+    return JSON.parse(args) as Translations;
+  } catch {
+    return {};
+  }
 }
 
 export const translateProduct = createServerFn({ method: "POST" })
@@ -99,10 +110,16 @@ export const translateProduct = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase } = context;
     const { data: product, error } = await supabase
-      .from("products").select("*").eq("id", data.productId).single();
+      .from("products")
+      .select("*")
+      .eq("id", data.productId)
+      .single();
     if (error || !product) throw new Error("البند غير موجود");
 
-    const translations = await callTranslationAI(product as Record<string, unknown>, data.direction);
+    const translations = await callTranslationAI(
+      product as Record<string, unknown>,
+      data.direction,
+    );
 
     // Filter to requested fields if any
     let toApply: Translations = translations;
@@ -129,17 +146,25 @@ export const applyTranslations = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const updates: Record<string, string> = {};
     const allowed = [
-      "name_ar", "name_en",
-      "short_description_ar", "short_description_en",
-      "description_ar", "description_en",
-      "marketing_content", "technical_content", "warranty_info",
+      "name_ar",
+      "name_en",
+      "short_description_ar",
+      "short_description_en",
+      "description_ar",
+      "description_en",
+      "marketing_content",
+      "technical_content",
+      "warranty_info",
     ];
     for (const [k, v] of Object.entries(data.translations)) {
       if (allowed.includes(k) && typeof v === "string" && v.trim() !== "") updates[k] = v;
     }
     if (Object.keys(updates).length === 0) return { applied: 0 };
 
-    const { error } = await supabase.from("products").update(updates as never).eq("id", data.productId);
+    const { error } = await supabase
+      .from("products")
+      .update(updates as never)
+      .eq("id", data.productId);
     if (error) throw new Error(error.message);
 
     await supabase.from("audit_logs").insert({

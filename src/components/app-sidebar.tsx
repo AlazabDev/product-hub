@@ -26,10 +26,17 @@ import {
   Wrench,
 } from "lucide-react";
 
-
 import {
-  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
-  SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter,
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarHeader,
+  SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { supabase } from "@/integrations/supabase/client";
@@ -82,7 +89,6 @@ const sections = [
       { title: "مراجعة المحتوى AI", to: "/content-review", icon: Sparkles, phase: 5 },
       { title: "مساعد AI", to: "/ai-review", icon: Sparkles, phase: 1 },
       { title: "الموافقات", to: "/approvals", icon: CheckCircle2, phase: 6 },
-
     ],
   },
   {
@@ -110,11 +116,15 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" side="right">
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center gap-3 p-2">
-          <div className="size-9 shrink-0 rounded-md bg-accent text-accent-foreground grid place-items-center font-bold">AZ</div>
+          <div className="size-9 shrink-0 rounded-md bg-accent text-accent-foreground grid place-items-center font-bold">
+            AZ
+          </div>
           {!collapsed && (
             <div className="min-w-0">
               <div className="font-bold text-sidebar-foreground truncate">Alazab PAOP</div>
-              <div className="text-[10px] text-sidebar-foreground/60 truncate">Product Asset Operations</div>
+              <div className="text-[10px] text-sidebar-foreground/60 truncate">
+                Product Asset Operations
+              </div>
             </div>
           )}
         </div>
@@ -138,7 +148,9 @@ export function AppSidebar() {
                             <>
                               <span className="flex-1 truncate">{item.title}</span>
                               {!built && (
-                                <span className="text-[9px] num bg-sidebar-accent text-sidebar-foreground/70 rounded px-1.5 py-0.5">P{item.phase}</span>
+                                <span className="text-[9px] num bg-sidebar-accent text-sidebar-foreground/70 rounded px-1.5 py-0.5">
+                                  P{item.phase}
+                                </span>
                               )}
                             </>
                           )}
@@ -157,7 +169,10 @@ export function AppSidebar() {
         <div className="p-2 space-y-2">
           {!collapsed && role && (
             <div className="text-[10px] text-sidebar-foreground/60 px-2">
-              الدور: <span className="text-accent font-semibold">{role === "admin" ? "مدير" : role === "editor" ? "محرر" : "مشاهد"}</span>
+              الدور:{" "}
+              <span className="text-accent font-semibold">
+                {role === "admin" ? "مدير" : role === "editor" ? "محرر" : "مشاهد"}
+              </span>
             </div>
           )}
           <SidebarMenuButton onClick={signOut} tooltip="تسجيل خروج">

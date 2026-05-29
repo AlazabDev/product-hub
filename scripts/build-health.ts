@@ -25,7 +25,11 @@ type Issue = {
 const ROOT = resolve(import.meta.dir, "..");
 const OUT = resolve(ROOT, "src/data/build-health.json");
 
-function suggest(code: string, message: string, file: string): { category: string; suggestion: string } {
+function suggest(
+  code: string,
+  message: string,
+  file: string,
+): { category: string; suggestion: string } {
   const m = message;
 
   if (code === "TS2307") {

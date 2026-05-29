@@ -15,7 +15,11 @@ export type LightboxItem = {
 };
 
 export function AssetLightbox({
-  items, index, onClose, onSetMain, onUnlink,
+  items,
+  index,
+  onClose,
+  onSetMain,
+  onUnlink,
 }: {
   items: LightboxItem[];
   index: number;
@@ -37,7 +41,11 @@ export function AssetLightbox({
       open={open}
       close={onClose}
       index={index < 0 ? 0 : index}
-      slides={items.map((i) => ({ src: i.src, alt: i.alt, download: { url: i.src, filename: i.alt } }))}
+      slides={items.map((i) => ({
+        src: i.src,
+        alt: i.alt,
+        download: { url: i.src, filename: i.alt },
+      }))}
       plugins={[Zoom, Download, Counter]}
       zoom={{ maxZoomPixelRatio: 4, scrollToZoom: true }}
       counter={{ container: { style: { top: 0, bottom: "unset" } } }}
@@ -60,7 +68,9 @@ export function AssetLightbox({
             disabled={!current || current.isMain}
             onClick={() => current && onSetMain(current.linkId)}
           >
-            <Star className={`size-5 ${current?.isMain ? "fill-yellow-400 text-yellow-400" : ""}`} />
+            <Star
+              className={`size-5 ${current?.isMain ? "fill-yellow-400 text-yellow-400" : ""}`}
+            />
           </button>,
           <button
             key="unlink"

@@ -96,9 +96,7 @@ export const Route = createFileRoute("/_authenticated/integrations")({
 });
 
 function IntegrationsPage() {
-  const [selectedIntegration, setSelectedIntegration] = useState<string | null>(
-    null
-  );
+  const [selectedIntegration, setSelectedIntegration] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const qc = useQueryClient();
 
@@ -116,12 +114,9 @@ function IntegrationsPage() {
 
   const syncMutation = useMutation({
     mutationFn: async (integrationId: string) => {
-      const { data, error } = await supabase.functions.invoke(
-        "sync-integration",
-        {
-          body: { integrationId },
-        }
-      );
+      const { data, error } = await supabase.functions.invoke("sync-integration", {
+        body: { integrationId },
+      });
       if (error) throw error;
       return data;
     },
@@ -136,10 +131,7 @@ function IntegrationsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (configId: string) => {
-      const { error } = await supabase
-        .from("integration_configs")
-        .delete()
-        .eq("id", configId);
+      const { error } = await supabase.from("integration_configs").delete().eq("id", configId);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -173,9 +165,7 @@ function IntegrationsPage() {
           <SheetContent side="right" className="w-full sm:w-[540px]">
             <SheetHeader>
               <SheetTitle>إضافة تكامل جديد</SheetTitle>
-              <SheetDescription>
-                اختر النظام الذي تريد توصيله مع AzProud
-              </SheetDescription>
+              <SheetDescription>اختر النظام الذي تريد توصيله مع AzProud</SheetDescription>
             </SheetHeader>
             <IntegrationSetupForm
               onSuccess={() => {
@@ -203,15 +193,10 @@ function IntegrationsPage() {
                   <div className="text-3xl">{integration.icon}</div>
                   <div>
                     <h3 className="font-bold text-lg">{integration.name}</h3>
-                    <p className="text-xs text-muted-foreground">
-                      {integration.description}
-                    </p>
+                    <p className="text-xs text-muted-foreground">{integration.description}</p>
                   </div>
                 </div>
-                <Badge
-                  className={`${integration.color} border-0`}
-                  variant="secondary"
-                >
+                <Badge className={`${integration.color} border-0`} variant="secondary">
                   {integration.status === "ready"
                     ? "جاهز"
                     : integration.status === "active"
@@ -270,14 +255,9 @@ function IntegrationsPage() {
                   <DialogContent dir="rtl">
                     <DialogHeader>
                       <DialogTitle>{integration.name}</DialogTitle>
-                      <DialogDescription>
-                        إعدادات التكامل والتكوين
-                      </DialogDescription>
+                      <DialogDescription>إعدادات التكامل والتكوين</DialogDescription>
                     </DialogHeader>
-                    <IntegrationDetails
-                      integration={integration}
-                      config={config}
-                    />
+                    <IntegrationDetails integration={integration} config={config} />
                   </DialogContent>
                 </Dialog>
                 {isConnected && (
@@ -317,9 +297,7 @@ function IntegrationsPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   {config.status === "active" && (
-                    <Badge className="bg-green-500/20 text-green-700 border-0">
-                      نشط
-                    </Badge>
+                    <Badge className="bg-green-500/20 text-green-700 border-0">نشط</Badge>
                   )}
                   <Button
                     variant="ghost"
@@ -358,11 +336,7 @@ function IntegrationsPage() {
   );
 }
 
-function IntegrationSetupForm({
-  onSuccess,
-}: {
-  onSuccess: () => void;
-}) {
+function IntegrationSetupForm({ onSuccess }: { onSuccess: () => void }) {
   const [type, setType] = useState("daftra");
   const [apiKey, setApiKey] = useState("");
   const [apiSecret, setApiSecret] = useState("");
@@ -432,11 +406,7 @@ function IntegrationSetupForm({
         />
       </div>
 
-      <Button
-        onClick={handleSubmit}
-        disabled={!apiKey || isLoading}
-        className="w-full"
-      >
+      <Button onClick={handleSubmit} disabled={!apiKey || isLoading} className="w-full">
         {isLoading ? "جاري الحفظ..." : "إضافة التكامل"}
       </Button>
     </div>

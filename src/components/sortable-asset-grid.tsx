@@ -1,4 +1,11 @@
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
 import { SortableContext, arrayMove, rectSortingStrategy, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Card } from "@/components/ui/card";
@@ -16,7 +23,9 @@ export type GridItem = {
 };
 
 export function SortableAssetGrid({
-  items, onReorder, onOpen,
+  items,
+  onReorder,
+  onOpen,
 }: {
   items: GridItem[];
   onReorder: (newOrder: GridItem[]) => void;
@@ -47,7 +56,9 @@ export function SortableAssetGrid({
 }
 
 function SortableTile({ item, onOpen }: { item: GridItem; onOpen: () => void }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.linkId });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: item.linkId,
+  });
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -56,16 +67,27 @@ function SortableTile({ item, onOpen }: { item: GridItem; onOpen: () => void }) 
   const isImg = item.fileType?.startsWith("image/");
 
   return (
-    <Card ref={setNodeRef} style={style} className="surface-elevated border-0 overflow-hidden group relative">
+    <Card
+      ref={setNodeRef}
+      style={style}
+      className="surface-elevated border-0 overflow-hidden group relative"
+    >
       <button
         type="button"
         onClick={onOpen}
         className="block aspect-square w-full bg-muted relative cursor-zoom-in"
       >
         {isImg ? (
-          <img src={item.url} alt={item.fileName} loading="lazy" className="size-full object-cover" />
+          <img
+            src={item.url}
+            alt={item.fileName}
+            loading="lazy"
+            className="size-full object-cover"
+          />
         ) : (
-          <div className="size-full grid place-items-center text-xs text-muted-foreground p-3 text-center">{item.fileName}</div>
+          <div className="size-full grid place-items-center text-xs text-muted-foreground p-3 text-center">
+            {item.fileName}
+          </div>
         )}
         {item.isMain && (
           <Badge className="absolute top-2 right-2 bg-accent text-accent-foreground gap-1 shadow-md">
@@ -84,10 +106,16 @@ function SortableTile({ item, onOpen }: { item: GridItem; onOpen: () => void }) 
         </button>
       </button>
       <div className="p-2 space-y-1">
-        <div className="text-[11px] truncate font-medium" title={item.fileName}>{item.fileName}</div>
+        <div className="text-[11px] truncate font-medium" title={item.fileName}>
+          {item.fileName}
+        </div>
         <div className="flex items-center justify-between gap-1 text-[10px] text-muted-foreground">
-          <span className="px-1.5 py-0.5 rounded bg-secondary capitalize">{item.role.replace("_", " ")}</span>
-          <span className="num" dir="ltr">{new Date(item.uploadedAt).toLocaleDateString("en-GB")}</span>
+          <span className="px-1.5 py-0.5 rounded bg-secondary capitalize">
+            {item.role.replace("_", " ")}
+          </span>
+          <span className="num" dir="ltr">
+            {new Date(item.uploadedAt).toLocaleDateString("en-GB")}
+          </span>
         </div>
       </div>
     </Card>

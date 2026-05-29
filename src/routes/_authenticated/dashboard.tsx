@@ -3,13 +3,36 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import {
-  Package, CheckCircle2, Clock, AlertTriangle, Image, DollarSign,
-  Truck, Network, Copy, ArrowLeft, History, TrendingUp, Plus, Zap,
+  Package,
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  Image,
+  DollarSign,
+  Truck,
+  Network,
+  Copy,
+  ArrowLeft,
+  History,
+  TrendingUp,
+  Plus,
+  Zap,
 } from "lucide-react";
 import { KPICard } from "@/components/dashboard/kpi-card";
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, BarChart, Bar, Legend,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  Legend,
 } from "recharts";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -18,17 +41,27 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 async function fetchStats() {
-  const [products, approved, draft, needsReview, assets, suppliers, prices, integrations, dups] = await Promise.all([
-    supabase.from("products").select("*", { count: "exact", head: true }),
-    supabase.from("products").select("*", { count: "exact", head: true }).eq("status", "approved"),
-    supabase.from("products").select("*", { count: "exact", head: true }).eq("status", "draft"),
-    supabase.from("products").select("*", { count: "exact", head: true }).eq("status", "needs_review"),
-    supabase.from("assets").select("*", { count: "exact", head: true }),
-    supabase.from("suppliers").select("*", { count: "exact", head: true }),
-    supabase.from("prices").select("*", { count: "exact", head: true }),
-    supabase.from("api_integrations").select("*", { count: "exact", head: true }),
-    supabase.from("duplicate_groups").select("*", { count: "exact", head: true }).eq("status", "open"),
-  ]);
+  const [products, approved, draft, needsReview, assets, suppliers, prices, integrations, dups] =
+    await Promise.all([
+      supabase.from("products").select("*", { count: "exact", head: true }),
+      supabase
+        .from("products")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "approved"),
+      supabase.from("products").select("*", { count: "exact", head: true }).eq("status", "draft"),
+      supabase
+        .from("products")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "needs_review"),
+      supabase.from("assets").select("*", { count: "exact", head: true }),
+      supabase.from("suppliers").select("*", { count: "exact", head: true }),
+      supabase.from("prices").select("*", { count: "exact", head: true }),
+      supabase.from("api_integrations").select("*", { count: "exact", head: true }),
+      supabase
+        .from("duplicate_groups")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "open"),
+    ]);
   return {
     products: products.count ?? 0,
     approved: approved.count ?? 0,
@@ -58,7 +91,9 @@ async function fetchTypeBreakdown() {
     const k = r.gpc_family || "غير مصنف";
     counts[k] = (counts[k] ?? 0) + 1;
   });
-  return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  return Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8);
 }
 
 async function fetchStatusDistribution() {
@@ -72,14 +107,19 @@ async function fetchStatusDistribution() {
 }
 
 async function fetchMonthlyActivity() {
-  const { data } = await supabase.from("products").select("created_at").order("created_at", { ascending: true });
+  const { data } = await supabase
+    .from("products")
+    .select("created_at")
+    .order("created_at", { ascending: true });
   const months: Record<string, number> = {};
   (data ?? []).forEach((r: any) => {
     const date = new Date(r.created_at);
     const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
     months[key] = (months[key] ?? 0) + 1;
   });
-  return Object.entries(months).slice(-12).map(([month, count]) => ({ month, count }));
+  return Object.entries(months)
+    .slice(-12)
+    .map(([month, count]) => ({ month, count }));
 }
 
 async function fetchRecentAuditLogs() {
@@ -96,9 +136,18 @@ function Dashboard() {
   const { data: stats } = useQuery({ queryKey: ["stats"], queryFn: fetchStats });
   const { data: recent } = useQuery({ queryKey: ["recent"], queryFn: fetchRecent });
   const { data: families } = useQuery({ queryKey: ["families"], queryFn: fetchTypeBreakdown });
-  const { data: statusDist } = useQuery({ queryKey: ["status-dist"], queryFn: fetchStatusDistribution });
-  const { data: monthlyActivity } = useQuery({ queryKey: ["monthly-activity"], queryFn: fetchMonthlyActivity });
-  const { data: auditLogs } = useQuery({ queryKey: ["recent-audit"], queryFn: fetchRecentAuditLogs });
+  const { data: statusDist } = useQuery({
+    queryKey: ["status-dist"],
+    queryFn: fetchStatusDistribution,
+  });
+  const { data: monthlyActivity } = useQuery({
+    queryKey: ["monthly-activity"],
+    queryFn: fetchMonthlyActivity,
+  });
+  const { data: auditLogs } = useQuery({
+    queryKey: ["recent-audit"],
+    queryFn: fetchRecentAuditLogs,
+  });
 
   const statusColors: Record<string, string> = {
     approved: "#10b981",
@@ -128,9 +177,14 @@ function Dashboard() {
       <div className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold">لوحة التحكم</h1>
-          <p className="text-sm text-muted-foreground mt-1">نظرة شاملة على حالة المنصة والبيانات المعتمدة</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            نظرة شاملة على حالة المنصة والبيانات المعتمدة
+          </p>
         </div>
-        <Link to="/products" className="text-sm text-accent font-semibold flex items-center gap-1 hover:underline">
+        <Link
+          to="/products"
+          className="text-sm text-accent font-semibold flex items-center gap-1 hover:underline"
+        >
           استعراض كل البنود <ArrowLeft className="size-4 rotate-180" />
         </Link>
       </div>
@@ -239,7 +293,9 @@ function Dashboard() {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">البنود المعتمدة</span>
-              <span className="num font-medium">{stats?.approved}/{stats?.products}</span>
+              <span className="num font-medium">
+                {stats?.approved}/{stats?.products}
+              </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">انتظار المراجعة</span>
@@ -265,18 +321,29 @@ function Dashboard() {
               <AreaChart data={monthlyActivity ?? []}>
                 <defs>
                   <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#c9a227" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#c9a227" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#c9a227" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#c9a227" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
                 <XAxis dataKey="month" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: "#fff", border: "1px solid #e5e5e5", borderRadius: "8px" }}
+                  contentStyle={{
+                    backgroundColor: "#fff",
+                    border: "1px solid #e5e5e5",
+                    borderRadius: "8px",
+                  }}
                   labelStyle={{ fontWeight: "bold" }}
                 />
-                <Area type="monotone" dataKey="count" stroke="#c9a227" fillOpacity={1} fill="url(#colorCount)" name="عدد البنود" />
+                <Area
+                  type="monotone"
+                  dataKey="count"
+                  stroke="#c9a227"
+                  fillOpacity={1}
+                  fill="url(#colorCount)"
+                  name="عدد البنود"
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -304,7 +371,11 @@ function Dashboard() {
                 </Pie>
                 <Tooltip
                   formatter={(value: number, name: string) => [value, statusLabels[name] || name]}
-                  contentStyle={{ backgroundColor: "#fff", border: "1px solid #e5e5e5", borderRadius: "8px" }}
+                  contentStyle={{
+                    backgroundColor: "#fff",
+                    border: "1px solid #e5e5e5",
+                    borderRadius: "8px",
+                  }}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -312,7 +383,10 @@ function Dashboard() {
           <div className="flex flex-wrap gap-2 justify-center mt-2">
             {(statusDist ?? []).map((s: any) => (
               <div key={s.name} className="flex items-center gap-1 text-xs">
-                <div className="size-2 rounded-full" style={{ backgroundColor: statusColors[s.name] || "#6b7280" }} />
+                <div
+                  className="size-2 rounded-full"
+                  style={{ backgroundColor: statusColors[s.name] || "#6b7280" }}
+                />
                 <span>{statusLabels[s.name] || s.name}</span>
               </div>
             ))}
@@ -324,7 +398,9 @@ function Dashboard() {
         <Card className="lg:col-span-2 p-5 surface-elevated border-0">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold">آخر البنود المضافة</h3>
-            <Link to="/products" className="text-xs text-accent hover:underline">عرض الكل</Link>
+            <Link to="/products" className="text-xs text-accent hover:underline">
+              عرض الكل
+            </Link>
           </div>
           <div className="divide-y">
             {(recent ?? []).map((p: any) => (
@@ -336,7 +412,9 @@ function Dashboard() {
               >
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-medium truncate">{p.name_ar}</div>
-                  <div className="text-[11px] text-muted-foreground num mt-0.5" dir="ltr">{p.az_code}</div>
+                  <div className="text-[11px] text-muted-foreground num mt-0.5" dir="ltr">
+                    {p.az_code}
+                  </div>
                 </div>
                 <StatusBadge status={p.status} />
               </Link>
@@ -354,7 +432,9 @@ function Dashboard() {
                 <div key={name as string}>
                   <div className="flex justify-between text-xs mb-1">
                     <span className="truncate">{name}</span>
-                    <span className="num text-muted-foreground">{(count as number).toLocaleString("en-US")}</span>
+                    <span className="num text-muted-foreground">
+                      {(count as number).toLocaleString("en-US")}
+                    </span>
                   </div>
                   <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
                     <div className="h-full bg-accent" style={{ width: `${pct}%` }} />
@@ -372,8 +452,9 @@ function Dashboard() {
           <h3 className="font-bold">حوكمة البيانات</h3>
         </div>
         <p className="text-sm text-muted-foreground">
-          النظام يلتزم بسياسات صارمة: لا حذف نهائي، كل ت��ديل مسجل في audit_logs، التصدير محصور بالبنود
-          المعتمدة، تعديل الاسعار يحفظ التاريخ تلقائيا، ولا يتم اعتماد بند بدون البيانات الاساسية الكاملة.
+          النظام يلتزم بسياسات صارمة: لا حذف نهائي، كل ت��ديل مسجل في audit_logs، التصدير محصور
+          بالبنود المعتمدة، تعديل الاسعار يحفظ التاريخ تلقائيا، ولا يتم اعتماد بند بدون البيانات
+          الاساسية الكاملة.
         </p>
       </Card>
 
@@ -384,7 +465,9 @@ function Dashboard() {
             <History className="size-4" />
             اخر سجلات التدقيق
           </h3>
-          <Link to="/audit-logs" className="text-xs text-accent hover:underline">عرض الكل</Link>
+          <Link to="/audit-logs" className="text-xs text-accent hover:underline">
+            عرض الكل
+          </Link>
         </div>
         <div className="divide-y">
           {(auditLogs ?? []).map((log: any) => (
@@ -401,7 +484,9 @@ function Dashboard() {
             </div>
           ))}
           {(!auditLogs || auditLogs.length === 0) && (
-            <div className="py-4 text-center text-muted-foreground text-sm">لا توجد سجلات حديثة</div>
+            <div className="py-4 text-center text-muted-foreground text-sm">
+              لا توجد سجلات حديثة
+            </div>
           )}
         </div>
       </Card>

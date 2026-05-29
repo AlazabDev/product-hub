@@ -11,10 +11,14 @@ import { translateProduct, applyTranslations } from "@/lib/translation.functions
 import { toast } from "sonner";
 
 const LABELS: Record<string, string> = {
-  name_ar: "الاسم (عربي)", name_en: "Name (EN)",
-  short_description_ar: "وصف مختصر (عربي)", short_description_en: "Short description (EN)",
-  description_ar: "الوصف (عربي)", description_en: "Description (EN)",
-  marketing_content: "المحتوى التسويقي", technical_content: "المحتوى الفني",
+  name_ar: "الاسم (عربي)",
+  name_en: "Name (EN)",
+  short_description_ar: "وصف مختصر (عربي)",
+  short_description_en: "Short description (EN)",
+  description_ar: "الوصف (عربي)",
+  description_en: "Description (EN)",
+  marketing_content: "المحتوى التسويقي",
+  technical_content: "المحتوى الفني",
   warranty_info: "معلومات الضمان",
 };
 
@@ -27,7 +31,11 @@ export function ProductTranslationTab({ productId }: { productId: string }) {
   const { data: product } = useQuery({
     queryKey: ["product", productId, "translation"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("products").select("*").eq("id", productId).single();
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("id", productId)
+        .single();
       if (error) throw error;
       return data;
     },
@@ -55,7 +63,8 @@ export function ProductTranslationTab({ productId }: { productId: string }) {
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ["product", productId] });
       toast.success(`تم تطبيق ${res.applied} حقل`);
-      setDrafts({}); setSelected(new Set());
+      setDrafts({});
+      setSelected(new Set());
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -72,26 +81,45 @@ export function ProductTranslationTab({ productId }: { productId: string }) {
           </div>
           <div className="flex items-center gap-2">
             <Button
-              size="sm" variant={direction === "ar_to_en" ? "default" : "outline"}
+              size="sm"
+              variant={direction === "ar_to_en" ? "default" : "outline"}
               onClick={() => setDirection("ar_to_en")}
-            >عربي ← English</Button>
+            >
+              عربي ← English
+            </Button>
             <ArrowLeftRight className="size-3.5 text-muted-foreground" />
             <Button
-              size="sm" variant={direction === "en_to_ar" ? "default" : "outline"}
+              size="sm"
+              variant={direction === "en_to_ar" ? "default" : "outline"}
               onClick={() => setDirection("en_to_ar")}
-            >English ← عربي</Button>
+            >
+              English ← عربي
+            </Button>
           </div>
         </div>
         <p className="text-xs text-muted-foreground mt-2">
           استخدام Lovable AI (Gemini) لاقتراح ترجمة احترافية. راجع وعدّل قبل التطبيق.
         </p>
         <div className="mt-4 flex gap-2 flex-wrap">
-          <Button onClick={() => translate.mutate()} disabled={translate.isPending} className="gap-1.5">
-            {translate.isPending ? <Loader2 className="size-4 animate-spin" /> : <Languages className="size-4" />}
+          <Button
+            onClick={() => translate.mutate()}
+            disabled={translate.isPending}
+            className="gap-1.5"
+          >
+            {translate.isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Languages className="size-4" />
+            )}
             اقتراح ترجمة
           </Button>
           {Object.keys(drafts).length > 0 && (
-            <Button onClick={() => apply.mutate()} disabled={apply.isPending || selected.size === 0} variant="default" className="gap-1.5">
+            <Button
+              onClick={() => apply.mutate()}
+              disabled={apply.isPending || selected.size === 0}
+              variant="default"
+              className="gap-1.5"
+            >
               <Check className="size-4" /> تطبيق ({selected.size})
             </Button>
           )}
@@ -115,13 +143,18 @@ export function ProductTranslationTab({ productId }: { productId: string }) {
                       checked={selected.has(field)}
                       onCheckedChange={(c) => {
                         const n = new Set(selected);
-                        if (c) n.add(field); else n.delete(field);
+                        if (c) n.add(field);
+                        else n.delete(field);
                         setSelected(n);
                       }}
                     />
                     <span className="text-sm font-semibold">{LABELS[field] ?? field}</span>
                   </div>
-                  {original && <span className="text-[10px] bg-warning/15 text-warning rounded px-1.5 py-0.5">سيستبدل القيمة الحالية</span>}
+                  {original && (
+                    <span className="text-[10px] bg-warning/15 text-warning rounded px-1.5 py-0.5">
+                      سيستبدل القيمة الحالية
+                    </span>
+                  )}
                 </div>
                 {original && (
                   <div className="text-xs text-muted-foreground bg-muted/40 rounded p-2 max-h-20 overflow-auto">

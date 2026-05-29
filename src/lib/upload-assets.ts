@@ -1,9 +1,18 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export type AssetRole =
-  | "main_image" | "gallery" | "before" | "after" | "technical_drawing"
-  | "supplier_image" | "site_photo" | "invoice_attachment" | "warranty_document"
-  | "datasheet" | "model_3d" | "cad_file";
+  | "main_image"
+  | "gallery"
+  | "before"
+  | "after"
+  | "technical_drawing"
+  | "supplier_image"
+  | "site_photo"
+  | "invoice_attachment"
+  | "warranty_document"
+  | "datasheet"
+  | "model_3d"
+  | "cad_file";
 
 const BUCKET = "product-assets";
 
@@ -24,7 +33,9 @@ export async function uploadAndLinkAsset(opts: {
   const safeName = sanitize(file.name);
   const path = `${azCode}/${ts}_${sortOrder}_${safeName}`;
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const { error: upErr } = await supabase.storage
     .from(BUCKET)
@@ -67,7 +78,10 @@ export async function deleteAssetLink(linkId: string) {
 }
 
 export async function setAssetRole(linkId: string, role: AssetRole) {
-  const { error } = await supabase.from("product_assets").update({ asset_role: role }).eq("id", linkId);
+  const { error } = await supabase
+    .from("product_assets")
+    .update({ asset_role: role })
+    .eq("id", linkId);
   if (error) throw error;
 }
 
@@ -82,7 +96,10 @@ export async function promoteToMain(productId: string, linkId: string) {
   if (current && current.id !== linkId) {
     await supabase.from("product_assets").update({ asset_role: "gallery" }).eq("id", current.id);
   }
-  const { error } = await supabase.from("product_assets").update({ asset_role: "main_image" }).eq("id", linkId);
+  const { error } = await supabase
+    .from("product_assets")
+    .update({ asset_role: "main_image" })
+    .eq("id", linkId);
   if (error) throw error;
 }
 
@@ -90,8 +107,8 @@ export async function promoteToMain(productId: string, linkId: string) {
 export async function reorderAssets(linkIds: string[]) {
   await Promise.all(
     linkIds.map((id, idx) =>
-      supabase.from("product_assets").update({ sort_order: idx }).eq("id", id)
-    )
+      supabase.from("product_assets").update({ sort_order: idx }).eq("id", id),
+    ),
   );
 }
 

@@ -5,7 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Search, Plus, Clock, AlertCircle, CheckCircle2 } from "lucide-react";
 import {
@@ -47,7 +53,9 @@ function RequestsPage() {
     queryFn: async () => {
       let query = supabase
         .from("product_requests")
-        .select("id, title, status, priority, request_type, created_at, quantity", { count: "exact" })
+        .select("id, title, status, priority, request_type, created_at, quantity", {
+          count: "exact",
+        })
         .order("created_at", { ascending: false })
         .range(page * PAGE, page * PAGE + PAGE - 1);
 
@@ -223,10 +231,10 @@ function RequestsPage() {
                     {req.request_type === "new_product"
                       ? "منتج جديد"
                       : req.request_type === "new_service"
-                      ? "خدمة جديدة"
-                      : req.request_type === "bulk_order"
-                      ? "طلب كمي"
-                      : "طلب خاص"}
+                        ? "خدمة جديدة"
+                        : req.request_type === "bulk_order"
+                          ? "طلب كمي"
+                          : "طلب خاص"}
                   </td>
                   <td className="p-3">
                     <Badge className={`text-[10px] ${priorityColors[req.priority] || ""}`}>
@@ -235,7 +243,9 @@ function RequestsPage() {
                   </td>
                   <td className="p-3">
                     {statusMap[req.status] ? (
-                      <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] ${statusMap[req.status].tone}`}>
+                      <div
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] ${statusMap[req.status].tone}`}
+                      >
                         {(() => {
                           const IconComponent = statusMap[req.status].icon;
                           return <IconComponent className="size-3" />;

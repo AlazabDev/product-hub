@@ -9,8 +9,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Settings, Users, Key, Shield, Plus, Trash2, Copy, RefreshCw } from "lucide-react";
 
@@ -170,11 +182,15 @@ function SettingsPage() {
             <div className="space-y-4">
               <div>
                 <Label className="text-muted-foreground text-xs">البريد الالكتروني</Label>
-                <div className="mt-1 text-sm num" dir="ltr">{user?.email}</div>
+                <div className="mt-1 text-sm num" dir="ltr">
+                  {user?.email}
+                </div>
               </div>
               <div>
                 <Label className="text-muted-foreground text-xs">معرف المستخدم</Label>
-                <div className="mt-1 text-xs num text-muted-foreground" dir="ltr">{user?.id}</div>
+                <div className="mt-1 text-xs num text-muted-foreground" dir="ltr">
+                  {user?.id}
+                </div>
               </div>
               <div>
                 <Label className="text-muted-foreground text-xs">الدور</Label>
@@ -195,7 +211,7 @@ function SettingsPage() {
                 <Users className="size-5" />
                 ادارة المستخدمين
               </h3>
-              
+
               {loadingRoles && (
                 <div className="text-center text-muted-foreground py-8">جاري التحميل...</div>
               )}
@@ -210,16 +226,23 @@ function SettingsPage() {
                 {userRoles?.map((ur) => (
                   <div key={ur.id} className="py-3 flex items-center justify-between">
                     <div>
-                      <div className="text-sm num" dir="ltr">{ur.user_id.slice(0, 12)}...</div>
+                      <div className="text-sm num" dir="ltr">
+                        {ur.user_id.slice(0, 12)}...
+                      </div>
                       <div className="text-xs text-muted-foreground mt-0.5">
                         {new Date(ur.created_at).toLocaleDateString("ar")}
                       </div>
                     </div>
-                    <Badge variant="outline" className={
-                      ur.role === "admin" ? "bg-destructive/15 text-destructive" :
-                      ur.role === "editor" ? "bg-accent/15 text-accent" :
-                      "bg-muted text-muted-foreground"
-                    }>
+                    <Badge
+                      variant="outline"
+                      className={
+                        ur.role === "admin"
+                          ? "bg-destructive/15 text-destructive"
+                          : ur.role === "editor"
+                            ? "bg-accent/15 text-accent"
+                            : "bg-muted text-muted-foreground"
+                      }
+                    >
                       {roleLabels[ur.role]}
                     </Badge>
                   </div>
@@ -265,7 +288,14 @@ function SettingsPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{api.name}</span>
-                        <Badge variant="outline" className={api.is_active ? "bg-success/15 text-success" : "bg-muted text-muted-foreground"}>
+                        <Badge
+                          variant="outline"
+                          className={
+                            api.is_active
+                              ? "bg-success/15 text-success"
+                              : "bg-muted text-muted-foreground"
+                          }
+                        >
                           {api.is_active ? "نشط" : "معطل"}
                         </Badge>
                         <Badge variant="outline">{api.channel}</Badge>
@@ -283,10 +313,17 @@ function SettingsPage() {
                         </Button>
                       </div>
                       <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                        <span>الطلبات: <span className="num">{api.total_requests.toLocaleString()}</span></span>
-                        <span>الحد: <span className="num">{api.rate_limit_per_minute}</span>/دقيقة</span>
+                        <span>
+                          الطلبات:{" "}
+                          <span className="num">{api.total_requests.toLocaleString()}</span>
+                        </span>
+                        <span>
+                          الحد: <span className="num">{api.rate_limit_per_minute}</span>/دقيقة
+                        </span>
                         {api.last_used_at && (
-                          <span>اخر استخدام: {new Date(api.last_used_at).toLocaleDateString("ar")}</span>
+                          <span>
+                            اخر استخدام: {new Date(api.last_used_at).toLocaleDateString("ar")}
+                          </span>
                         )}
                       </div>
                     </div>
@@ -294,7 +331,9 @@ function SettingsPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => toggleApiMutation.mutate({ id: api.id, isActive: api.is_active })}
+                        onClick={() =>
+                          toggleApiMutation.mutate({ id: api.id, isActive: api.is_active })
+                        }
                       >
                         <RefreshCw className="size-4" />
                       </Button>
@@ -346,7 +385,9 @@ function SettingsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddApi(false)}>الغاء</Button>
+            <Button variant="outline" onClick={() => setShowAddApi(false)}>
+              الغاء
+            </Button>
             <Button
               onClick={() => createApiMutation.mutate()}
               disabled={!newApiName || createApiMutation.isPending}

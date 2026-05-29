@@ -6,7 +6,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -33,11 +39,7 @@ interface RequestFormProps {
   isLoading?: boolean;
 }
 
-export function RequestForm({
-  onSuccess,
-  onCancel,
-  isLoading: externalLoading,
-}: RequestFormProps) {
+export function RequestForm({ onSuccess, onCancel, isLoading: externalLoading }: RequestFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const {
     register,
@@ -65,13 +67,16 @@ export function RequestForm({
           {
             title: data.title,
             description: data.description,
-            request_type: data.request_type as "product" | "service" | "material" | "pricing_inquiry" | "supplier_connection",
+            request_type: data.request_type as
+              | "product"
+              | "service"
+              | "material"
+              | "pricing_inquiry"
+              | "supplier_connection",
             priority: data.priority as "low" | "medium" | "high" | "urgent",
             category: data.category || null,
             quantity: data.quantity ? parseInt(data.quantity) : null,
-            estimated_budget: data.estimated_budget
-              ? parseFloat(data.estimated_budget)
-              : null,
+            estimated_budget: data.estimated_budget ? parseFloat(data.estimated_budget) : null,
             status: "open" as "open" | "in_review" | "approved" | "rejected",
           } as any,
         ])
@@ -100,9 +105,7 @@ export function RequestForm({
           {...register("title")}
           disabled={loading}
         />
-        {errors.title && (
-          <p className="text-xs text-destructive">{errors.title.message}</p>
-        )}
+        {errors.title && <p className="text-xs text-destructive">{errors.title.message}</p>}
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
@@ -145,9 +148,7 @@ export function RequestForm({
               <SelectItem value="urgent">عاجلة</SelectItem>
             </SelectContent>
           </Select>
-          {errors.priority && (
-            <p className="text-xs text-destructive">{errors.priority.message}</p>
-          )}
+          {errors.priority && <p className="text-xs text-destructive">{errors.priority.message}</p>}
         </div>
       </div>
 
@@ -202,12 +203,7 @@ export function RequestForm({
       </div>
 
       <div className="flex gap-3 justify-end pt-4 border-t">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          disabled={loading}
-        >
+        <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
           إلغاء
         </Button>
         <Button type="submit" disabled={loading} className="gap-2">
