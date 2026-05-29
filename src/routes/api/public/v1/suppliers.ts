@@ -8,7 +8,7 @@ export const Route = createFileRoute("/api/public/v1/suppliers")({
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
       GET: async ({ request }) => {
         const started = Date.now();
-        const auth = await requireApiKey(request);
+        const auth = await requireApiKey(request, "/api/public/v1/suppliers");
         if ("error" in auth) return auth.error;
         const { data, error, count } = await supabaseAdmin
           .from("suppliers")

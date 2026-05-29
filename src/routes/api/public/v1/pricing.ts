@@ -8,7 +8,7 @@ export const Route = createFileRoute("/api/public/v1/pricing")({
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
       GET: async ({ request }) => {
         const started = Date.now();
-        const auth = await requireApiKey(request);
+        const auth = await requireApiKey(request, "/api/public/v1/pricing");
         if ("error" in auth) return auth.error;
         const url = new URL(request.url);
         const limit = Math.min(Number(url.searchParams.get("limit") ?? 100), 500);

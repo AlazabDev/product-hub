@@ -8,7 +8,7 @@ export const Route = createFileRoute("/api/public/v1/products/$azCode")({
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
       GET: async ({ request, params }) => {
         const started = Date.now();
-        const auth = await requireApiKey(request);
+        const auth = await requireApiKey(request, "/api/public/v1/products/$azCode");
         const ep = `/api/public/v1/products/${params.azCode}`;
         if ("error" in auth) {
           await logCall({ consumer: null, request, endpoint: ep, status: 401, startedAt: started });
