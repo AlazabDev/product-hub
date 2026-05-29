@@ -144,11 +144,24 @@ export interface PricingBreakdown {
 }
 
 // =====================================================
-// Material Database (يمكن استبدالها ببيانات من Supabase)
+// Material & Labor Configuration
 // =====================================================
+// Live prices come from DB (products + prices). The constants below are
+// DEV-ONLY fallbacks; in production a missing material throws.
+//
+// Material price loader: queries `products` joined with their default `prices`
+// row, indexed by az_code / product_code. Cached for the lifetime of the
+// server process.
 
-const MATERIAL_PRICES: Record<string, { price: number; unit: string; name_ar: string }> = {
-  // الاخشاب
+interface MaterialEntry {
+  price: number;
+  unit: string;
+  name_ar: string;
+  product_id?: string;
+  supplier_id?: string;
+}
+
+const DEFAULT_MATERIAL_PRICES: Record<string, MaterialEntry> = {
   "MDF-18": { price: 180, unit: "m2", name_ar: "MDF 18mm" },
   "MDF-16": { price: 160, unit: "m2", name_ar: "MDF 16mm" },
   "MDF-12": { price: 140, unit: "m2", name_ar: "MDF 12mm" },
@@ -158,8 +171,6 @@ const MATERIAL_PRICES: Record<string, { price: number; unit: string; name_ar: st
   "MEL-16": { price: 230, unit: "m2", name_ar: "ميلامين 16mm" },
   "SOLID-OAK": { price: 450, unit: "m2", name_ar: "خشب بلوط صلب" },
   "SOLID-BEECH": { price: 380, unit: "m2", name_ar: "خشب زان صلب" },
-  
-  // الحديد والاكسسوارات
   "HINGE-SOFT": { price: 25, unit: "piece", name_ar: "مفصلة سوفت كلوز" },
   "HINGE-STD": { price: 12, unit: "piece", name_ar: "مفصلة عادية" },
   "HANDLE-MOD": { price: 35, unit: "piece", name_ar: "يد حديثة" },
@@ -167,8 +178,6 @@ const MATERIAL_PRICES: Record<string, { price: number; unit: string; name_ar: st
   "DRAWER-RAIL": { price: 85, unit: "set", name_ar: "سكة درج سوفت كلوز" },
   "SHELF-SUPPORT": { price: 5, unit: "piece", name_ar: "حامل رف" },
   "LOCK-STD": { price: 45, unit: "piece", name_ar: "قفل عادي" },
-  
-  // التشطيبات
   "PAINT-PU": { price: 120, unit: "m2", name_ar: "دهان PU" },
   "PAINT-LAC": { price: 150, unit: "m2", name_ar: "دهان لاكيه" },
   "VENEER": { price: 180, unit: "m2", name_ar: "قشرة خشب" },
@@ -176,13 +185,101 @@ const MATERIAL_PRICES: Record<string, { price: number; unit: string; name_ar: st
   "EDGE-ABS": { price: 12, unit: "meter", name_ar: "حافة ABS" },
 };
 
-// معدلات العمالة بالساعة
-const LABOR_RATES = {
-  cutting: 40,      // القطع
-  assembly: 50,     // التجميع
-  finishing: 45,    // التشطيب
-  installation: 60, // التركيب
+const DEFAULT_LABOR_RATES = {
+  cutting: 40,
+  assembly: 50,
+  finishing: 45,
+  installation: 60,
 };
+
+let MATERIAL_CACHE: Record<string, MaterialEntry> | null = null;
+let LABOR_CACHE: typeof DEFAULT_LABOR_RATES | null = null;
+
+function isProd() {
+  return process.env.NODE_ENV === "production";
+}
+
+async function fetchMaterialPrices(): Promise<Record<string, MaterialEntry>> {
+  if (MATERIAL_CACHE) return MATERIAL_CACHE;
+  try {
+    const { data: products } = await supabaseAdmin
+      .from("products")
+      .select("id, az_code, product_code, name_ar, default_supplier_id, default_price_id")
+      .eq("status", "approved");
+
+    const ids = (products ?? []).map((p) => p.default_price_id).filter(Boolean) as string[];
+    const priceMap = new Map<string, { selling_price: number | null }>();
+    if (ids.length > 0) {
+      const { data: prices } = await supabaseAdmin
+        .from("prices")
+        .select("id, selling_price")
+        .in("id", ids);
+      for (const p of prices ?? []) priceMap.set(p.id, { selling_price: p.selling_price });
+    }
+
+    const built: Record<string, MaterialEntry> = {};
+    for (const p of products ?? []) {
+      const key = p.product_code ?? p.az_code;
+      const priceRow = p.default_price_id ? priceMap.get(p.default_price_id) : null;
+      const price = Number(priceRow?.selling_price ?? 0);
+      if (!key || !price) continue;
+      built[key] = {
+        price,
+        unit: "piece",
+        name_ar: p.name_ar ?? key,
+        product_id: p.id,
+        supplier_id: p.default_supplier_id ?? undefined,
+      };
+    }
+
+    MATERIAL_CACHE = isProd() ? built : { ...DEFAULT_MATERIAL_PRICES, ...built };
+    return MATERIAL_CACHE;
+  } catch (err) {
+    if (isProd()) throw new Error(`material_price_load_failed: ${String(err)}`);
+    console.warn("[pricing-engine] DB material lookup failed; using DEV fallback.", err);
+    MATERIAL_CACHE = { ...DEFAULT_MATERIAL_PRICES };
+    return MATERIAL_CACHE;
+  }
+}
+
+async function fetchLaborRules(): Promise<typeof DEFAULT_LABOR_RATES> {
+  if (LABOR_CACHE) return LABOR_CACHE;
+  try {
+    const { data } = await supabaseAdmin
+      .from("pricing_rules")
+      .select("rule_type, value, conditions")
+      .eq("is_active", true)
+      .eq("rule_type", "labor_rate");
+    const rates = { ...DEFAULT_LABOR_RATES };
+    let dbHit = false;
+    for (const r of data ?? []) {
+      const phase = (r.conditions as { phase?: string } | null)?.phase;
+      if (phase && phase in rates) {
+        rates[phase as keyof typeof rates] = Number(r.value);
+        dbHit = true;
+      }
+    }
+    if (!dbHit && isProd()) throw new Error("pricing_rules_missing: labor_rate");
+    if (!dbHit) console.warn("[pricing-engine] No labor_rate rules; using DEV defaults.");
+    LABOR_CACHE = rates;
+    return LABOR_CACHE;
+  } catch (err) {
+    if (isProd()) throw err;
+    console.warn("[pricing-engine] DB labor lookup failed; using DEV fallback.", err);
+    LABOR_CACHE = { ...DEFAULT_LABOR_RATES };
+    return LABOR_CACHE;
+  }
+}
+
+function requireMaterial(code: string, prices: Record<string, MaterialEntry>): MaterialEntry | null {
+  const m = prices[code];
+  if (m) return m;
+  if (isProd()) throw new Error(`material_price_missing: ${code}`);
+  console.warn(`[pricing-engine] Missing material '${code}' — skipping in DEV.`);
+  return null;
+}
+
+
 
 // =====================================================
 // Pricing Engine
