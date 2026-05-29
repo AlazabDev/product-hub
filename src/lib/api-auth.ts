@@ -1,5 +1,41 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
+// =====================================================
+// CORS — origins from ALLOWED_ORIGINS env (wildcard only in dev)
+// =====================================================
+
+function parseAllowedOrigins(): string[] {
+  const raw = (process.env.ALLOWED_ORIGINS ?? "").trim();
+  if (!raw) return [];
+  return raw.split(",").map((s) => s.trim()).filter(Boolean);
+}
+
+function isDev() {
+  return process.env.NODE_ENV !== "production";
+}
+
+export function corsHeaders(request: Request): Record<string, string> {
+  const reqOrigin = request.headers.get("origin") ?? "";
+  const allowed = parseAllowedOrigins();
+  let originHeader = "null";
+  if (allowed.length === 0) {
+    originHeader = isDev() ? "*" : "null";
+  } else if (allowed.includes(reqOrigin)) {
+    originHeader = reqOrigin;
+  } else if (allowed.includes("*") && isDev()) {
+    originHeader = "*";
+  }
+  return {
+    "Access-Control-Allow-Origin": originHeader,
+    "Vary": "Origin",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, x-api-key, Authorization",
+    "Access-Control-Max-Age": "86400",
+  };
+}
+
+// Backward-compat: a permissive default for handlers that still import CORS
+// as a static constant. Prefer corsHeaders(request).
 export const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -14,16 +50,52 @@ export function json(body: unknown, status = 200, extra: Record<string, string> 
   });
 }
 
-export async function requireApiKey(request: Request) {
+// =====================================================
+// API key auth + endpoint whitelist + rate limiting
+// =====================================================
+
+const RATE_LIMIT_PER_MINUTE = Number(process.env.API_RATE_LIMIT_PER_MINUTE ?? 120);
+
+export async function requireApiKey(request: Request, endpoint?: string) {
   const key = request.headers.get("x-api-key");
-  if (!key) return { error: json({ error: "Missing x-api-key header" }, 401) };
+  if (!key) return { error: json({ success: false, error: "Missing x-api-key header", code: "missing_api_key" }, 401) };
+
   const { data, error } = await supabaseAdmin
     .from("api_consumers")
     .select("id, name, channel, is_active, allowed_endpoints, total_requests")
     .eq("api_key", key)
     .maybeSingle();
-  if (error || !data) return { error: json({ error: "Invalid API key" }, 401) };
-  if (!data.is_active) return { error: json({ error: "API key disabled" }, 403) };
+  if (error || !data) return { error: json({ success: false, error: "Invalid API key", code: "invalid_api_key" }, 401) };
+  if (!data.is_active) return { error: json({ success: false, error: "API key disabled", code: "api_key_disabled" }, 403) };
+
+  // Endpoint whitelist (empty list = allow all)
+  if (endpoint && Array.isArray(data.allowed_endpoints) && data.allowed_endpoints.length > 0) {
+    const allowed = data.allowed_endpoints.some((p) => {
+      if (typeof p !== "string") return false;
+      if (p === endpoint) return true;
+      if (p.endsWith("*")) return endpoint.startsWith(p.slice(0, -1));
+      return false;
+    });
+    if (!allowed) {
+      return { error: json({ success: false, error: "Endpoint not allowed for this API key", code: "endpoint_forbidden" }, 403) };
+    }
+  }
+
+  // Rate limiting via webhook_logs count in last minute
+  try {
+    const since = new Date(Date.now() - 60_000).toISOString();
+    const { count } = await supabaseAdmin
+      .from("webhook_logs")
+      .select("id", { count: "exact", head: true })
+      .eq("consumer_id", data.id)
+      .gte("created_at", since);
+    if ((count ?? 0) >= RATE_LIMIT_PER_MINUTE) {
+      return { error: json({ success: false, error: "Rate limit exceeded", code: "rate_limited" }, 429) };
+    }
+  } catch (e) {
+    console.warn("rate limit check failed", e);
+  }
+
   return { consumer: data };
 }
 
