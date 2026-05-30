@@ -58,14 +58,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Alazab PAOP — منصة إدارة الأصول والمنتجات" },
+      { title: "Alazab Products" },
       {
         name: "description",
         content:
           "منصة العزب لإدارة المنتجات والخدمات والأصول الرقمية والتسعير والموردين — مصدر بيانات موحد مع API مركزي.",
       },
-      { property: "og:title", content: "Alazab PAOP — منصة إدارة الأصول والمنتجات" },
-      { name: "twitter:title", content: "Alazab PAOP — منصة إدارة الأصول والمنتجات" },
+      { property: "og:title", content: "Alazab Products" },
+      { name: "twitter:title", content: "Alazab Products" },
       {
         property: "og:description",
         content:
@@ -88,6 +88,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
+      { name: "description", content: "Professional architectural solutions for shops and residential units" },
+      { property: "og:description", content: "Professional architectural solutions for shops and residential units" },
+      { name: "twitter:description", content: "Professional architectural solutions for shops and residential units" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/2zh7dx24F4NV7XVVn2l5MAZdd4K3/social-images/social-1780101254217-aidea.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/2zh7dx24F4NV7XVVn2l5MAZdd4K3/social-images/social-1780101254217-aidea.webp" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
