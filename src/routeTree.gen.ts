@@ -13,11 +13,13 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSupportRouteImport } from './routes/_authenticated/support'
+import { Route as AuthenticatedSupplierInventoryRouteImport } from './routes/_authenticated/supplier-inventory'
 import { Route as AuthenticatedQuoteRequestsRouteImport } from './routes/_authenticated/quote-requests'
 import { Route as AuthenticatedManufacturingOrdersRouteImport } from './routes/_authenticated/manufacturing-orders'
 import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedContentReviewRouteImport } from './routes/_authenticated/content-review'
+import { Route as AuthenticatedContentRouteImport } from './routes/_authenticated/content'
 import { Route as AuthenticatedBuildHealthRouteImport } from './routes/_authenticated/build-health'
 import { Route as AuthenticatedAuditLogsRouteImport } from './routes/_authenticated/audit-logs'
 import { Route as AuthenticatedAiReviewRouteImport } from './routes/_authenticated/ai-review'
@@ -68,6 +70,12 @@ const AuthenticatedSupportRoute = AuthenticatedSupportRouteImport.update({
   path: '/support',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedSupplierInventoryRoute =
+  AuthenticatedSupplierInventoryRouteImport.update({
+    id: '/supplier-inventory',
+    path: '/supplier-inventory',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedQuoteRequestsRoute =
   AuthenticatedQuoteRequestsRouteImport.update({
     id: '/quote-requests',
@@ -97,6 +105,11 @@ const AuthenticatedContentReviewRoute =
     path: '/content-review',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedContentRoute = AuthenticatedContentRouteImport.update({
+  id: '/content',
+  path: '/content',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedBuildHealthRoute =
   AuthenticatedBuildHealthRouteImport.update({
     id: '/build-health',
@@ -274,11 +287,13 @@ export interface FileRoutesByFullPath {
   '/ai-review': typeof AuthenticatedAiReviewRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/build-health': typeof AuthenticatedBuildHealthRoute
+  '/content': typeof AuthenticatedContentRoute
   '/content-review': typeof AuthenticatedContentReviewRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/manufacturing-orders': typeof AuthenticatedManufacturingOrdersRoute
   '/quote-requests': typeof AuthenticatedQuoteRequestsRoute
+  '/supplier-inventory': typeof AuthenticatedSupplierInventoryRoute
   '/support': typeof AuthenticatedSupportRoute
   '/assets/bulk-upload': typeof AuthenticatedAssetsBulkUploadRoute
   '/assets/duplicates': typeof AuthenticatedAssetsDuplicatesRoute
@@ -314,11 +329,13 @@ export interface FileRoutesByTo {
   '/ai-review': typeof AuthenticatedAiReviewRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/build-health': typeof AuthenticatedBuildHealthRoute
+  '/content': typeof AuthenticatedContentRoute
   '/content-review': typeof AuthenticatedContentReviewRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/manufacturing-orders': typeof AuthenticatedManufacturingOrdersRoute
   '/quote-requests': typeof AuthenticatedQuoteRequestsRoute
+  '/supplier-inventory': typeof AuthenticatedSupplierInventoryRoute
   '/support': typeof AuthenticatedSupportRoute
   '/assets/bulk-upload': typeof AuthenticatedAssetsBulkUploadRoute
   '/assets/duplicates': typeof AuthenticatedAssetsDuplicatesRoute
@@ -356,11 +373,13 @@ export interface FileRoutesById {
   '/_authenticated/ai-review': typeof AuthenticatedAiReviewRoute
   '/_authenticated/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/_authenticated/build-health': typeof AuthenticatedBuildHealthRoute
+  '/_authenticated/content': typeof AuthenticatedContentRoute
   '/_authenticated/content-review': typeof AuthenticatedContentReviewRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
   '/_authenticated/manufacturing-orders': typeof AuthenticatedManufacturingOrdersRoute
   '/_authenticated/quote-requests': typeof AuthenticatedQuoteRequestsRoute
+  '/_authenticated/supplier-inventory': typeof AuthenticatedSupplierInventoryRoute
   '/_authenticated/support': typeof AuthenticatedSupportRoute
   '/_authenticated/assets/bulk-upload': typeof AuthenticatedAssetsBulkUploadRoute
   '/_authenticated/assets/duplicates': typeof AuthenticatedAssetsDuplicatesRoute
@@ -398,11 +417,13 @@ export interface FileRouteTypes {
     | '/ai-review'
     | '/audit-logs'
     | '/build-health'
+    | '/content'
     | '/content-review'
     | '/dashboard'
     | '/integrations'
     | '/manufacturing-orders'
     | '/quote-requests'
+    | '/supplier-inventory'
     | '/support'
     | '/assets/bulk-upload'
     | '/assets/duplicates'
@@ -438,11 +459,13 @@ export interface FileRouteTypes {
     | '/ai-review'
     | '/audit-logs'
     | '/build-health'
+    | '/content'
     | '/content-review'
     | '/dashboard'
     | '/integrations'
     | '/manufacturing-orders'
     | '/quote-requests'
+    | '/supplier-inventory'
     | '/support'
     | '/assets/bulk-upload'
     | '/assets/duplicates'
@@ -479,11 +502,13 @@ export interface FileRouteTypes {
     | '/_authenticated/ai-review'
     | '/_authenticated/audit-logs'
     | '/_authenticated/build-health'
+    | '/_authenticated/content'
     | '/_authenticated/content-review'
     | '/_authenticated/dashboard'
     | '/_authenticated/integrations'
     | '/_authenticated/manufacturing-orders'
     | '/_authenticated/quote-requests'
+    | '/_authenticated/supplier-inventory'
     | '/_authenticated/support'
     | '/_authenticated/assets/bulk-upload'
     | '/_authenticated/assets/duplicates'
@@ -558,6 +583,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSupportRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/supplier-inventory': {
+      id: '/_authenticated/supplier-inventory'
+      path: '/supplier-inventory'
+      fullPath: '/supplier-inventory'
+      preLoaderRoute: typeof AuthenticatedSupplierInventoryRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/quote-requests': {
       id: '/_authenticated/quote-requests'
       path: '/quote-requests'
@@ -591,6 +623,13 @@ declare module '@tanstack/react-router' {
       path: '/content-review'
       fullPath: '/content-review'
       preLoaderRoute: typeof AuthenticatedContentReviewRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/content': {
+      id: '/_authenticated/content'
+      path: '/content'
+      fullPath: '/content'
+      preLoaderRoute: typeof AuthenticatedContentRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/build-health': {
@@ -810,11 +849,13 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAiReviewRoute: typeof AuthenticatedAiReviewRoute
   AuthenticatedAuditLogsRoute: typeof AuthenticatedAuditLogsRoute
   AuthenticatedBuildHealthRoute: typeof AuthenticatedBuildHealthRoute
+  AuthenticatedContentRoute: typeof AuthenticatedContentRoute
   AuthenticatedContentReviewRoute: typeof AuthenticatedContentReviewRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
   AuthenticatedManufacturingOrdersRoute: typeof AuthenticatedManufacturingOrdersRoute
   AuthenticatedQuoteRequestsRoute: typeof AuthenticatedQuoteRequestsRoute
+  AuthenticatedSupplierInventoryRoute: typeof AuthenticatedSupplierInventoryRoute
   AuthenticatedSupportRoute: typeof AuthenticatedSupportRoute
   AuthenticatedAssetsBulkUploadRoute: typeof AuthenticatedAssetsBulkUploadRoute
   AuthenticatedAssetsDuplicatesRoute: typeof AuthenticatedAssetsDuplicatesRoute
@@ -840,11 +881,13 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAiReviewRoute: AuthenticatedAiReviewRoute,
   AuthenticatedAuditLogsRoute: AuthenticatedAuditLogsRoute,
   AuthenticatedBuildHealthRoute: AuthenticatedBuildHealthRoute,
+  AuthenticatedContentRoute: AuthenticatedContentRoute,
   AuthenticatedContentReviewRoute: AuthenticatedContentReviewRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
   AuthenticatedManufacturingOrdersRoute: AuthenticatedManufacturingOrdersRoute,
   AuthenticatedQuoteRequestsRoute: AuthenticatedQuoteRequestsRoute,
+  AuthenticatedSupplierInventoryRoute: AuthenticatedSupplierInventoryRoute,
   AuthenticatedSupportRoute: AuthenticatedSupportRoute,
   AuthenticatedAssetsBulkUploadRoute: AuthenticatedAssetsBulkUploadRoute,
   AuthenticatedAssetsDuplicatesRoute: AuthenticatedAssetsDuplicatesRoute,
