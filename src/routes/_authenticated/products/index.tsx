@@ -26,8 +26,8 @@ import {
   FileJson,
   Sparkles,
   Loader2,
+  Plus,
 } from "lucide-react";
-import { ProductCreateDialog } from "@/components/product-create-dialog";
 import { generateProductImages } from "@/lib/product-image-gen.functions";
 
 export const Route = createFileRoute("/_authenticated/products/")({
@@ -225,7 +225,12 @@ function ProductsList() {
           </p>
         </div>
         <div className="flex gap-2">
-          <ProductCreateDialog />
+          <Button asChild className="gap-2">
+            <Link to="/products/new">
+              <Plus className="size-4" />
+              إنشاء بند جديد
+            </Link>
+          </Button>
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" disabled={exportLoading}>
