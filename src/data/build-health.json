@@ -1,8 +1,46 @@
 {
-  "generatedAt": "2026-05-29T09:27:17.382Z",
-  "totalErrors": 0,
+  "generatedAt": "2026-05-30T01:30:56.775Z",
+  "totalErrors": 3,
   "totalWarnings": 0,
-  "byCategory": {},
-  "byFile": {},
-  "issues": []
+  "byCategory": {
+    "مسار route غير موجود": 1,
+    "تحويل قيمة غير صالح": 2
+  },
+  "byFile": {
+    "src/routes/_authenticated/integrations.tsx": 1,
+    "src/routes/_authenticated/requests/index.tsx": 1,
+    "src/routes/_authenticated/suppliers/index.tsx": 1
+  },
+  "issues": [
+    {
+      "file": "src/routes/_authenticated/integrations.tsx",
+      "line": 327,
+      "column": 15,
+      "code": "TS2820",
+      "message": "Type '\"/docs/INTEGRATIONS\"' is not assignable to type '\"/\" | \"/login\" | \"/api/public/v1/suppliers\" | \"/api/public/v1/products\" | \"/api/public/v1/pricing\" | \"/api/public/v1/assets\" | \"/api/agent/v1/quote-response\" | \"/api/agent/v1/quote-request\" | ... 33 more ... | \"..\"'. Did you mean '\"/integrations\"'?",
+      "category": "مسار route غير موجود",
+      "severity": "error",
+      "suggestion": "المسار \"/docs/INTEGRATIONS\" غير معرّف في routeTree. أنشئ ملف src/routes/docs/INTEGRATIONS.tsx أو غيّر to= لمسار صحيح."
+    },
+    {
+      "file": "src/routes/_authenticated/requests/index.tsx",
+      "line": 224,
+      "column": 23,
+      "code": "TS2322",
+      "message": "Type '`/requests/${any}`' is not assignable to type '\"/\" | \"/login\" | \"/api/public/v1/suppliers\" | \"/api/public/v1/products\" | \"/api/public/v1/pricing\" | \"/api/public/v1/assets\" | \"/api/agent/v1/quote-response\" | \"/api/agent/v1/quote-request\" | ... 33 more ... | \"..\"'.",
+      "category": "تحويل قيمة غير صالح",
+      "severity": "error",
+      "suggestion": "قيمة من نوع غير مدعوم. مرّر القيمة كـ string (JSON.stringify) أو غيّر نوع العمود في الـ schema."
+    },
+    {
+      "file": "src/routes/_authenticated/suppliers/index.tsx",
+      "line": 132,
+      "column": 25,
+      "code": "TS2322",
+      "message": "Type '`/suppliers/${any}`' is not assignable to type '\"/\" | \"/login\" | \"/api/public/v1/suppliers\" | \"/api/public/v1/products\" | \"/api/public/v1/pricing\" | \"/api/public/v1/assets\" | \"/api/agent/v1/quote-response\" | \"/api/agent/v1/quote-request\" | ... 33 more ... | \"..\"'.",
+      "category": "تحويل قيمة غير صالح",
+      "severity": "error",
+      "suggestion": "قيمة من نوع غير مدعوم. مرّر القيمة كـ string (JSON.stringify) أو غيّر نوع العمود في الـ schema."
+    }
+  ]
 }
