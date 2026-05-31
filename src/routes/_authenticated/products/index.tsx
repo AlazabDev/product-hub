@@ -29,6 +29,7 @@ import {
   Plus,
 } from "lucide-react";
 import { generateProductImages } from "@/lib/product-image-gen.functions";
+import { PageHeader } from "@/components/page-header";
 
 export const Route = createFileRoute("/_authenticated/products/")({
   head: () => ({ meta: [{ title: "المنتجات والخدمات — Alazab PAOP" }] }),
@@ -216,78 +217,79 @@ function ProductsList() {
   };
 
   return (
-    <div className="p-6 space-y-4 max-w-[1600px] mx-auto">
-      <div className="flex items-end justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">المنتجات والخدمات</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            <span className="num">{total.toLocaleString("en-US")}</span> بند في الكتالوج
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button asChild className="gap-2">
-            <Link to="/products/new">
-              <Plus className="size-4" />
-              إنشاء بند جديد
-            </Link>
-          </Button>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" disabled={exportLoading}>
-                <Download className="size-4 ml-1" />
-                تصدير
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80" align="end">
-              <div className="space-y-4">
-                <div>
-                  <h4 className="font-semibold mb-2">اختر الاعمدة للتصدير</h4>
-                  <p className="text-xs text-muted-foreground mb-3">
-                    سيتم تصدير البنود المعتمدة فقط
-                  </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {exportColumns.map((col) => (
-                      <label key={col.key} className="flex items-center gap-2 text-sm">
-                        <Checkbox
-                          checked={selectedColumns.includes(col.key)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setSelectedColumns([...selectedColumns, col.key]);
-                            } else {
-                              setSelectedColumns(selectedColumns.filter((c) => c !== col.key));
-                            }
-                          }}
-                        />
-                        {col.label}
-                      </label>
-                    ))}
+    <>
+      <PageHeader
+        icon={<Plus className="size-5" />}
+        title="المنتجات والخدمات"
+        description={`${total.toLocaleString("en-US")} بند في الكتالوج`}
+        actions={
+          <>
+            <Button asChild className="gap-2">
+              <Link to="/products/new">
+                <Plus className="size-4" />
+                إنشاء بند جديد
+              </Link>
+            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" disabled={exportLoading}>
+                  <Download className="size-4 ml-1" />
+                  تصدير
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80" align="end">
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">اختر الاعمدة للتصدير</h4>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      سيتم تصدير البنود المعتمدة فقط
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {exportColumns.map((col) => (
+                        <label key={col.key} className="flex items-center gap-2 text-sm">
+                          <Checkbox
+                            checked={selectedColumns.includes(col.key)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedColumns([...selectedColumns, col.key]);
+                              } else {
+                                setSelectedColumns(selectedColumns.filter((c) => c !== col.key));
+                              }
+                            }}
+                          />
+                          {col.label}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => exportData("csv")}
+                      disabled={selectedColumns.length === 0 || exportLoading}
+                    >
+                      <FileSpreadsheet className="size-4 ml-1" />
+                      CSV
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => exportData("json")}
+                      disabled={selectedColumns.length === 0 || exportLoading}
+                    >
+                      <FileJson className="size-4 ml-1" />
+                      JSON
+                    </Button>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => exportData("csv")}
-                    disabled={selectedColumns.length === 0 || exportLoading}
-                  >
-                    <FileSpreadsheet className="size-4 ml-1" />
-                    CSV
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => exportData("json")}
-                    disabled={selectedColumns.length === 0 || exportLoading}
-                  >
-                    <FileJson className="size-4 ml-1" />
-                    JSON
-                  </Button>
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
-      </div>
+              </PopoverContent>
+            </Popover>
+          </>
+        }
+      />
+      <div className="p-4 md:p-6 space-y-4 max-w-[1600px] mx-auto">
+
 
       <Card className="p-4 surface-elevated border-0">
         <div className="flex gap-3 flex-wrap items-center">
