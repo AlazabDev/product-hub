@@ -174,21 +174,22 @@ function Dashboard() {
   };
 
   return (
-    <div className="p-6 space-y-6 max-w-[1600px] mx-auto">
-      <div className="flex items-end justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">لوحة التحكم</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            نظرة شاملة على حالة المنصة والبيانات المعتمدة
-          </p>
-        </div>
-        <Link
-          to="/products"
-          className="text-sm text-accent font-semibold flex items-center gap-1 hover:underline"
-        >
-          استعراض كل البنود <ArrowLeft className="size-4 rotate-180" />
-        </Link>
-      </div>
+    <>
+      <PageHeader
+        icon={<LayoutDashboard className="size-5" />}
+        title="لوحة التحكم"
+        description="نظرة شاملة على حالة المنصة والبيانات المعتمدة"
+        actions={
+          <Link
+            to="/products"
+            className="text-sm text-accent font-semibold flex items-center gap-1 hover:underline"
+          >
+            استعراض كل البنود <ArrowLeft className="size-4 rotate-180" />
+          </Link>
+        }
+      />
+      <div className="p-4 md:p-6 space-y-6 max-w-[1600px] mx-auto">
+
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         <KPICard
