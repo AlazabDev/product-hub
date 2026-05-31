@@ -19,6 +19,7 @@ import {
   Zap,
 } from "lucide-react";
 import { KPICard } from "@/components/dashboard/kpi-card";
+import { PageHeader } from "@/components/page-header";
 import {
   AreaChart,
   Area,
@@ -498,9 +499,11 @@ function Dashboard() {
           )}
         </div>
       </Card>
-    </div>
+      </div>
+    </>
   );
 }
+
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; cls: string }> = {
