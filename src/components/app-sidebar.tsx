@@ -1,30 +1,6 @@
+import { useState, useMemo } from "react";
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import {
-  LayoutDashboard,
-  Box,
-  Users,
-  Settings,
-  DollarSign,
-  BarChart3,
-  FileText,
-  LogOut,
-  TrendingUp,
-  MessageSquare,
-  Package,
-  Image,
-  Copy,
-  MessageCircle,
-  Truck,
-  Warehouse,
-  History,
-  Upload,
-  Download,
-  Network,
-  Sparkles,
-  CheckCircle2,
-  Bell,
-  Wrench,
-} from "lucide-react";
+import { LogOut, Search, Command } from "lucide-react";
 
 import {
   Sidebar,
@@ -39,66 +15,11 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserRole } from "@/lib/auth";
-
-const sections = [
-  {
-    label: "نظرة عامة",
-    items: [
-      { title: "لوحة التحكم", to: "/dashboard", icon: LayoutDashboard, phase: 1 },
-      { title: "التحليلات", to: "/analytics", icon: BarChart3, phase: 7 },
-      { title: "الإشعارات والنشاط", to: "/notifications", icon: Bell, phase: 7 },
-    ],
-  },
-  {
-    label: "البيانات الأساسية",
-    items: [
-      { title: "المنتجات والخدمات", to: "/products", icon: Package, phase: 1 },
-      { title: "إدارة الأصول", to: "/assets", icon: Image, phase: 1 },
-      { title: "أصول غير مرتبطة", to: "/assets/unlinked", icon: Copy, phase: 2 },
-      { title: "وكيل الدعم", to: "/support", icon: MessageCircle, phase: 2 },
-      { title: "إدارة المحتوى", to: "/content", icon: FileText, phase: 2 },
-    ],
-  },
-  {
-    label: "التسعير والموردين",
-    items: [
-      { title: "محرك التسعير", to: "/pricing", icon: DollarSign, phase: 3 },
-      { title: "الموردون", to: "/suppliers", icon: Truck, phase: 3 },
-      { title: "مخزون الموردين", to: "/supplier-inventory", icon: Warehouse, phase: 3 },
-    ],
-  },
-  {
-    label: "الطلبات والمبيعات",
-    items: [
-      { title: "طلبات المنتجات", to: "/requests", icon: MessageSquare, phase: 3 },
-      { title: "طلبات العروض", to: "/quote-requests", icon: FileText, phase: 3 },
-      { title: "طلبات التصنيع", to: "/manufacturing-orders", icon: Package, phase: 4 },
-    ],
-  },
-  {
-    label: "العمليات",
-    items: [
-      { title: "سجل التدقيق", to: "/audit-logs", icon: History, phase: 1 },
-      { title: "مراجعة التكرار", to: "/duplicates", icon: Copy, phase: 1 },
-      { title: "مركز الاستيراد", to: "/import", icon: Upload, phase: 4 },
-      { title: "مركز التصدير", to: "/export", icon: Download, phase: 4 },
-      { title: "مركز API", to: "/api-center", icon: Network, phase: 4 },
-      { title: "التكاملات والتوصيلات", to: "/integrations", icon: Network, phase: 5 },
-      { title: "مراجعة المحتوى AI", to: "/content-review", icon: Sparkles, phase: 5 },
-      { title: "مساعد AI", to: "/ai-review", icon: Sparkles, phase: 1 },
-      { title: "الموافقات", to: "/approvals", icon: CheckCircle2, phase: 6 },
-    ],
-  },
-  {
-    label: "النظام",
-    items: [
-      { title: "Build Health", to: "/build-health", icon: Wrench, phase: 7 },
-      { title: "الإعدادات", to: "/settings", icon: Settings, phase: 1 },
-    ],
-  },
-];
+import { NAV_ITEMS } from "@/lib/nav-registry";
+import { useCommandPalette } from "@/components/command-palette";
 
 export function AppSidebar() {
   const { state } = useSidebar();
@@ -106,6 +27,21 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const role = useUserRole();
   const currentPath = useRouterState({ select: (r) => r.location.pathname });
+  const { setOpen } = useCommandPalette();
+  const [filter, setFilter] = useState("");
+
+  const sections = useMemo(() => {
+    const f = filter.trim().toLowerCase();
+    const grouped: Record<string, typeof NAV_ITEMS> = {};
+    for (const item of NAV_ITEMS) {
+      if (f) {
+        const hay = `${item.title} ${item.keywords?.join(" ") ?? ""}`.toLowerCase();
+        if (!hay.includes(f)) continue;
+      }
+      (grouped[item.group] ||= []).push(item);
+    }
+    return grouped;
+  }, [filter]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -120,7 +56,7 @@ export function AppSidebar() {
             AZ
           </div>
           {!collapsed && (
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="font-bold text-sidebar-foreground truncate">Alazab PAOP</div>
               <div className="text-[10px] text-sidebar-foreground/60 truncate">
                 Product Asset Operations
@@ -128,32 +64,48 @@ export function AppSidebar() {
             </div>
           )}
         </div>
+        {!collapsed && (
+          <div className="px-2 pb-2 space-y-1.5">
+            <div className="relative">
+              <Search className="size-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-sidebar-foreground/50" />
+              <Input
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                placeholder="فلترة القائمة..."
+                className="h-8 text-xs pr-7 bg-sidebar-accent/40 border-sidebar-border text-sidebar-foreground placeholder:text-sidebar-foreground/50"
+              />
+            </div>
+            <button
+              onClick={() => setOpen(true)}
+              className="w-full flex items-center justify-between gap-2 text-[11px] text-sidebar-foreground/70 hover:text-sidebar-foreground bg-sidebar-accent/30 hover:bg-sidebar-accent/60 transition-colors rounded-md px-2 py-1.5"
+            >
+              <span className="flex items-center gap-1.5">
+                <Command className="size-3" />
+                لوحة الأوامر
+              </span>
+              <kbd className="num text-[10px] bg-sidebar/60 border border-sidebar-border rounded px-1">
+                ⌘K
+              </kbd>
+            </button>
+          </div>
+        )}
       </SidebarHeader>
 
       <SidebarContent>
-        {sections.map((sec) => (
-          <SidebarGroup key={sec.label}>
-            {!collapsed && <SidebarGroupLabel>{sec.label}</SidebarGroupLabel>}
+        {Object.entries(sections).map(([label, items]) => (
+          <SidebarGroup key={label}>
+            {!collapsed && <SidebarGroupLabel>{label}</SidebarGroupLabel>}
             <SidebarGroupContent>
               <SidebarMenu>
-                {sec.items.map((item) => {
-                  const active = currentPath === item.to || currentPath.startsWith(item.to + "/");
-                  const built = item.phase <= 7;
+                {items.map((item) => {
+                  const active =
+                    currentPath === item.to || currentPath.startsWith(item.to + "/");
                   return (
                     <SidebarMenuItem key={item.to}>
                       <SidebarMenuButton asChild isActive={active} tooltip={item.title}>
                         <Link to={item.to} className="flex items-center gap-2">
                           <item.icon className="size-4 shrink-0" />
-                          {!collapsed && (
-                            <>
-                              <span className="flex-1 truncate">{item.title}</span>
-                              {!built && (
-                                <span className="text-[9px] num bg-sidebar-accent text-sidebar-foreground/70 rounded px-1.5 py-0.5">
-                                  P{item.phase}
-                                </span>
-                              )}
-                            </>
-                          )}
+                          {!collapsed && <span className="flex-1 truncate">{item.title}</span>}
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -163,6 +115,11 @@ export function AppSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
         ))}
+        {!collapsed && Object.keys(sections).length === 0 && (
+          <div className="px-4 py-6 text-center text-xs text-sidebar-foreground/60">
+            لا توجد نتائج لـ "{filter}"
+          </div>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border">

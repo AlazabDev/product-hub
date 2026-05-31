@@ -16,6 +16,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { SupplierForm } from "@/components/supplier-form";
+import { PageHeader } from "@/components/page-header";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/suppliers/")({
@@ -58,41 +59,41 @@ function SuppliersList() {
   };
 
   return (
-    <div className="p-6 space-y-4 max-w-[1400px] mx-auto">
-      <div className="flex items-end justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Truck className="size-6 text-accent" />
-            الموردون
-          </h1>
-          <p className="text-xs text-muted-foreground mt-1 num">إجمالي: {rows.length} مورد</p>
-        </div>
-        <Sheet open={showCreate} onOpenChange={setShowCreate}>
-          <SheetTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="size-4" />
-              مورد جديد
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="w-full sm:w-[540px] overflow-y-auto">
-            <SheetHeader>
-              <SheetTitle>إضافة مورد جديد</SheetTitle>
-              <SheetDescription>
-                أضف معلومات المورد الجديد بما في ذلك بيانات التواصل والفئة
-              </SheetDescription>
-            </SheetHeader>
-            <div className="mt-6">
-              <SupplierForm
-                onSuccess={() => {
-                  setShowCreate(false);
-                  qc.invalidateQueries({ queryKey: ["suppliers"] });
-                }}
-                onCancel={() => setShowCreate(false)}
-              />
-            </div>
-          </SheetContent>
-        </Sheet>
-      </div>
+    <>
+      <PageHeader
+        icon={<Truck className="size-5" />}
+        title="الموردون"
+        description={`إجمالي: ${rows.length} مورد`}
+        actions={
+          <Sheet open={showCreate} onOpenChange={setShowCreate}>
+            <SheetTrigger asChild>
+              <Button className="gap-2">
+                <Plus className="size-4" />
+                مورد جديد
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full sm:w-[540px] overflow-y-auto">
+              <SheetHeader>
+                <SheetTitle>إضافة مورد جديد</SheetTitle>
+                <SheetDescription>
+                  أضف معلومات المورد الجديد بما في ذلك بيانات التواصل والفئة
+                </SheetDescription>
+              </SheetHeader>
+              <div className="mt-6">
+                <SupplierForm
+                  onSuccess={() => {
+                    setShowCreate(false);
+                    qc.invalidateQueries({ queryKey: ["suppliers"] });
+                  }}
+                  onCancel={() => setShowCreate(false)}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
+        }
+      />
+      <div className="p-4 md:p-6 space-y-4 max-w-[1400px] mx-auto">
+
 
       <Card className="p-3 surface-elevated border-0">
         <div className="relative">
@@ -186,6 +187,8 @@ function SuppliersList() {
           </div>
         )}
       </Card>
-    </div>
+      </div>
+    </>
   );
 }
+

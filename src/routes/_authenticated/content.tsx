@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -65,19 +66,20 @@ function ContentPage() {
   );
 
   return (
-    <div className="space-y-6" dir="rtl">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">إدارة المحتوى</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            إدارة المحتوى النصي للمنتجات والتصنيفات والصفحات.
-          </p>
-        </div>
-        <Button size="sm" className="gap-1 self-start sm:self-auto">
-          <Plus className="size-4" />
-          محتوى جديد
-        </Button>
-      </div>
+    <>
+      <PageHeader
+        icon={<FileText className="size-5" />}
+        title="إدارة المحتوى"
+        description="إدارة المحتوى النصي للمنتجات والتصنيفات والصفحات"
+        actions={
+          <Button size="sm" className="gap-1">
+            <Plus className="size-4" />
+            محتوى جديد
+          </Button>
+        }
+      />
+      <div className="p-4 md:p-6 space-y-6" dir="rtl">
+
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1 max-w-md">
@@ -161,6 +163,8 @@ function ContentPage() {
           </Table>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </>
   );
 }
+
