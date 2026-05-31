@@ -625,9 +625,11 @@ function ProductsList() {
           </div>
         </div>
       </Card>
-    </div>
+      </div>
+    </>
   );
 }
+
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; cls: string }> = {
