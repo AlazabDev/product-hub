@@ -27,7 +27,7 @@ export const submitForApproval = createServerFn({ method: "POST" })
   .inputValidator((input) =>
     z
       .object({
-        entityType: z.enum(["product", "price"]),
+        entityType: z.enum(["product", "price", "quote_request"]),
         entityId: z.string().uuid(),
         title: z.string().min(1).max(200),
         priority: z.enum(["low", "normal", "high", "urgent"]).default("normal"),
