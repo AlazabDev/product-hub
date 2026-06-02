@@ -16,7 +16,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { SupplierForm } from "@/components/supplier-form";
-import { PageHeader } from "@/components/page-header";
+import { PageHeader, EmptyState } from "@/components/page-header";
+import { TableSkeleton, ErrorState } from "@/components/loading-states";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/suppliers/")({
@@ -35,7 +36,7 @@ function SuppliersList() {
   const [showCreate, setShowCreate] = useState(false);
   const qc = useQueryClient();
 
-  const { data: rows = [], isLoading } = useQuery({
+  const { data: rows = [], isLoading, isError, error, refetch } = useQuery({
     queryKey: ["suppliers", q],
     queryFn: async () => {
       let query = supabase
@@ -109,9 +110,21 @@ function SuppliersList() {
 
       <Card className="surface-elevated border-0 overflow-hidden">
         {isLoading ? (
-          <div className="p-12 text-center text-muted-foreground">جاري التحميل...</div>
+          <TableSkeleton rows={8} columns={6} />
+        ) : isError ? (
+          <ErrorState error={error} onRetry={() => refetch()} />
         ) : rows.length === 0 ? (
-          <div className="p-12 text-center text-muted-foreground">لا يوجد موردون</div>
+          <EmptyState
+            icon={<Truck className="size-7" />}
+            title="لا يوجد موردون"
+            description="ابدأ بإضافة أول مورد لمنظومتك."
+            action={
+              <Button className="gap-2" onClick={() => setShowCreate(true)}>
+                <Plus className="size-4" />
+                مورد جديد
+              </Button>
+            }
+          />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
