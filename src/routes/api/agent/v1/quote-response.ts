@@ -148,7 +148,7 @@ export const Route = createFileRoute("/api/agent/v1/quote-response")({
               entity_id: quote.id,
               title,
               status: "pending",
-              current_stage: "internal_review" as never,
+              current_stage: "internal_review",
               priority,
               notes: body.customer_notes ?? null,
             })

@@ -27,7 +27,7 @@ export const submitForApproval = createServerFn({ method: "POST" })
   .inputValidator((input) =>
     z
       .object({
-        entityType: z.enum(["product", "price"]),
+        entityType: z.enum(["product", "price", "quote_request"]),
         entityId: z.string().uuid(),
         title: z.string().min(1).max(200),
         priority: z.enum(["low", "normal", "high", "urgent"]).default("normal"),
@@ -101,6 +101,43 @@ export const decideApproval = createServerFn({ method: "POST" })
       .single();
     if (e1 || !appr) throw new Error(e1?.message ?? "Approval not found");
 
+    // ---------- Special path: quote_request -> atomic RPC ----------
+    if (appr.entity_type === "quote_request" && data.decision === "approved") {
+      const { data: rpcResult, error: rpcErr } = await supabase.rpc(
+        "approve_quote_for_manufacturing",
+        {
+          _approval_id: data.approvalId,
+          _decided_by: userId,
+          _notes: data.comment ?? undefined,
+        },
+      );
+      if (rpcErr) throw new Error(rpcErr.message);
+
+      await supabase.from("approval_history").insert({
+        approval_id: data.approvalId,
+        stage: appr.current_stage,
+        action: "approved",
+        comment: data.comment ?? null,
+        actor: userId,
+      });
+
+      await notify(
+        supabase,
+        appr.requested_by,
+        "تم اعتماد طلب التصنيع",
+        appr.title,
+        `/manufacturing-orders`,
+        "approval_result",
+      );
+
+      return {
+        ok: true,
+        status: "approved",
+        stage: appr.current_stage,
+        manufacturing: rpcResult,
+      };
+    }
+
     let newStatus = appr.status as string;
     let newStage = appr.current_stage as Stage;
     let decidedAt: string | null = null;
@@ -168,6 +205,11 @@ export const decideApproval = createServerFn({ method: "POST" })
       await supabase
         .from("prices")
         .update({ status: "approved", approved_by: userId, approved_at: new Date().toISOString() })
+        .eq("id", appr.entity_id);
+    } else if (appr.entity_type === "quote_request" && newStatus === "rejected") {
+      await supabase
+        .from("quote_requests")
+        .update({ status: "rejected", rejection_reason: data.comment ?? "Internal rejection" })
         .eq("id", appr.entity_id);
     }
 

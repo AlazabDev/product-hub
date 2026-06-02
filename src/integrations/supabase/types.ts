@@ -695,6 +695,21 @@ export type Database = {
         }
         Relationships: []
       }
+      manufacturing_order_status_transitions: {
+        Row: {
+          from_status: string
+          to_status: string
+        }
+        Insert: {
+          from_status: string
+          to_status: string
+        }
+        Update: {
+          from_status?: string
+          to_status?: string
+        }
+        Relationships: []
+      }
       manufacturing_orders: {
         Row: {
           actual_completion_date: string | null
@@ -1423,6 +1438,7 @@ export type Database = {
           overhead_cost: number | null
           pricing_breakdown: Json | null
           profit_margin: number | null
+          quantity: number
           quote_valid_until: string | null
           quoted_at: string | null
           rejection_reason: string | null
@@ -1459,6 +1475,7 @@ export type Database = {
           overhead_cost?: number | null
           pricing_breakdown?: Json | null
           profit_margin?: number | null
+          quantity?: number
           quote_valid_until?: string | null
           quoted_at?: string | null
           rejection_reason?: string | null
@@ -1495,6 +1512,7 @@ export type Database = {
           overhead_cost?: number | null
           pricing_breakdown?: Json | null
           profit_margin?: number | null
+          quantity?: number
           quote_valid_until?: string | null
           quoted_at?: string | null
           rejection_reason?: string | null
@@ -1751,6 +1769,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_quote_for_manufacturing: {
+        Args: { _approval_id: string; _decided_by?: string; _notes?: string }
+        Returns: Json
+      }
       generate_order_number: { Args: never; Returns: string }
       generate_requisition_number: { Args: never; Returns: string }
       has_role: {
@@ -1770,7 +1792,11 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "editor" | "viewer"
-      approval_stage: "content_review" | "manager_review" | "final_approval"
+      approval_stage:
+        | "content_review"
+        | "manager_review"
+        | "final_approval"
+        | "internal_review"
       approval_status:
         | "pending"
         | "approved"
@@ -1950,7 +1976,12 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "editor", "viewer"],
-      approval_stage: ["content_review", "manager_review", "final_approval"],
+      approval_stage: [
+        "content_review",
+        "manager_review",
+        "final_approval",
+        "internal_review",
+      ],
       approval_status: [
         "pending",
         "approved",
