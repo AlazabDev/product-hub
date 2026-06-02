@@ -102,23 +102,27 @@ function AssetsIndex() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <StatCard
-          label="إجمالي الأصول النشطة"
-          value={(stats?.total ?? 0).toLocaleString("en")}
-          icon={ImageIcon}
-        />
-        <StatCard
-          label="ارتباطات بمنتجات"
-          value={(stats?.linked ?? 0).toLocaleString("en")}
-          icon={Layers}
-        />
-        <StatCard
-          label="حجم التخزين"
-          value={formatBytes(stats?.totalBytes ?? 0)}
-          icon={HardDrive}
-        />
-      </div>
+      {!stats ? (
+        <StatCardsSkeleton count={3} className="md:grid-cols-3" />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <StatCard
+            label="إجمالي الأصول النشطة"
+            value={(stats?.total ?? 0).toLocaleString("en")}
+            icon={ImageIcon}
+          />
+          <StatCard
+            label="ارتباطات بمنتجات"
+            value={(stats?.linked ?? 0).toLocaleString("en")}
+            icon={Layers}
+          />
+          <StatCard
+            label="حجم التخزين"
+            value={formatBytes(stats?.totalBytes ?? 0)}
+            icon={HardDrive}
+          />
+        </div>
+      )}
 
       <Card className="p-5 surface-elevated border-0 space-y-4">
         <div className="flex items-center justify-between gap-3 flex-wrap">
