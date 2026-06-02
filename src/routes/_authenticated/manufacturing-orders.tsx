@@ -127,21 +127,18 @@ function ManufacturingOrdersPage() {
     queryFn: fetchOrderStats,
   });
 
+  const updateStatusFn = useServerFn(updateManufacturingOrderStatus);
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const updates: any = { status };
-      if (status === "in_production")
-        updates.actual_start_date = new Date().toISOString().split("T")[0];
-      if (status === "delivered")
-        updates.actual_completion_date = new Date().toISOString().split("T")[0];
-
-      const { error } = await supabase.from("manufacturing_orders").update(updates).eq("id", id);
-      if (error) throw error;
-    },
+    mutationFn: ({ id, status }: { id: string; status: string }) =>
+      updateStatusFn({
+        data: { orderId: id, status: status as Parameters<typeof updateStatusFn>[0]["data"]["status"] },
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["manufacturing-orders"] });
       queryClient.invalidateQueries({ queryKey: ["manufacturing-stats"] });
+      toast.success("تم تحديث حالة الأمر");
     },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const statCards = [
