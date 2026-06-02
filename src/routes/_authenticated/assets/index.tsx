@@ -6,6 +6,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { GridSkeleton, ErrorState, StatCardsSkeleton } from "@/components/loading-states";
+import { EmptyState } from "@/components/page-header";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Upload,
@@ -44,7 +46,7 @@ function AssetsIndex() {
     },
   });
 
-  const { data: rows, isLoading } = useQuery({
+  const { data: rows, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["assets-list", search],
     queryFn: async () => {
       const q = supabase
