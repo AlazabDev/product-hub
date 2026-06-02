@@ -6,6 +6,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { GridSkeleton, ErrorState, StatCardsSkeleton } from "@/components/loading-states";
+import { EmptyState } from "@/components/page-header";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Upload,
@@ -44,7 +46,7 @@ function AssetsIndex() {
     },
   });
 
-  const { data: rows, isLoading } = useQuery({
+  const { data: rows, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["assets-list", search],
     queryFn: async () => {
       const q = supabase
@@ -100,23 +102,27 @@ function AssetsIndex() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <StatCard
-          label="إجمالي الأصول النشطة"
-          value={(stats?.total ?? 0).toLocaleString("en")}
-          icon={ImageIcon}
-        />
-        <StatCard
-          label="ارتباطات بمنتجات"
-          value={(stats?.linked ?? 0).toLocaleString("en")}
-          icon={Layers}
-        />
-        <StatCard
-          label="حجم التخزين"
-          value={formatBytes(stats?.totalBytes ?? 0)}
-          icon={HardDrive}
-        />
-      </div>
+      {!stats ? (
+        <StatCardsSkeleton count={3} className="md:grid-cols-3" />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <StatCard
+            label="إجمالي الأصول النشطة"
+            value={(stats?.total ?? 0).toLocaleString("en")}
+            icon={ImageIcon}
+          />
+          <StatCard
+            label="ارتباطات بمنتجات"
+            value={(stats?.linked ?? 0).toLocaleString("en")}
+            icon={Layers}
+          />
+          <StatCard
+            label="حجم التخزين"
+            value={formatBytes(stats?.totalBytes ?? 0)}
+            icon={HardDrive}
+          />
+        </div>
+      )}
 
       <Card className="p-5 surface-elevated border-0 space-y-4">
         <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -147,19 +153,23 @@ function AssetsIndex() {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
-            {Array.from({ length: 24 }).map((_, i) => (
-              <Skeleton key={i} className="aspect-square" />
-            ))}
-          </div>
+          <GridSkeleton items={24} className="grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8" />
+        ) : isError ? (
+          <ErrorState error={error} onRetry={() => refetch()} />
         ) : !filtered.length ? (
-          <div className="py-12 text-center text-muted-foreground text-sm">
-            لا توجد نتائج.{" "}
-            <Link to="/assets/bulk-upload" className="text-accent">
-              ابدأ بالرفع
-            </Link>
-            .
-          </div>
+          <EmptyState
+            icon={<ImageIcon className="size-7" />}
+            title="لا توجد أصول"
+            description="ارفع أول مجموعة من الملفات لربطها بالمنتجات."
+            action={
+              <Link to="/assets/bulk-upload">
+                <Button className="gap-2">
+                  <Upload className="size-4" />
+                  ابدأ بالرفع
+                </Button>
+              </Link>
+            }
+          />
         ) : view === "grid" ? (
           <GridView rows={filtered} />
         ) : view === "list" ? (
