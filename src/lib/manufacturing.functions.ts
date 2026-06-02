@@ -46,8 +46,13 @@ export const updateManufacturingOrderStatus = createServerFn({ method: "POST" })
       throw new Error("forbidden: requires editor or admin role");
     }
 
-    const updates: Record<string, unknown> = { status: data.status };
     const today = new Date().toISOString().split("T")[0];
+    const updates: {
+      status: (typeof MO_STATUSES)[number];
+      actual_start_date?: string;
+      actual_completion_date?: string;
+      production_notes?: string;
+    } = { status: data.status };
     if (data.status === "in_production") updates.actual_start_date = today;
     if (data.status === "delivered") updates.actual_completion_date = today;
     if (data.notes) updates.production_notes = data.notes;
