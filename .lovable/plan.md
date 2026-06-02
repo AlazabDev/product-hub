@@ -1,93 +1,93 @@
-# Production Stabilization Plan — Alazab Product Hub
+# إغلاق الدورة الحرجة لاعتماد عروض الأسعار → التصنيع
 
-الهدف: `bun run build` ✅، TypeScript errors = 0، Schema/Code متطابقان، workflow التصنيع محكوم بـ Approval Gate.
+تنفيذ بالترتيب الصارم. كل خطوة لا تبدأ قبل إتمام السابقة.
 
-## الوضع الحالي (مؤكد من build-health.json)
+## 1) إصلاح `quote-response.ts` وتوحيد مرحلة الاعتماد
+- المشكلة: السطر `current_stage: "internal_review" as never` يكسر نوع `approval_stage` (الإنومات الحالية: `content_review|manager_review|final_approval`).
+- التعديل: استخدم مرحلة موحّدة `final_approval` لطلبات `quote_request` (لا يوجد سير ثلاثي للعروض)، أو القيمة الجديدة `internal_review` بعد إضافتها في الـ migration (الخطوة 2). نختار **إضافة `internal_review` في إنوم `approval_stage`** لفصل سير المنتجات عن سير العروض.
+- إزالة `as never` بعد ذلك.
 
-- 120 خطأ، 10 ملفات متضررة.
-- الجداول المفقودة في `types.ts` المستخدمة في الكود:
-  `product_requests`, `quote_requests`, `manufacturing_orders`, `material_requisitions`, `material_requisition_items`, `chatbot_interactions`, `agent_sessions`, `agent_actions`, `agent_decisions`, `pricing_rules`, إضافة لحقول `azure_*` متعددة.
-- `src/lib/azure-integrations.ts` → 23 خطأ، أبرزها import مكسور لـ `./azure-config` + استخدام جدول غير موجود (`azure_integrations`) بأعمدة JSON معاملة كسلاسل بسيطة.
-- `pricing-engine.ts` يحوي أسعار خامات hardcoded — ممنوع إنتاجيًا.
-- `quote-response.ts` ينشئ Manufacturing + Material Requisition مباشرة عند قبول العميل — انتهاك للـ Approval Gate.
+## 2) Migration 1 — Quantity + State Machine
+SQL يشمل:
+- `ALTER TYPE approval_stage ADD VALUE IF NOT EXISTS 'internal_review';`
+- إضافة عمود `quantity numeric NOT NULL DEFAULT 1` إلى `quote_requests`.
+- جدول مرجعي `manufacturing_order_status_transitions(from_status, to_status)` يثبت الانتقالات القانونية:
+  - `pending → materials_requested|cancelled`
+  - `materials_requested → in_production|cancelled`
+  - `in_production → quality_check|cancelled`
+  - `quality_check → ready|in_production`
+  - `ready → delivered|cancelled`
+  - `delivered →` (نهائي)
+- Trigger `enforce_mo_status_transition` على `manufacturing_orders` يرفض أي UPDATE خارج هذه المصفوفة.
+- Trigger مشابه `enforce_quote_status_transition` يثبت:
+  - `quoted → accepted_pending_internal_approval|rejected|expired`
+  - `accepted_pending_internal_approval → approved_in_production|rejected`
+  - `approved_in_production →` (نهائي)
+- GRANTs لجدول الانتقالات (`SELECT` لـ authenticated, `ALL` لـ service_role) + RLS.
+
+## 3) Migration 2 — RPC ذرية `approve_quote_for_manufacturing`
+دالة `SECURITY DEFINER` تأخذ `(_approval_id uuid, _decided_by uuid, _notes text)` وتنفذ داخل معاملة واحدة:
+1. قفل صف `approvals` (`FOR UPDATE`) والتحقق من: `status='pending'` و `entity_type='quote_request'`.
+2. قفل وقراءة `quote_requests` المرتبط؛ التحقق من حالة `accepted_pending_internal_approval`.
+3. توليد `order_number` عبر `generate_order_number()`.
+4. INSERT في `manufacturing_orders` بـ `quantity` من العرض و `unit_price/total_price/final_price` المحسوبة.
+5. توليد `requisition_number` و INSERT في `material_requisitions`.
+6. INSERT الدفعي لبنود `material_requisition_items` من `pricing_breakdown.materials_breakdown` (مضروبة في `quantity`).
+7. UPDATE `approvals.status='approved'`, `decided_at`, `decided_by`.
+8. UPDATE `quote_requests.status='approved_in_production'`.
+9. تُرجع `jsonb` يحوي معرفات MO و MR وعدد العناصر.
+- على أي فشل: `RAISE EXCEPTION` فيعود الـ rollback تلقائياً.
+- GRANT `EXECUTE` للـ `service_role` فقط.
+
+## 4) تحويل `internal-approval.ts` إلى غلاف خفيف
+- الرفض: يبقى منطقياً (تحديث `approvals` + `quote_requests`).
+- الاعتماد: استبدال المنطق الطويل باستدعاء واحد `supabaseAdmin.rpc('approve_quote_for_manufacturing', {...})`.
+- استخراج `mo_id/mr_id/items_count` من نتيجة الـ RPC وإرجاعها كما هي للعميل.
+- إبقاء `requireApiKey` + `logCall`.
+
+## 5) `approvals.functions.ts` — دعم `quote_request`
+- توسيع enum `entityType` في `submitForApproval` ليشمل `"quote_request"`.
+- توسيع منطق `decideApproval`:
+  - عند `entity_type='quote_request'` و قرار `approved`: استدعاء الـ RPC نفسها بدلاً من تحديث جدول products.
+  - عند الرفض: تحديث `quote_requests.status='rejected'`.
+- الإبقاء على سير ثلاثي للمنتجات كما هو.
+
+## 6) `approvals/index.tsx` — ربط مسار التصنيع
+- عند نجاح `decide.mutate` لطلب من نوع `quote_request` بقرار `approved`: عرض toast مع زر "فتح أمر التصنيع" يوجّه إلى `/manufacturing-orders`.
+- إظهار شارة `quote_request` مميّزة (لون مختلف) وترجمتها العربية "طلب عرض سعر".
+- تكييف خطوات التقدم (stage progress) ليُظهر مرحلة واحدة `internal_review` لطلبات العروض بدل الثلاث.
+
+## 7) `order-status.ts` — منع الانتقالات غير القانونية
+- في الـ PATCH handler: قبل أي تحديث للحالة، استعلام `manufacturing_order_status_transitions` (أو الاعتماد على الـ trigger) للتأكد من شرعية الانتقال.
+- إعادة خطأ `409 invalid_transition` بدلاً من فشل صامت.
+- whitelist لحقول التحديث الأخرى (تواريخ، ملاحظات، دفع) منفصلة عن تحديث الحالة.
+
+## 8) `manufacturing-orders.tsx` — منع التعديل المباشر
+- استبدال `supabase.from("manufacturing_orders").update(...)` (المباشر من المتصفح) بـ **server function جديد** `updateManufacturingOrderStatus` في `src/lib/manufacturing.functions.ts`:
+  - يستعمل `requireSupabaseAuth` + يتحقق `has_role(editor|admin)`.
+  - يستدعي نفس منطق الـ trigger (يفشل تلقائياً عند الانتقال غير القانوني).
+- استبدال `useMutation` ليستدعي الـ server fn عبر `useServerFn`.
+- إضافة قراءة الانتقالات المسموحة لإخفاء الأزرار غير الصالحة بصرياً.
+
+## 9) `api-auth.ts` — إغلاق CORS + Rate Limit لكل مستهلك
+- إزالة `CORS` الافتراضي المفتوح (`*`)؛ كل المسارات تستخدم `corsHeaders(request)` (موجودة بالفعل).
+- إجبار `ALLOWED_ORIGINS` ليكون مطلوباً في الإنتاج (`NODE_ENV==='production'` بدون قائمة → 403).
+- استبدال `RATE_LIMIT_PER_MINUTE` العام بـ `consumer.rate_limit_per_minute` (العمود موجود في جدول `api_consumers`).
+- تحديث جميع handlers (`quote-request|quote-response|internal-approval|order-status|public/v1/*`) لاستخدام `corsHeaders(request)` بدل `CORS` الثابت.
+
+## 10) `package.json` — بوابة TypeScript و Lint قبل Deploy
+- إضافة scripts:
+  - `"typecheck": "tsc --noEmit"`
+  - `"verify": "bun run typecheck && bun run lint && bun run build:health"`
+- توثيق في `.github/workflows/main.yml` (إن وجد) لإضافة `bun run verify` قبل أي خطوة deploy.
 
 ---
 
-## الدفعة 1 — Schema Foundation (أولوية حرجة)
+## ملاحظات تقنية
+- المهاجرات (steps 2 و 3) منفصلتان لأن `ALTER TYPE ... ADD VALUE` لا يمكن استخدامه في نفس المعاملة التي تستخدم القيمة الجديدة.
+- جميع التغييرات على الـ DB تشمل GRANT + RLS صريحاً.
+- لا أغيّر `types.ts` يدوياً (يُنشأ تلقائياً بعد كل migration).
+- بعد كل migration سأتوقف لانتظار موافقتك قبل الانتقال للخطوة التالية.
 
-migration واحدة شاملة تنشئ كل الجداول الناقصة المستخدمة فعليًا في الكود، مع GRANTs + RLS:
-
-| الجدول | الغرض |
-|---|---|
-| `product_requests` | طلبات منتجات من النماذج الداخلية |
-| `quote_requests` | طلبات تسعير الـ chatbot |
-| `chatbot_interactions` | سجل تفاعلات الـ agent |
-| `agent_sessions`, `agent_actions`, `agent_decisions` | حوكمة الـ Agent |
-| `pricing_rules` | قواعد التسعير (overhead/margin/labor) |
-| `manufacturing_orders` | أوامر تصنيع |
-| `material_requisitions` + `material_requisition_items` | صرف خامات |
-
-- كل جدول: GRANT للـ `authenticated` + `service_role`، RLS مفعّل، policies تعتمد `has_role`.
-- بعد التطبيق: `types.ts` يُحدّث تلقائيًا.
-
-**نتيجة متوقعة:** ~83 خطأ يختفي (38 جدول مفقود + 45 حقل مفقود معظمها داخل تلك الجداول).
-
----
-
-## الدفعة 2 — Azure Config + Integrations Cleanup
-
-- إنشاء `src/lib/azure-config.ts` يقرأ من `process.env` فقط (10 متغيرات بيئة محددة في الطلب).
-- تثبيت `AZURE_SEARCH_INDEX=alazab-products` كقيمة افتراضية.
-- إصلاح `azure-integrations.ts`: jsonb columns تُكتب كـ JSON (إزالة أخطاء `string[] → string|number|boolean`).
-- إصلاح `request-form.tsx` ليستخدم `product_requests` الجديد.
-- إصلاح كل ملفات `_authenticated/*` (integrations, manufacturing-orders, quote-requests, requests).
-
-**نتيجة متوقعة:** الـ 27 خطأ تحويل قيمة + 6 TS errors + 3 type mismatch تختفي.
-
----
-
-## الدفعة 3 — Approval Gate + Internal Approval Endpoint
-
-تعديل سلوكي حرج للـ workflow:
-
-- `quote-response.ts` عند `accepted`:
-  - status → `accepted_pending_internal_approval`
-  - ينشئ سجل `approvals` فقط — **لا** manufacturing_order ولا material_requisition.
-- إنشاء `POST /api/agent/v1/internal-approval`:
-  - يستقبل `approval_id` + `decision`.
-  - `approved` → ينشئ `manufacturing_orders` + `material_requisitions` + `material_requisition_items`.
-  - `rejected` → يحدّث الحالات فقط.
-- توحيد response shape لكل APIs: `{ success, data?, error?, code? }`.
-
----
-
-## الدفعة 4 — Pricing Engine + API Governance + Build Health
-
-- `pricing-engine.ts`: استبدال hardcoded بـ `fetchMaterialPrices/fetchLaborRules/fetchPricingRules` من DB. fallback فقط في dev مع `console.warn`. في production → خطأ صريح `pricing_rules_missing` / `material_price_missing`.
-- `api-auth.ts`:
-  - CORS من `ALLOWED_ORIGINS` env (wildcard فقط في dev).
-  - تطبيق `allowed_endpoints` فعليًا (403 إن لم يُسمح).
-  - rate limiting بسيط عبر `webhook_logs` count في آخر دقيقة.
-- تشغيل `bun run lint && bun run build && bun run build:health` وإصلاح ما تبقى.
-- تحديث `REPOSITORY_INDEX.md` + `README.md` + `docs/PRE_PRODUCTION_CHECKLIST.md` بالواقع المنجز.
-- توحيد الاسم إلى `product-hub` في `package.json` وما يلزم.
-
----
-
-## ما لن أفعله (التزامًا بالقيود)
-
-- لن أضيف features جديدة.
-- لن أكسر APIs الموجودة أثناء التعديل.
-- لن أستخدم `as any` لإخفاء أخطاء Schema.
-- لن أعدّل `client.ts` / `client.server.ts` / `types.ts` يدويًا.
-- لن أحذف شاشات بدون توثيق.
-
----
-
-## التسليم بعد كل دفعة
-
-تقرير مختصر: ملفات معدّلة، migrations مُطبّقة، أخطاء build-health قبل/بعد، الأخطاء المتبقية.
-
-## السؤال قبل البدء
-
-هل أبدأ بالدفعة 1 (migration الـ Schema الموحّدة)؟ أم تريد تعديل الترتيب أو حذف/إضافة بنود؟
+## النتيجة النهائية
+- مرحلة موافقة موحّدة، state machine مفروض على مستوى DB، RPC ذرية تمنع حالات "أمر بدون مستلزمات"، نهاية للتعديل المباشر من المتصفح، CORS مغلق، rate limit لكل عميل، وبوابة CI تمنع نشر كود مكسور.
