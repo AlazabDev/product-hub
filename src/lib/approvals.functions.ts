@@ -108,7 +108,7 @@ export const decideApproval = createServerFn({ method: "POST" })
         {
           _approval_id: data.approvalId,
           _decided_by: userId,
-          _notes: data.comment ?? null,
+          _notes: data.comment ?? undefined,
         },
       );
       if (rpcErr) throw new Error(rpcErr.message);
