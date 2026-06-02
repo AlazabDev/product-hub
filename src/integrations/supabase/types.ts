@@ -1769,6 +1769,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_quote_for_manufacturing: {
+        Args: { _approval_id: string; _decided_by?: string; _notes?: string }
+        Returns: Json
+      }
       generate_order_number: { Args: never; Returns: string }
       generate_requisition_number: { Args: never; Returns: string }
       has_role: {
