@@ -149,19 +149,23 @@ function AssetsIndex() {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
-            {Array.from({ length: 24 }).map((_, i) => (
-              <Skeleton key={i} className="aspect-square" />
-            ))}
-          </div>
+          <GridSkeleton items={24} className="grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8" />
+        ) : isError ? (
+          <ErrorState error={error} onRetry={() => refetch()} />
         ) : !filtered.length ? (
-          <div className="py-12 text-center text-muted-foreground text-sm">
-            لا توجد نتائج.{" "}
-            <Link to="/assets/bulk-upload" className="text-accent">
-              ابدأ بالرفع
-            </Link>
-            .
-          </div>
+          <EmptyState
+            icon={<ImageIcon className="size-7" />}
+            title="لا توجد أصول"
+            description="ارفع أول مجموعة من الملفات لربطها بالمنتجات."
+            action={
+              <Link to="/assets/bulk-upload">
+                <Button className="gap-2">
+                  <Upload className="size-4" />
+                  ابدأ بالرفع
+                </Button>
+              </Link>
+            }
+          />
         ) : view === "grid" ? (
           <GridView rows={filtered} />
         ) : view === "list" ? (
