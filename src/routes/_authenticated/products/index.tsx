@@ -29,7 +29,8 @@ import {
   Plus,
 } from "lucide-react";
 import { generateProductImages } from "@/lib/product-image-gen.functions";
-import { PageHeader } from "@/components/page-header";
+import { PageHeader, EmptyState } from "@/components/page-header";
+import { TableSkeleton } from "@/components/loading-states";
 
 export const Route = createFileRoute("/_authenticated/products/")({
   head: () => ({ meta: [{ title: "المنتجات والخدمات — Alazab PAOP" }] }),
@@ -527,15 +528,27 @@ function ProductsList() {
             <tbody>
               {isLoading && (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-muted-foreground">
-                    جاري التحميل...
+                  <td colSpan={8} className="p-0">
+                    <TableSkeleton rows={8} columns={8} showHeader={false} />
                   </td>
                 </tr>
               )}
               {!isLoading && data?.rows.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-muted-foreground">
-                    لا توجد نتائج
+                  <td colSpan={8} className="p-0">
+                    <EmptyState
+                      icon={<Plus className="size-7" />}
+                      title="لا توجد نتائج"
+                      description="جرّب تعديل الفلاتر أو إضافة بند جديد."
+                      action={
+                        <Button asChild className="gap-2">
+                          <Link to="/products/new">
+                            <Plus className="size-4" />
+                            إنشاء بند جديد
+                          </Link>
+                        </Button>
+                      }
+                    />
                   </td>
                 </tr>
               )}
