@@ -131,7 +131,17 @@ function ManufacturingOrdersPage() {
   const updateStatusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
       updateStatusFn({
-        data: { orderId: id, status: status as Parameters<typeof updateStatusFn>[0]["data"]["status"] },
+        data: {
+          orderId: id,
+          status: status as
+            | "pending"
+            | "materials_requested"
+            | "in_production"
+            | "quality_check"
+            | "ready"
+            | "delivered"
+            | "cancelled",
+        },
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["manufacturing-orders"] });
