@@ -5,13 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 import {
   uploadAndLinkAsset,
   deleteAssetLink,
   promoteToMain,
   reorderAssets,
+  addAssetFromUrl,
 } from "@/lib/upload-assets";
-import { Upload, Star, ImageOff, Maximize2 } from "lucide-react";
+import { generateProductImages } from "@/lib/product-image-gen.functions";
+import { useServerFn } from "@tanstack/react-start";
+import { Upload, Star, ImageOff, Maximize2, Link as LinkIcon, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { SortableAssetGrid, type GridItem } from "@/components/sortable-asset-grid";
 import { AssetLightbox } from "@/components/asset-lightbox";
