@@ -4,8 +4,37 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { CORS, json, logCall, requireApiKey } from "@/lib/api-auth";
+
+const MO_STATUSES = [
+  "pending",
+  "materials_requested",
+  "in_production",
+  "quality_check",
+  "ready",
+  "delivered",
+  "cancelled",
+] as const;
+
+const PatchSchema = z.object({
+  order_id: z.string().uuid().optional(),
+  order_number: z.string().min(1).max(64).optional(),
+  status: z.enum(MO_STATUSES).optional(),
+  actual_start_date: z.string().datetime().optional(),
+  actual_completion_date: z.string().datetime().optional(),
+  delivery_date: z.string().datetime().optional(),
+  payment_status: z.enum(["unpaid", "partial", "paid"]).optional(),
+  amount_paid: z.number().nonnegative().max(1e12).optional(),
+  production_notes: z.string().max(2000).optional(),
+  quality_notes: z.string().max(2000).optional(),
+  delivery_notes: z.string().max(2000).optional(),
+  notify_customer: z.boolean().optional(),
+}).strict().refine((v) => v.order_id || v.order_number, {
+  message: "Missing order_id or order_number",
+});
+
 
 export const Route = createFileRoute("/api/agent/v1/order-status")({
   server: {
@@ -113,13 +142,17 @@ export const Route = createFileRoute("/api/agent/v1/order-status")({
         if ("error" in auth) return auth.error;
 
         try {
-          const body = await request.json();
-
-          if (!body.order_id && !body.order_number) {
-            return json({ success: false, error: "Missing order_id or order_number" }, 400);
+          const raw = await request.json();
+          const parsed = PatchSchema.safeParse(raw);
+          if (!parsed.success) {
+            return json(
+              { success: false, error: "Invalid request", details: parsed.error.flatten() },
+              400,
+            );
           }
+          const body = parsed.data;
 
-          const updates: any = {};
+          const updates: Record<string, unknown> = {};
           if (body.status) updates.status = body.status;
           if (body.actual_start_date) updates.actual_start_date = body.actual_start_date;
           if (body.actual_completion_date)
@@ -130,6 +163,7 @@ export const Route = createFileRoute("/api/agent/v1/order-status")({
           if (body.production_notes) updates.production_notes = body.production_notes;
           if (body.quality_notes) updates.quality_notes = body.quality_notes;
           if (body.delivery_notes) updates.delivery_notes = body.delivery_notes;
+
 
           let query = supabaseAdmin.from("manufacturing_orders").update(updates);
           if (body.order_id) {
