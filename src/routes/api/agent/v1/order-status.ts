@@ -165,12 +165,15 @@ export const Route = createFileRoute("/api/agent/v1/order-status")({
           if (body.delivery_notes) updates.delivery_notes = body.delivery_notes;
 
 
-          let query = supabaseAdmin.from("manufacturing_orders").update(updates);
+          let query = supabaseAdmin
+            .from("manufacturing_orders")
+            .update(updates as never);
           if (body.order_id) {
             query = query.eq("id", body.order_id);
           } else {
-            query = query.eq("order_number", body.order_number);
+            query = query.eq("order_number", body.order_number as string);
           }
+
 
           const { data, error } = await query.select().single();
 
