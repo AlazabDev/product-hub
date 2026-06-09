@@ -405,58 +405,30 @@ ${stats.prices ? `**سجلات التسعير:**\n- الاجمالي: ${(stats.p
   }
 }
 
-// Main chat function
+// Main chat function — proxies through a server function so the Azure OpenAI key never reaches the browser.
+import { azureChatCompletion } from "@/lib/ai-chat.functions";
+
 export async function sendChatMessage(
   messages: ChatMessage[],
   onToolCall?: (toolName: string, args: Record<string, unknown>) => void,
 ): Promise<AIResponse> {
-  const endpoint = import.meta.env.VITE_AZURE_OPENAI_ENDPOINT;
-  const apiKey = import.meta.env.VITE_AZURE_OPENAI_API_KEY;
-  const deploymentName =
-    import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_NAME || "alazab-paop-assistant";
-  const apiVersion = import.meta.env.VITE_AZURE_OPENAI_API_VERSION || "2024-02-01";
-
-  if (!endpoint || !apiKey) {
-    // Fallback to demo mode
-    return {
-      content: "عذرا، لم يتم تكوين Azure OpenAI بعد. يرجى اضافة متغيرات البيئة المطلوبة.",
-    };
-  }
-
-  const url = `${endpoint}/openai/deployments/${deploymentName}/chat/completions?api-version=${apiVersion}`;
-
   const apiMessages = [
-    { role: "system", content: SYSTEM_PROMPT },
+    { role: "system" as const, content: SYSTEM_PROMPT },
     ...messages.map((m) => ({ role: m.role, content: m.content })),
   ];
 
   try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": apiKey,
-      },
-      body: JSON.stringify({
-        messages: apiMessages,
-        tools: TOOLS,
-        tool_choice: "auto",
-        temperature: 0.7,
-        max_tokens: 2000,
-      }),
+    const first = await azureChatCompletion({
+      data: { messages: apiMessages, tools: TOOLS, temperature: 0.7, max_tokens: 2000 },
     });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Azure OpenAI Error: ${response.status} - ${errorText}`);
+    if (!first.ok) {
+      return {
+        content: first.error ?? "تعذر الاتصال بمساعد Azure OpenAI.",
+      };
     }
-
-    const data = await response.json();
+    const data = first.data;
     const choice = data.choices?.[0];
-
-    if (!choice) {
-      throw new Error("No response from Azure OpenAI");
-    }
+    if (!choice) throw new Error("No response from Azure OpenAI");
 
     // Handle tool calls
     if (choice.message.tool_calls?.length) {
@@ -465,38 +437,28 @@ export async function sendChatMessage(
       for (const toolCall of choice.message.tool_calls) {
         const toolName = toolCall.function.name;
         const args = JSON.parse(toolCall.function.arguments);
-
         onToolCall?.(toolName, args);
-
         const result = await executeToolCall(toolName, args);
         toolResults.push(result);
       }
 
-      // Make a follow-up call with tool results
       const followUpMessages = [
         ...apiMessages,
         choice.message,
         ...choice.message.tool_calls.map((tc: any, i: number) => ({
-          role: "tool",
+          role: "tool" as const,
           tool_call_id: tc.id,
           content: toolResults[i],
         })),
       ];
 
-      const followUpResponse = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "api-key": apiKey,
-        },
-        body: JSON.stringify({
-          messages: followUpMessages,
-          temperature: 0.7,
-          max_tokens: 2000,
-        }),
+      const followUp = await azureChatCompletion({
+        data: { messages: followUpMessages, temperature: 0.7, max_tokens: 2000 },
       });
-
-      const followUpData = await followUpResponse.json();
+      if (!followUp.ok) {
+        return { content: followUp.error ?? "تعذر اكمال الرد." };
+      }
+      const followUpData = followUp.data;
       const finalContent = followUpData.choices?.[0]?.message?.content || "";
 
       return {
@@ -518,6 +480,7 @@ export async function sendChatMessage(
     throw error;
   }
 }
+
 
 // Export types and utilities
 export { TOOLS, SYSTEM_PROMPT };

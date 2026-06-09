@@ -14,11 +14,18 @@ export const Route = createFileRoute("/api/public/v1/products/$azCode")({
           await logCall({ consumer: null, request, endpoint: ep, status: 401, startedAt: started });
           return auth.error;
         }
+        // Sanitize path param to allow only safe code characters and prevent filter injection
+        const safeCode = String(params.azCode).replace(/[^A-Za-z0-9_\-]/g, "").slice(0, 64);
+        if (!safeCode) {
+          await logCall({ consumer: auth.consumer, request, endpoint: ep, status: 400, startedAt: started });
+          return json({ error: "Invalid code" }, 400);
+        }
         const { data: product, error } = await supabaseAdmin
           .from("products")
           .select("*")
-          .or(`az_code.eq.${params.azCode},egs_code.eq.${params.azCode}`)
+          .or(`az_code.eq.${safeCode},egs_code.eq.${safeCode}`)
           .maybeSingle();
+
         if (error) return json({ error: error.message }, 500);
         if (!product) {
           await logCall({

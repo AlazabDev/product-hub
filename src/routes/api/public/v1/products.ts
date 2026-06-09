@@ -35,10 +35,16 @@ export const Route = createFileRoute("/api/public/v1/products")({
           .order("updated_at", { ascending: false })
           .range(offset, offset + limit - 1);
         if (status) q = q.eq("status", status as "draft");
-        if (search)
-          q = q.or(
-            `name_ar.ilike.%${search}%,name_en.ilike.%${search}%,az_code.ilike.%${search}%,egs_code.ilike.%${search}%`,
-          );
+        if (search) {
+          // Strip PostgREST filter metacharacters to prevent .or() injection
+          const safe = search.replace(/[,()*.\\%]/g, "").slice(0, 100);
+          if (safe) {
+            q = q.or(
+              `name_ar.ilike.%${safe}%,name_en.ilike.%${safe}%,az_code.ilike.%${safe}%,egs_code.ilike.%${safe}%`,
+            );
+          }
+        }
+
 
         const { data, error, count } = await q;
         if (error) {
