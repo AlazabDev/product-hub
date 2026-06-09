@@ -281,6 +281,44 @@ export function ProductAssetsTab({ productId, azCode }: { productId: string; azC
           >
             {busy ? "جاري الرفع..." : "اختر ملفات"}
           </Button>
+
+          <div className="w-full border-t pt-3 space-y-2">
+            <div className="flex gap-2">
+              <Input
+                dir="ltr"
+                placeholder="https://example.com/image.jpg"
+                value={urlValue}
+                onChange={(e) => setUrlValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    onAddUrl();
+                  }
+                }}
+                className="h-8 text-xs"
+              />
+              <Button
+                onClick={onAddUrl}
+                disabled={busy || !urlValue.trim()}
+                variant="outline"
+                size="sm"
+                className="shrink-0"
+              >
+                <LinkIcon className="size-3" />
+              </Button>
+            </div>
+            <Button
+              onClick={onGenerateAI}
+              disabled={aiBusy}
+              variant="default"
+              size="sm"
+              className="w-full gap-1"
+            >
+              <Sparkles className="size-3" />
+              {aiBusy ? "جاري التوليد..." : "توليد بالذكاء الاصطناعي"}
+            </Button>
+          </div>
+
           <div className="text-[10px] text-muted-foreground num" dir="ltr">
             {gridItems.length} ملف
           </div>
