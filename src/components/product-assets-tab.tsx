@@ -39,7 +39,10 @@ export function ProductAssetsTab({ productId, azCode }: { productId: string; azC
   const fileRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [aiBusy, setAiBusy] = useState(false);
+  const [urlValue, setUrlValue] = useState("");
   const [lightboxIdx, setLightboxIdx] = useState(-1);
+  const genImages = useServerFn(generateProductImages);
 
   const { data: rows, isLoading } = useQuery<Row[]>({
     queryKey: ["product-assets", productId],
