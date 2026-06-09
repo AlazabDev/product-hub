@@ -26,7 +26,7 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        "border-b bg-card/40 backdrop-blur-sm sticky top-14 z-[5]",
+        "border-b bg-card/80 backdrop-blur-md sticky top-0 z-10",
         className,
       )}
     >
