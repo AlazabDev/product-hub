@@ -5,13 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 import {
   uploadAndLinkAsset,
   deleteAssetLink,
   promoteToMain,
   reorderAssets,
+  addAssetFromUrl,
 } from "@/lib/upload-assets";
-import { Upload, Star, ImageOff, Maximize2 } from "lucide-react";
+import { generateProductImages } from "@/lib/product-image-gen.functions";
+import { useServerFn } from "@tanstack/react-start";
+import { Upload, Star, ImageOff, Maximize2, Link as LinkIcon, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { SortableAssetGrid, type GridItem } from "@/components/sortable-asset-grid";
 import { AssetLightbox } from "@/components/asset-lightbox";
@@ -35,7 +39,10 @@ export function ProductAssetsTab({ productId, azCode }: { productId: string; azC
   const fileRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [aiBusy, setAiBusy] = useState(false);
+  const [urlValue, setUrlValue] = useState("");
   const [lightboxIdx, setLightboxIdx] = useState(-1);
+  const genImages = useServerFn(generateProductImages);
 
   const { data: rows, isLoading } = useQuery<Row[]>({
     queryKey: ["product-assets", productId],
@@ -115,6 +122,46 @@ export function ProductAssetsTab({ productId, azCode }: { productId: string; azC
     e.preventDefault();
     setDragOver(false);
     upload(Array.from(e.dataTransfer.files));
+  };
+
+  const onAddUrl = async () => {
+    const url = urlValue.trim();
+    if (!url) return;
+    setBusy(true);
+    try {
+      const existing = rows?.length ?? 0;
+      await addAssetFromUrl({
+        url,
+        productId,
+        azCode,
+        role: existing === 0 ? "main_image" : "gallery",
+        sortOrder: existing,
+      });
+      setUrlValue("");
+      toast.success("تم إضافة الصورة من الرابط");
+      qc.invalidateQueries({ queryKey: ["product-assets", productId] });
+    } catch (e: any) {
+      toast.error(e.message ?? "فشل الإضافة");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onGenerateAI = async () => {
+    setAiBusy(true);
+    try {
+      const res = await genImages({ data: { productIds: [productId] } });
+      if (res.totalGenerated > 0) {
+        toast.success(`تم توليد ${res.totalGenerated} صورة بالذكاء الاصطناعي`);
+        qc.invalidateQueries({ queryKey: ["product-assets", productId] });
+      } else {
+        toast.error("تعذّر توليد صور — تحقق من إعدادات الذكاء الاصطناعي");
+      }
+    } catch (e: any) {
+      toast.error(e.message ?? "فشل التوليد");
+    } finally {
+      setAiBusy(false);
+    }
   };
 
   const onSetMain = async (linkId: string) => {
@@ -234,6 +281,44 @@ export function ProductAssetsTab({ productId, azCode }: { productId: string; azC
           >
             {busy ? "جاري الرفع..." : "اختر ملفات"}
           </Button>
+
+          <div className="w-full border-t pt-3 space-y-2">
+            <div className="flex gap-2">
+              <Input
+                dir="ltr"
+                placeholder="https://example.com/image.jpg"
+                value={urlValue}
+                onChange={(e) => setUrlValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    onAddUrl();
+                  }
+                }}
+                className="h-8 text-xs"
+              />
+              <Button
+                onClick={onAddUrl}
+                disabled={busy || !urlValue.trim()}
+                variant="outline"
+                size="sm"
+                className="shrink-0"
+              >
+                <LinkIcon className="size-3" />
+              </Button>
+            </div>
+            <Button
+              onClick={onGenerateAI}
+              disabled={aiBusy}
+              variant="default"
+              size="sm"
+              className="w-full gap-1"
+            >
+              <Sparkles className="size-3" />
+              {aiBusy ? "جاري التوليد..." : "توليد بالذكاء الاصطناعي"}
+            </Button>
+          </div>
+
           <div className="text-[10px] text-muted-foreground num" dir="ltr">
             {gridItems.length} ملف
           </div>

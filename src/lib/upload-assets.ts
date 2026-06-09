@@ -72,6 +72,51 @@ export async function uploadAndLinkAsset(opts: {
   return { assetId: asset.id, publicUrl: pub.publicUrl, path };
 }
 
+/** Link an existing remote image URL as a product asset (no upload). */
+export async function addAssetFromUrl(opts: {
+  url: string;
+  productId: string;
+  azCode: string;
+  role: AssetRole;
+  sortOrder: number;
+  fileName?: string;
+}): Promise<{ assetId: string }> {
+  const { url, productId, azCode, role, sortOrder, fileName } = opts;
+  try {
+    new URL(url);
+  } catch {
+    throw new Error("رابط غير صالح");
+  }
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const name = fileName || url.split("/").pop()?.split("?")[0] || `link_${Date.now()}`;
+  const { data: asset, error: aErr } = await supabase
+    .from("assets")
+    .insert({
+      file_name: name,
+      file_url: url,
+      file_size: null,
+      file_type: null,
+      folder_path: azCode,
+      storage_provider: "external",
+      source: "url",
+      uploaded_by: user?.id ?? null,
+      status: "active",
+    })
+    .select("id")
+    .single();
+  if (aErr) throw new Error(`Asset row: ${aErr.message}`);
+  const { error: lErr } = await supabase.from("product_assets").insert({
+    product_id: productId,
+    asset_id: asset.id,
+    asset_role: role,
+    sort_order: sortOrder,
+  });
+  if (lErr) throw new Error(`Link: ${lErr.message}`);
+  return { assetId: asset.id };
+}
+
 export async function deleteAssetLink(linkId: string) {
   const { error } = await supabase.from("product_assets").delete().eq("id", linkId);
   if (error) throw error;
