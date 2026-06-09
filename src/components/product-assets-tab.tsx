@@ -124,6 +124,46 @@ export function ProductAssetsTab({ productId, azCode }: { productId: string; azC
     upload(Array.from(e.dataTransfer.files));
   };
 
+  const onAddUrl = async () => {
+    const url = urlValue.trim();
+    if (!url) return;
+    setBusy(true);
+    try {
+      const existing = rows?.length ?? 0;
+      await addAssetFromUrl({
+        url,
+        productId,
+        azCode,
+        role: existing === 0 ? "main_image" : "gallery",
+        sortOrder: existing,
+      });
+      setUrlValue("");
+      toast.success("تم إضافة الصورة من الرابط");
+      qc.invalidateQueries({ queryKey: ["product-assets", productId] });
+    } catch (e: any) {
+      toast.error(e.message ?? "فشل الإضافة");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onGenerateAI = async () => {
+    setAiBusy(true);
+    try {
+      const res = await genImages({ data: { productIds: [productId] } });
+      if (res.totalGenerated > 0) {
+        toast.success(`تم توليد ${res.totalGenerated} صورة بالذكاء الاصطناعي`);
+        qc.invalidateQueries({ queryKey: ["product-assets", productId] });
+      } else {
+        toast.error("تعذّر توليد صور — تحقق من إعدادات الذكاء الاصطناعي");
+      }
+    } catch (e: any) {
+      toast.error(e.message ?? "فشل التوليد");
+    } finally {
+      setAiBusy(false);
+    }
+  };
+
   const onSetMain = async (linkId: string) => {
     try {
       await promoteToMain(productId, linkId);
