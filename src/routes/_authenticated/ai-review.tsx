@@ -335,10 +335,19 @@ function AIReview() {
   );
 }
 
-// Helper function to format message content
+// Helper function to format message content (HTML-escapes raw input first to prevent XSS)
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function formatMessage(content: string): string {
   return (
-    content
+    escapeHtml(content)
       // Bold
       .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
       // Headers
@@ -356,3 +365,4 @@ function formatMessage(content: string): string {
       )
   );
 }
+
