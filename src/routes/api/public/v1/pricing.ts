@@ -15,7 +15,7 @@ export const Route = createFileRoute("/api/public/v1/pricing")({
         const { data, error, count } = await supabaseAdmin
           .from("prices")
           .select(
-            "id, product_id, supplier_id, selling_price, purchase_price, currency, status, valid_from, valid_to, updated_at",
+            "id, product_id, selling_price, currency, status, valid_from, valid_to, updated_at",
             { count: "exact" },
           )
           .order("updated_at", { ascending: false })

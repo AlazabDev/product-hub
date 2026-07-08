@@ -20,9 +20,11 @@ export const Route = createFileRoute("/api/public/v1/products/$azCode")({
           await logCall({ consumer: auth.consumer, request, endpoint: ep, status: 400, startedAt: started });
           return json({ error: "Invalid code" }, 400);
         }
+        const PUBLIC_PRODUCT_FIELDS =
+          "id, az_code, egs_code, name_ar, name_en, short_description_ar, short_description_en, status, item_type, gpc_brick_title, tags, updated_at";
         const { data: product, error } = await supabaseAdmin
           .from("products")
-          .select("*")
+          .select(PUBLIC_PRODUCT_FIELDS)
           .or(`az_code.eq.${safeCode},egs_code.eq.${safeCode}`)
           .maybeSingle();
 
@@ -45,9 +47,7 @@ export const Route = createFileRoute("/api/public/v1/products/$azCode")({
             .order("sort_order"),
           supabaseAdmin
             .from("prices")
-            .select(
-              "selling_price, purchase_price, currency, status, supplier_id, valid_from, valid_to",
-            )
+            .select("selling_price, currency, status, valid_from, valid_to")
             .eq("product_id", product.id),
         ]);
         await logCall({
