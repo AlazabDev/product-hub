@@ -1787,8 +1787,6 @@ export type Database = {
         Args: { _category?: string; _family?: string; _type: string }
         Returns: string
       }
-      show_limit: { Args: never; Returns: number }
-      show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
       app_role: "admin" | "editor" | "viewer"
