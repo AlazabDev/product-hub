@@ -84,8 +84,21 @@ function SupportPage() {
               مدعوم بـ Azure AI Search + Azure OpenAI
             </div>
           </div>
-          <div className="mr-auto text-[10px] text-muted-foreground flex items-center gap-1">
-            <Sparkles className="size-3" /> gpt-4o-mini
+          <div className="mr-auto flex items-center gap-2">
+            <AgentHealthBadge />
+            {toolsUsed.length > 0 && (
+              <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground border rounded-full px-2 py-1">
+                <Wrench className="size-3" /> {toolsUsed.length} أداة
+              </span>
+            )}
+            <Link to="/agent-settings">
+              <Button size="sm" variant="ghost" className="gap-1 h-8">
+                <Settings2 className="size-4" /> إعدادات
+              </Button>
+            </Link>
+            <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+              <Sparkles className="size-3" /> Azure OpenAI
+            </span>
           </div>
         </div>
 
