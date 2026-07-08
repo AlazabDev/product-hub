@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { askSupportAgent } from "@/lib/support-agent.functions";
@@ -7,8 +7,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { MessageCircle, Send, Bot, User, Sparkles } from "lucide-react";
+import { Send, Bot, User, Sparkles, Settings2, Wrench } from "lucide-react";
 import { toast } from "sonner";
+import { AgentHealthBadge } from "@/components/agent-health-badge";
+import { loadAgentConfig } from "./agent-settings";
 
 export const Route = createFileRoute("/_authenticated/support")({
   head: () => ({ meta: [{ title: "وكيل الدعم — Alazab PAOP" }] }),
@@ -31,19 +33,30 @@ function SupportPage() {
   ]);
   const fn = useServerFn(askSupportAgent);
 
+  const [toolsUsed, setToolsUsed] = useState<Array<{ name: string }>>([]);
+
   const send = useMutation({
     mutationFn: async (text: string) => {
       const next: Msg[] = [...messages, { role: "user", content: text }];
-      const res = await fn({
-        data: { messages: next.map((m) => ({ role: m.role, content: m.content })) },
-      });
-      return { reply: res.reply, source: res.source };
+      const config = loadAgentConfig();
+      const res = (await fn({
+        data: {
+          messages: next.map((m) => ({ role: m.role, content: m.content })),
+          config,
+        },
+      })) as {
+        reply: string;
+        source: { azCode: string; name?: string } | null;
+        toolsUsed: Array<{ name: string }>;
+      };
+      return res;
     },
     onSuccess: (res) => {
       setMessages((prev) => [
         ...prev,
         { role: "assistant", content: res.reply, source: res.source },
       ]);
+      setToolsUsed(res.toolsUsed ?? []);
     },
     onError: (e: any) => {
       toast.error(e.message || "خطأ في الاتصال بالوكيل");
