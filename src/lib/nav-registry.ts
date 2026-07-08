@@ -46,6 +46,7 @@ export const NAV_ITEMS: NavItem[] = [
   { title: "أصول غير مرتبطة", to: "/assets/unlinked", icon: Copy, group: "البيانات" },
   { title: "رفع جماعي للأصول", to: "/assets/bulk-upload", icon: Upload, group: "البيانات" },
   { title: "وكيل الدعم", to: "/support", icon: MessageCircle, group: "البيانات" },
+  { title: "إعدادات وكيل Azure", to: "/agent-settings", icon: Sparkles, group: "البيانات", keywords: ["azure", "agent", "ai", "settings"] },
   { title: "إدارة المحتوى", to: "/content", icon: FileText, group: "البيانات" },
 
   // التسعير
