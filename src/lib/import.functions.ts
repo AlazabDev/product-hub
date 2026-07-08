@@ -62,7 +62,17 @@ export const bulkUpsertProducts = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data, context }) => {
-    const { userId } = context;
+    const { userId, supabase } = context;
+
+    // role check: editor or admin
+    const [{ data: isEditor }, { data: isAdmin }] = await Promise.all([
+      supabase.rpc("has_role", { _user_id: userId, _role: "editor" }),
+      supabase.rpc("has_role", { _user_id: userId, _role: "admin" }),
+    ]);
+    if (!isEditor && !isAdmin) {
+      throw new Error("forbidden: requires editor or admin role");
+    }
+
     const errors: { row: number; az_code?: string; message: string }[] = [];
     const valid: ProductImportRow[] = [];
 
