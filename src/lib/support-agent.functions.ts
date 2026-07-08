@@ -191,7 +191,7 @@ export const askSupportAgent = createServerFn({ method: "POST" })
     ];
 
     let finalContent = "";
-    const toolTrace: Array<{ name: string; args: unknown }> = [];
+    const toolTrace: Array<{ name: string; args: Record<string, string> }> = [];
 
     for (let step = 0; step < 4; step++) {
       const body: Record<string, unknown> = {
@@ -228,7 +228,9 @@ export const askSupportAgent = createServerFn({ method: "POST" })
           } catch {
             /* keep empty */
           }
-          toolTrace.push({ name: tc.function.name, args: parsed });
+          const argsStr: Record<string, string> = {};
+          for (const [k, v] of Object.entries(parsed)) argsStr[k] = String(v);
+          toolTrace.push({ name: tc.function.name, args: argsStr });
           const result = await runTool(tc.function.name, parsed, context.supabase);
           convo.push({ role: "tool", tool_call_id: tc.id, content: result });
         }

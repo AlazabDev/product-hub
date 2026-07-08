@@ -23,6 +23,7 @@ import { Route as AuthenticatedContentRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedBuildHealthRouteImport } from './routes/_authenticated/build-health'
 import { Route as AuthenticatedAuditLogsRouteImport } from './routes/_authenticated/audit-logs'
 import { Route as AuthenticatedAiReviewRouteImport } from './routes/_authenticated/ai-review'
+import { Route as AuthenticatedAgentSettingsRouteImport } from './routes/_authenticated/agent-settings'
 import { Route as AuthenticatedSuppliersIndexRouteImport } from './routes/_authenticated/suppliers/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedRequestsIndexRouteImport } from './routes/_authenticated/requests/index'
@@ -126,6 +127,12 @@ const AuthenticatedAiReviewRoute = AuthenticatedAiReviewRouteImport.update({
   path: '/ai-review',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAgentSettingsRoute =
+  AuthenticatedAgentSettingsRouteImport.update({
+    id: '/agent-settings',
+    path: '/agent-settings',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedSuppliersIndexRoute =
   AuthenticatedSuppliersIndexRouteImport.update({
     id: '/suppliers/',
@@ -284,6 +291,7 @@ const ApiPublicV1ProductsAzCodeRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/agent-settings': typeof AuthenticatedAgentSettingsRoute
   '/ai-review': typeof AuthenticatedAiReviewRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/build-health': typeof AuthenticatedBuildHealthRoute
@@ -326,6 +334,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/agent-settings': typeof AuthenticatedAgentSettingsRoute
   '/ai-review': typeof AuthenticatedAiReviewRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/build-health': typeof AuthenticatedBuildHealthRoute
@@ -370,6 +379,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
+  '/_authenticated/agent-settings': typeof AuthenticatedAgentSettingsRoute
   '/_authenticated/ai-review': typeof AuthenticatedAiReviewRoute
   '/_authenticated/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/_authenticated/build-health': typeof AuthenticatedBuildHealthRoute
@@ -414,6 +424,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/agent-settings'
     | '/ai-review'
     | '/audit-logs'
     | '/build-health'
@@ -456,6 +467,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/agent-settings'
     | '/ai-review'
     | '/audit-logs'
     | '/build-health'
@@ -499,6 +511,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/login'
+    | '/_authenticated/agent-settings'
     | '/_authenticated/ai-review'
     | '/_authenticated/audit-logs'
     | '/_authenticated/build-health'
@@ -651,6 +664,13 @@ declare module '@tanstack/react-router' {
       path: '/ai-review'
       fullPath: '/ai-review'
       preLoaderRoute: typeof AuthenticatedAiReviewRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/agent-settings': {
+      id: '/_authenticated/agent-settings'
+      path: '/agent-settings'
+      fullPath: '/agent-settings'
+      preLoaderRoute: typeof AuthenticatedAgentSettingsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/suppliers/': {
@@ -846,6 +866,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAgentSettingsRoute: typeof AuthenticatedAgentSettingsRoute
   AuthenticatedAiReviewRoute: typeof AuthenticatedAiReviewRoute
   AuthenticatedAuditLogsRoute: typeof AuthenticatedAuditLogsRoute
   AuthenticatedBuildHealthRoute: typeof AuthenticatedBuildHealthRoute
@@ -878,6 +899,7 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAgentSettingsRoute: AuthenticatedAgentSettingsRoute,
   AuthenticatedAiReviewRoute: AuthenticatedAiReviewRoute,
   AuthenticatedAuditLogsRoute: AuthenticatedAuditLogsRoute,
   AuthenticatedBuildHealthRoute: AuthenticatedBuildHealthRoute,
@@ -940,13 +962,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

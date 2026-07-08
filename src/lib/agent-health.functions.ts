@@ -85,9 +85,10 @@ export const getAgentHealth = createServerFn({ method: "POST" })
 
     let db: CheckResult;
     try {
-      const [{ error }, ms] = await timed(() =>
-        context.supabase.from("products").select("id", { count: "exact", head: true }),
+      const [res, ms] = await timed(async () =>
+        await context.supabase.from("products").select("id", { count: "exact", head: true }),
       );
+      const error = (res as { error: { message: string } | null }).error;
       db = error
         ? { ok: false, latencyMs: ms, message: "فشل الاستعلام", detail: error.message }
         : { ok: true, latencyMs: ms, message: "قاعدة البيانات متصلة" };
