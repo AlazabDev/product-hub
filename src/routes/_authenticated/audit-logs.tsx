@@ -82,7 +82,8 @@ function AuditLogsPage() {
         .range(page * PAGE, page * PAGE + PAGE - 1);
 
       if (q) {
-        query = query.or(`entity_id.ilike.%${q}%,created_by.ilike.%${q}%`);
+        const s = sanitizeFilterInput(q);
+        if (s) query = query.or(`entity_id.ilike.%${s}%,created_by.ilike.%${s}%`);
       }
       if (entityType !== "all") {
         query = query.eq("entity_type", entityType);
