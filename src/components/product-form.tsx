@@ -15,7 +15,9 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
+import { normalizeProduct, type NormalizeDiffEntry } from "@/lib/product-normalize";
+import { ProductNormalizeDialog } from "@/components/product-normalize-dialog";
 
 const productSchema = z.object({
   name_ar: z.string().min(2, "الاسم العربي مطلوب"),
@@ -84,18 +86,30 @@ export function ProductForm({
   isLoading: externalLoading,
 }: ProductFormProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [normalizeOpen, setNormalizeOpen] = useState(false);
+  const [pendingData, setPendingData] = useState<ProductFormData | null>(null);
+  const [diff, setDiff] = useState<NormalizeDiffEntry[]>([]);
   const {
     register,
     handleSubmit,
     formState: { errors },
     watch,
     setValue,
+    getValues,
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: initialData,
   });
 
   const itemType = watch("item_type");
+
+  const previewNormalize = () => {
+    const values = getValues();
+    const { normalized, diff: d } = normalizeProduct(values as Record<string, unknown>);
+    setPendingData(normalized as ProductFormData);
+    setDiff(d);
+    setNormalizeOpen(true);
+  };
 
   const onSubmit = async (data: ProductFormData) => {
     setIsLoading(true);
