@@ -15,7 +15,9 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
+import { normalizeProduct, type NormalizeDiffEntry } from "@/lib/product-normalize";
+import { ProductNormalizeDialog } from "@/components/product-normalize-dialog";
 
 const productSchema = z.object({
   name_ar: z.string().min(2, "الاسم العربي مطلوب"),
@@ -84,12 +86,16 @@ export function ProductForm({
   isLoading: externalLoading,
 }: ProductFormProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [normalizeOpen, setNormalizeOpen] = useState(false);
+  const [pendingData, setPendingData] = useState<ProductFormData | null>(null);
+  const [diff, setDiff] = useState<NormalizeDiffEntry[]>([]);
   const {
     register,
     handleSubmit,
     formState: { errors },
     watch,
     setValue,
+    getValues,
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: initialData,
@@ -97,7 +103,15 @@ export function ProductForm({
 
   const itemType = watch("item_type");
 
-  const onSubmit = async (data: ProductFormData) => {
+  const previewNormalize = () => {
+    const values = getValues();
+    const { normalized, diff: d } = normalizeProduct(values as Record<string, unknown>);
+    setPendingData(normalized as ProductFormData);
+    setDiff(d);
+    setNormalizeOpen(true);
+  };
+
+  const persist = async (data: ProductFormData) => {
     setIsLoading(true);
     try {
       const payload: SupabaseProductInsert = {
@@ -113,20 +127,16 @@ export function ProductForm({
       };
 
       if (initialData?.id) {
-        // Update existing
         const { error } = await supabase.from("products").update(payload).eq("id", initialData.id);
-
         if (error) throw error;
         toast.success("تم تحديث البند بنجاح");
         onSuccess?.(initialData.id);
       } else {
-        // Create new
         const { data: newProduct, error } = await supabase
           .from("products")
           .insert([payload])
           .select("id")
           .single();
-
         if (error) throw error;
         toast.success("تم إنشاء البند بنجاح");
         onSuccess?.(newProduct.id);
@@ -138,9 +148,33 @@ export function ProductForm({
     }
   };
 
+  const onSubmit = async (data: ProductFormData) => {
+    const { normalized, diff: d } = normalizeProduct(data as Record<string, unknown>);
+    if (d.length > 0) {
+      setPendingData(normalized as ProductFormData);
+      setDiff(d);
+      setNormalizeOpen(true);
+      return;
+    }
+    await persist(normalized as ProductFormData);
+  };
+
+  const applyNormalized = async () => {
+    if (!pendingData) return;
+    // Reflect normalized values back into the visible form fields
+    (Object.keys(pendingData) as (keyof ProductFormData)[]).forEach((k) => {
+      setValue(k, pendingData[k] as never, { shouldDirty: true });
+    });
+    setNormalizeOpen(false);
+    await persist(pendingData);
+    setPendingData(null);
+    setDiff([]);
+  };
+
   const loading = isLoading || externalLoading;
 
   return (
+    <>
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <div className="grid md:grid-cols-2 gap-4">
         <div className="space-y-2">
@@ -252,9 +286,19 @@ export function ProductForm({
         />
       </div>
 
-      <div className="flex gap-3 justify-end pt-4 border-t">
+      <div className="flex gap-3 justify-end pt-4 border-t flex-wrap">
         <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
           إلغاء
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={previewNormalize}
+          disabled={loading}
+          className="gap-2"
+        >
+          <Sparkles className="size-4" />
+          معاينة التنسيق التلقائي
         </Button>
         <Button type="submit" disabled={loading} className="gap-2">
           {loading && <Loader2 className="size-4 animate-spin" />}
@@ -262,5 +306,18 @@ export function ProductForm({
         </Button>
       </div>
     </form>
+
+    <ProductNormalizeDialog
+      open={normalizeOpen}
+      diff={diff}
+      loading={isLoading}
+      onCancel={() => {
+        setNormalizeOpen(false);
+        setPendingData(null);
+        setDiff([]);
+      }}
+      onConfirm={applyNormalized}
+    />
+    </>
   );
 }
