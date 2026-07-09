@@ -23,7 +23,8 @@ const InputSchema = z.object({
 export const azureChatCompletion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => InputSchema.parse(input))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await requireAnyRole(context.supabase, context.userId, ["admin", "editor"]);
     const endpoint = (process.env.AZURE_OPENAI_ENDPOINT ?? "").replace(/\/$/, "");
     const apiKey = process.env.AZURE_OPENAI_API_KEY ?? "";
     const deployment =
