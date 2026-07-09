@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { requireAnyRole } from "./require-role";
+import { sanitizeFilterInput } from "@/lib/sanitize-filter";
 
 interface AzureSearchDoc {
   az_code: string;

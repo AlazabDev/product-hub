@@ -6,6 +6,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizeFilterInput } from "@/lib/sanitize-filter";
 
 // Types
 export interface ChatMessage {
