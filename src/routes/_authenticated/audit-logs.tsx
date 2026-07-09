@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizeFilterInput } from "@/lib/sanitize-filter";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -81,7 +82,8 @@ function AuditLogsPage() {
         .range(page * PAGE, page * PAGE + PAGE - 1);
 
       if (q) {
-        query = query.or(`entity_id.ilike.%${q}%,created_by.ilike.%${q}%`);
+        const s = sanitizeFilterInput(q);
+        if (s) query = query.or(`entity_id.ilike.%${s}%,created_by.ilike.%${s}%`);
       }
       if (entityType !== "all") {
         query = query.eq("entity_type", entityType);

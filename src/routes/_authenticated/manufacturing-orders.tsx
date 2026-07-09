@@ -7,6 +7,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizeFilterInput } from "@/lib/sanitize-filter";
 import { updateManufacturingOrderStatus } from "@/lib/manufacturing.functions";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
@@ -84,9 +85,8 @@ async function fetchOrders(filters: { status?: string; search?: string }) {
     query = query.eq("status", filters.status);
   }
   if (filters.search) {
-    query = query.or(
-      `order_number.ilike.%${filters.search}%,customer_name.ilike.%${filters.search}%`,
-    );
+    const s = sanitizeFilterInput(filters.search);
+    if (s) query = query.or(`order_number.ilike.%${s}%,customer_name.ilike.%${s}%`);
   }
 
   const { data, error } = await query;

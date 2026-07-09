@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizeFilterInput } from "@/lib/sanitize-filter";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -44,7 +45,8 @@ function SuppliersList() {
         .select("id, name_ar, name_en, supplier_code, category, tier, email, phone, status")
         .order("created_at", { ascending: false });
       if (q) {
-        query = query.or(`name_ar.ilike.%${q}%,name_en.ilike.%${q}%,supplier_code.ilike.%${q}%`);
+        const s = sanitizeFilterInput(q);
+        if (s) query = query.or(`name_ar.ilike.%${s}%,name_en.ilike.%${s}%,supplier_code.ilike.%${s}%`);
       }
       const { data, error } = await query.limit(200);
       if (error) throw error;

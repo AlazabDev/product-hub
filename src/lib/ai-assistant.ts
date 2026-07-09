@@ -6,6 +6,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizeFilterInput } from "@/lib/sanitize-filter";
 
 // Types
 export interface ChatMessage {
@@ -187,10 +188,11 @@ async function executeToolCall(toolName: string, args: Record<string, unknown>):
         limit?: number;
       };
 
+      const safeQuery = sanitizeFilterInput(query);
       let queryBuilder = supabase
         .from("products")
         .select("id, az_code, name_ar, item_type, status, gpc_family, confidence_level")
-        .or(`name_ar.ilike.%${query}%,az_code.ilike.%${query}%,description_ar.ilike.%${query}%`)
+        .or(`name_ar.ilike.%${safeQuery}%,az_code.ilike.%${safeQuery}%,description_ar.ilike.%${safeQuery}%`)
         .limit(limit);
 
       if (item_type) queryBuilder = queryBuilder.eq("item_type", item_type as any);

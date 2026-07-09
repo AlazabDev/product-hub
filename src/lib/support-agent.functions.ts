@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { requireAnyRole } from "./require-role";
+import { sanitizeFilterInput } from "@/lib/sanitize-filter";
 
 interface AzureSearchDoc {
   az_code: string;
@@ -129,8 +130,9 @@ async function runTool(
 ): Promise<string> {
   try {
     if (name === "search_products") {
-      const q = String(args.query ?? "");
+      const q = sanitizeFilterInput(String(args.query ?? ""));
       const limit = Math.min(Number(args.limit ?? 5), 20);
+      if (!q) return JSON.stringify({ results: [] });
       const { data } = await supabase
         .from("products")
         .select("az_code,name_ar,name_en,status,item_type,short_description_ar,category_id")
