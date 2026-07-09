@@ -105,10 +105,10 @@ function ProductsList() {
         .order("created_at", { ascending: false })
         .range(page * PAGE, page * PAGE + PAGE - 1);
 
-      if (filters.q)
-        query = query.or(
-          `name_ar.ilike.%${filters.q}%,name_en.ilike.%${filters.q}%,az_code.ilike.%${filters.q}%`,
-        );
+      if (filters.q) {
+        const s = sanitizeFilterInput(filters.q);
+        if (s) query = query.or(`name_ar.ilike.%${s}%,name_en.ilike.%${s}%,az_code.ilike.%${s}%`);
+      }
       if (filters.status !== "all") query = query.eq("status", filters.status as any);
       if (filters.itemType !== "all") query = query.eq("item_type", filters.itemType as any);
       if (filters.gpcFamily !== "all") query = query.eq("gpc_family", filters.gpcFamily);
