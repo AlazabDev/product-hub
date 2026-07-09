@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAnyRole } from "./require-role";
 
 type CheckResult = {
   ok: boolean;
@@ -81,6 +82,7 @@ async function checkSearch(): Promise<CheckResult> {
 export const getAgentHealth = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    await requireAnyRole(context.supabase, context.userId, ["admin", "editor", "viewer"]);
     const [openai, search] = await Promise.all([checkOpenAI(), checkSearch()]);
 
     let db: CheckResult;
