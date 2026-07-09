@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAnyRole } from "./require-role";
 
 type CheckResult = {
   ok: boolean;
