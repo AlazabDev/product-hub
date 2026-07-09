@@ -165,6 +165,7 @@ export const askSupportAgent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => InputSchema.parse(input))
   .handler(async ({ data, context }) => {
+    await requireAnyRole(context.supabase, context.userId, ["admin", "editor"]);
     const env = getEnv();
     if (!env.openaiEndpoint || !env.openaiKey || !env.chatDeployment) {
       throw new Error("Azure OpenAI غير مهيأ. تحقق من إعدادات الأسرار.");
