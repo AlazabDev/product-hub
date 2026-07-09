@@ -59,9 +59,8 @@ async function fetchQuoteRequests(filters: { status?: string; search?: string })
     query = query.eq("status", filters.status);
   }
   if (filters.search) {
-    query = query.or(
-      `request_id.ilike.%${filters.search}%,customer_name.ilike.%${filters.search}%`,
-    );
+    const s = sanitizeFilterInput(filters.search);
+    if (s) query = query.or(`request_id.ilike.%${s}%,customer_name.ilike.%${s}%`);
   }
 
   const { data, error } = await query;
