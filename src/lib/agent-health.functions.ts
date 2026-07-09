@@ -82,6 +82,7 @@ async function checkSearch(): Promise<CheckResult> {
 export const getAgentHealth = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    await requireAnyRole(context.supabase, context.userId, ["admin", "editor", "viewer"]);
     const [openai, search] = await Promise.all([checkOpenAI(), checkSearch()]);
 
     let db: CheckResult;
