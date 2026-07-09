@@ -84,9 +84,8 @@ async function fetchOrders(filters: { status?: string; search?: string }) {
     query = query.eq("status", filters.status);
   }
   if (filters.search) {
-    query = query.or(
-      `order_number.ilike.%${filters.search}%,customer_name.ilike.%${filters.search}%`,
-    );
+    const s = sanitizeFilterInput(filters.search);
+    if (s) query = query.or(`order_number.ilike.%${s}%,customer_name.ilike.%${s}%`);
   }
 
   const { data, error } = await query;
