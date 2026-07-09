@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { azureStatus, azureChat, azureSearch } from "./azure.server";
+import { requireAnyRole } from "./require-role";
 
 export const getAzureStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
