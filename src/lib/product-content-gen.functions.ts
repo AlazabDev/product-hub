@@ -29,7 +29,8 @@ export type GeneratedContent = {
 export const generateProductContent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: GenInput) => input)
-  .handler(async ({ data }): Promise<GeneratedContent> => {
+  .handler(async ({ data, context }): Promise<GeneratedContent> => {
+    await requireAnyRole(context.supabase, context.userId, ["admin", "editor"]);
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("LOVABLE_API_KEY غير مهيأ");
     if (!data.keywords || data.keywords.trim().length < 2) {
