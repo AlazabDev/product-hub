@@ -116,6 +116,212 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_audit_logs: {
+        Row: {
+          action: string
+          api_calls_count: number | null
+          cost_estimate: number | null
+          created_at: string
+          details: Json | null
+          duration_ms: number | null
+          entity_id: string | null
+          entity_type: string
+          error_message: string | null
+          id: string
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          api_calls_count?: number | null
+          cost_estimate?: number | null
+          created_at?: string
+          details?: Json | null
+          duration_ms?: number | null
+          entity_id?: string | null
+          entity_type: string
+          error_message?: string | null
+          id?: string
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          api_calls_count?: number | null
+          cost_estimate?: number | null
+          created_at?: string
+          details?: Json | null
+          duration_ms?: number | null
+          entity_id?: string | null
+          entity_type?: string
+          error_message?: string | null
+          id?: string
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      ai_optimization_jobs: {
+        Row: {
+          completed_at: string | null
+          consumer_id: string | null
+          created_at: string
+          errors: Json | null
+          estimated_completion: string | null
+          failed_count: number | null
+          id: string
+          job_id: string
+          optimization_level: string | null
+          optimization_type: string
+          processed_count: number | null
+          product_ids: string[]
+          progress_percent: number | null
+          results: Json | null
+          started_at: string | null
+          status: string
+          success_count: number | null
+          total_products: number
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          consumer_id?: string | null
+          created_at?: string
+          errors?: Json | null
+          estimated_completion?: string | null
+          failed_count?: number | null
+          id?: string
+          job_id: string
+          optimization_level?: string | null
+          optimization_type: string
+          processed_count?: number | null
+          product_ids: string[]
+          progress_percent?: number | null
+          results?: Json | null
+          started_at?: string | null
+          status?: string
+          success_count?: number | null
+          total_products: number
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          consumer_id?: string | null
+          created_at?: string
+          errors?: Json | null
+          estimated_completion?: string | null
+          failed_count?: number | null
+          id?: string
+          job_id?: string
+          optimization_level?: string | null
+          optimization_type?: string
+          processed_count?: number | null
+          product_ids?: string[]
+          progress_percent?: number | null
+          results?: Json | null
+          started_at?: string | null
+          status?: string
+          success_count?: number | null
+          total_products?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ai_optimization_logs: {
+        Row: {
+          action: string | null
+          created_at: string
+          details: Json | null
+          duration_ms: number | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          metadata: Json | null
+          optimization_type: string | null
+          product_id: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action?: string | null
+          created_at?: string
+          details?: Json | null
+          duration_ms?: number | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          metadata?: Json | null
+          optimization_type?: string | null
+          product_id?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string | null
+          created_at?: string
+          details?: Json | null
+          duration_ms?: number | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          metadata?: Json | null
+          optimization_type?: string | null
+          product_id?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      ai_settings: {
+        Row: {
+          content_sources: Json | null
+          created_at: string
+          datasheet_enabled: boolean | null
+          id: string
+          image_fetch_enabled: boolean | null
+          last_optimization_at: string | null
+          optimization_count: number | null
+          optimization_level: string
+          product_id: string
+          quote_auto_generation: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          content_sources?: Json | null
+          created_at?: string
+          datasheet_enabled?: boolean | null
+          id?: string
+          image_fetch_enabled?: boolean | null
+          last_optimization_at?: string | null
+          optimization_count?: number | null
+          optimization_level?: string
+          product_id: string
+          quote_auto_generation?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          content_sources?: Json | null
+          created_at?: string
+          datasheet_enabled?: boolean | null
+          id?: string
+          image_fetch_enabled?: boolean | null
+          last_optimization_at?: string | null
+          optimization_count?: number | null
+          optimization_level?: string
+          product_id?: string
+          quote_auto_generation?: boolean | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_settings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       api_consumers: {
         Row: {
           allowed_endpoints: string[] | null
@@ -203,6 +409,81 @@ export type Database = {
         }
         Relationships: []
       }
+      api_quotes: {
+        Row: {
+          api_endpoint: string | null
+          api_key_id: string | null
+          created_at: string
+          created_by: string | null
+          generated_at: string | null
+          generated_by: string | null
+          generated_quote: Json
+          id: string
+          internal_notes: string | null
+          product_id: string | null
+          quote_notes: string | null
+          quote_request_data: Json
+          quote_token: string | null
+          status: string
+          supplier_id: string | null
+          updated_at: string
+          validity_days: number | null
+        }
+        Insert: {
+          api_endpoint?: string | null
+          api_key_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          generated_at?: string | null
+          generated_by?: string | null
+          generated_quote: Json
+          id?: string
+          internal_notes?: string | null
+          product_id?: string | null
+          quote_notes?: string | null
+          quote_request_data: Json
+          quote_token?: string | null
+          status?: string
+          supplier_id?: string | null
+          updated_at?: string
+          validity_days?: number | null
+        }
+        Update: {
+          api_endpoint?: string | null
+          api_key_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          generated_at?: string | null
+          generated_by?: string | null
+          generated_quote?: Json
+          id?: string
+          internal_notes?: string | null
+          product_id?: string | null
+          quote_notes?: string | null
+          quote_request_data?: Json
+          quote_token?: string | null
+          status?: string
+          supplier_id?: string | null
+          updated_at?: string
+          validity_days?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_quotes_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "api_quotes_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       approval_history: {
         Row: {
           action: string
@@ -253,6 +534,7 @@ export type Database = {
           id: string
           notes: string | null
           priority: string
+          rejection_reason: string | null
           requested_by: string | null
           status: Database["public"]["Enums"]["approval_status"]
           title: string
@@ -269,6 +551,7 @@ export type Database = {
           id?: string
           notes?: string | null
           priority?: string
+          rejection_reason?: string | null
           requested_by?: string | null
           status?: Database["public"]["Enums"]["approval_status"]
           title: string
@@ -285,6 +568,7 @@ export type Database = {
           id?: string
           notes?: string | null
           priority?: string
+          rejection_reason?: string | null
           requested_by?: string | null
           status?: Database["public"]["Enums"]["approval_status"]
           title?: string
@@ -695,21 +979,6 @@ export type Database = {
         }
         Relationships: []
       }
-      manufacturing_order_status_transitions: {
-        Row: {
-          from_status: string
-          to_status: string
-        }
-        Insert: {
-          from_status: string
-          to_status: string
-        }
-        Update: {
-          from_status?: string
-          to_status?: string
-        }
-        Relationships: []
-      }
       manufacturing_orders: {
         Row: {
           actual_completion_date: string | null
@@ -727,6 +996,7 @@ export type Database = {
           design_data: Json | null
           discount_amount: number | null
           discount_percent: number | null
+          estimated_completion: string | null
           estimated_completion_date: string | null
           estimated_start_date: string | null
           final_price: number | null
@@ -760,6 +1030,7 @@ export type Database = {
           design_data?: Json | null
           discount_amount?: number | null
           discount_percent?: number | null
+          estimated_completion?: string | null
           estimated_completion_date?: string | null
           estimated_start_date?: string | null
           final_price?: number | null
@@ -793,6 +1064,7 @@ export type Database = {
           design_data?: Json | null
           discount_amount?: number | null
           discount_percent?: number | null
+          estimated_completion?: string | null
           estimated_completion_date?: string | null
           estimated_start_date?: string | null
           final_price?: number | null
@@ -1199,6 +1471,136 @@ export type Database = {
           },
         ]
       }
+      product_datasheets: {
+        Row: {
+          content: Json
+          created_at: string
+          created_by: string | null
+          file_storage_path: string | null
+          file_url: string | null
+          format: string | null
+          generated_at: string | null
+          generator_model: string | null
+          id: string
+          language: string | null
+          product_id: string
+          status: string
+          updated_at: string
+          version: number | null
+        }
+        Insert: {
+          content: Json
+          created_at?: string
+          created_by?: string | null
+          file_storage_path?: string | null
+          file_url?: string | null
+          format?: string | null
+          generated_at?: string | null
+          generator_model?: string | null
+          id?: string
+          language?: string | null
+          product_id: string
+          status?: string
+          updated_at?: string
+          version?: number | null
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          created_by?: string | null
+          file_storage_path?: string | null
+          file_url?: string | null
+          format?: string | null
+          generated_at?: string | null
+          generator_model?: string | null
+          id?: string
+          language?: string | null
+          product_id?: string
+          status?: string
+          updated_at?: string
+          version?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_datasheets_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_images_ai: {
+        Row: {
+          ai_analysis: Json | null
+          ai_confidence_score: number | null
+          created_at: string
+          created_by: string | null
+          external_id: string | null
+          id: string
+          image_source: string
+          image_storage_path: string | null
+          image_type: string | null
+          image_url: string
+          is_primary: boolean | null
+          match_notes: string | null
+          metadata: Json | null
+          processing_status: string
+          product_id: string
+          sort_order: number | null
+          source_api: string | null
+          updated_at: string
+        }
+        Insert: {
+          ai_analysis?: Json | null
+          ai_confidence_score?: number | null
+          created_at?: string
+          created_by?: string | null
+          external_id?: string | null
+          id?: string
+          image_source?: string
+          image_storage_path?: string | null
+          image_type?: string | null
+          image_url: string
+          is_primary?: boolean | null
+          match_notes?: string | null
+          metadata?: Json | null
+          processing_status?: string
+          product_id: string
+          sort_order?: number | null
+          source_api?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ai_analysis?: Json | null
+          ai_confidence_score?: number | null
+          created_at?: string
+          created_by?: string | null
+          external_id?: string | null
+          id?: string
+          image_source?: string
+          image_storage_path?: string | null
+          image_type?: string | null
+          image_url?: string
+          is_primary?: boolean | null
+          match_notes?: string | null
+          metadata?: Json | null
+          processing_status?: string
+          product_id?: string
+          sort_order?: number | null
+          source_api?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_images_ai_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_requests: {
         Row: {
           assigned_to: string | null
@@ -1252,18 +1654,28 @@ export type Database = {
       }
       products: {
         Row: {
+          ai_optimization_applied_at: string | null
           approved_at: string | null
           approved_by: string | null
           az_code: string
+          brand: string | null
+          buy_price: number | null
+          category: string | null
           category_id: string | null
           confidence_level: string | null
+          content_optimization_score: number | null
+          craft_category: string | null
           created_at: string
           created_by: string | null
+          daftra_code: string | null
+          daftra_id: string | null
+          datasheet_generated: boolean | null
           default_price_id: string | null
           default_supplier_id: string | null
           description_ar: string | null
           description_en: string | null
           egs_code: string | null
+          estimated_price: number | null
           external_links: Json | null
           family_id: string | null
           faq: Json | null
@@ -1273,40 +1685,65 @@ export type Database = {
           gpc_segment: string | null
           gs1_gpc_brick: string | null
           id: string
+          image_match_score: number | null
+          image_url_2: string | null
+          image_url_3: string | null
+          images_count: number | null
           installation_notes: string | null
           internal_notes: string | null
           item_type: Database["public"]["Enums"]["item_type"]
+          main_image_url: string | null
           maintenance_notes: string | null
           marketing_content: string | null
+          materials: Json | null
           name_ar: string
           name_en: string | null
           operational_track: string | null
+          optimization_notes: string | null
+          price: number | null
+          price_confidence: string | null
+          price_source: string | null
           product_code: string | null
           search_keywords: string[] | null
           sector_ar: string | null
           short_description_ar: string | null
           short_description_en: string | null
           source: string | null
+          specifications: Json | null
           status: Database["public"]["Enums"]["item_status"]
+          stock_balance: number | null
+          sync_status: Json | null
           tags: string[] | null
           technical_content: string | null
+          track_stock: boolean | null
           unit_id: string | null
+          unit_price: number | null
           updated_at: string
           warranty_info: string | null
         }
         Insert: {
+          ai_optimization_applied_at?: string | null
           approved_at?: string | null
           approved_by?: string | null
           az_code: string
+          brand?: string | null
+          buy_price?: number | null
+          category?: string | null
           category_id?: string | null
           confidence_level?: string | null
+          content_optimization_score?: number | null
+          craft_category?: string | null
           created_at?: string
           created_by?: string | null
+          daftra_code?: string | null
+          daftra_id?: string | null
+          datasheet_generated?: boolean | null
           default_price_id?: string | null
           default_supplier_id?: string | null
           description_ar?: string | null
           description_en?: string | null
           egs_code?: string | null
+          estimated_price?: number | null
           external_links?: Json | null
           family_id?: string | null
           faq?: Json | null
@@ -1316,40 +1753,65 @@ export type Database = {
           gpc_segment?: string | null
           gs1_gpc_brick?: string | null
           id?: string
+          image_match_score?: number | null
+          image_url_2?: string | null
+          image_url_3?: string | null
+          images_count?: number | null
           installation_notes?: string | null
           internal_notes?: string | null
           item_type?: Database["public"]["Enums"]["item_type"]
+          main_image_url?: string | null
           maintenance_notes?: string | null
           marketing_content?: string | null
+          materials?: Json | null
           name_ar: string
           name_en?: string | null
           operational_track?: string | null
+          optimization_notes?: string | null
+          price?: number | null
+          price_confidence?: string | null
+          price_source?: string | null
           product_code?: string | null
           search_keywords?: string[] | null
           sector_ar?: string | null
           short_description_ar?: string | null
           short_description_en?: string | null
           source?: string | null
+          specifications?: Json | null
           status?: Database["public"]["Enums"]["item_status"]
+          stock_balance?: number | null
+          sync_status?: Json | null
           tags?: string[] | null
           technical_content?: string | null
+          track_stock?: boolean | null
           unit_id?: string | null
+          unit_price?: number | null
           updated_at?: string
           warranty_info?: string | null
         }
         Update: {
+          ai_optimization_applied_at?: string | null
           approved_at?: string | null
           approved_by?: string | null
           az_code?: string
+          brand?: string | null
+          buy_price?: number | null
+          category?: string | null
           category_id?: string | null
           confidence_level?: string | null
+          content_optimization_score?: number | null
+          craft_category?: string | null
           created_at?: string
           created_by?: string | null
+          daftra_code?: string | null
+          daftra_id?: string | null
+          datasheet_generated?: boolean | null
           default_price_id?: string | null
           default_supplier_id?: string | null
           description_ar?: string | null
           description_en?: string | null
           egs_code?: string | null
+          estimated_price?: number | null
           external_links?: Json | null
           family_id?: string | null
           faq?: Json | null
@@ -1359,24 +1821,39 @@ export type Database = {
           gpc_segment?: string | null
           gs1_gpc_brick?: string | null
           id?: string
+          image_match_score?: number | null
+          image_url_2?: string | null
+          image_url_3?: string | null
+          images_count?: number | null
           installation_notes?: string | null
           internal_notes?: string | null
           item_type?: Database["public"]["Enums"]["item_type"]
+          main_image_url?: string | null
           maintenance_notes?: string | null
           marketing_content?: string | null
+          materials?: Json | null
           name_ar?: string
           name_en?: string | null
           operational_track?: string | null
+          optimization_notes?: string | null
+          price?: number | null
+          price_confidence?: string | null
+          price_source?: string | null
           product_code?: string | null
           search_keywords?: string[] | null
           sector_ar?: string | null
           short_description_ar?: string | null
           short_description_en?: string | null
           source?: string | null
+          specifications?: Json | null
           status?: Database["public"]["Enums"]["item_status"]
+          stock_balance?: number | null
+          sync_status?: Json | null
           tags?: string[] | null
           technical_content?: string | null
+          track_stock?: boolean | null
           unit_id?: string | null
+          unit_price?: number | null
           updated_at?: string
           warranty_info?: string | null
         }
@@ -1413,6 +1890,7 @@ export type Database = {
       }
       quote_requests: {
         Row: {
+          accepted_at: string | null
           accessories: Json | null
           chatbot_session_id: string | null
           components: Json | null
@@ -1438,7 +1916,6 @@ export type Database = {
           overhead_cost: number | null
           pricing_breakdown: Json | null
           profit_margin: number | null
-          quantity: number
           quote_valid_until: string | null
           quoted_at: string | null
           rejection_reason: string | null
@@ -1450,6 +1927,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          accepted_at?: string | null
           accessories?: Json | null
           chatbot_session_id?: string | null
           components?: Json | null
@@ -1475,7 +1953,6 @@ export type Database = {
           overhead_cost?: number | null
           pricing_breakdown?: Json | null
           profit_margin?: number | null
-          quantity?: number
           quote_valid_until?: string | null
           quoted_at?: string | null
           rejection_reason?: string | null
@@ -1487,6 +1964,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          accepted_at?: string | null
           accessories?: Json | null
           chatbot_session_id?: string | null
           components?: Json | null
@@ -1512,7 +1990,6 @@ export type Database = {
           overhead_cost?: number | null
           pricing_breakdown?: Json | null
           profit_margin?: number | null
-          quantity?: number
           quote_valid_until?: string | null
           quoted_at?: string | null
           rejection_reason?: string | null
@@ -1522,6 +1999,21 @@ export type Database = {
           status?: string
           total_cost?: number | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      supcloud_keepalive: {
+        Row: {
+          id: number
+          marker: string
+        }
+        Insert: {
+          id: number
+          marker?: string
+        }
+        Update: {
+          id?: number
+          marker?: string
         }
         Relationships: []
       }
@@ -1594,6 +2086,82 @@ export type Database = {
           },
         ]
       }
+      supplier_secrets: {
+        Row: {
+          supplier_id: string
+          updated_at: string
+          webhook_secret: string | null
+        }
+        Insert: {
+          supplier_id: string
+          updated_at?: string
+          webhook_secret?: string | null
+        }
+        Update: {
+          supplier_id?: string
+          updated_at?: string
+          webhook_secret?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_secrets_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: true
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_sync_logs: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          event_type: string
+          id: string
+          ip_address: string | null
+          payload: Json | null
+          records_failed: number
+          records_processed: number
+          records_updated: number
+          status: string
+          supplier_id: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          event_type: string
+          id?: string
+          ip_address?: string | null
+          payload?: Json | null
+          records_failed?: number
+          records_processed?: number
+          records_updated?: number
+          status?: string
+          supplier_id: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          payload?: Json | null
+          records_failed?: number
+          records_processed?: number
+          records_updated?: number
+          status?: string
+          supplier_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_sync_logs_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppliers: {
         Row: {
           api_url: string | null
@@ -1614,6 +2182,7 @@ export type Database = {
           supplier_tier: Database["public"]["Enums"]["supplier_tier"] | null
           supplier_type: string | null
           updated_at: string
+          webhook_enabled: boolean
           website: string | null
         }
         Insert: {
@@ -1635,6 +2204,7 @@ export type Database = {
           supplier_tier?: Database["public"]["Enums"]["supplier_tier"] | null
           supplier_type?: string | null
           updated_at?: string
+          webhook_enabled?: boolean
           website?: string | null
         }
         Update: {
@@ -1656,6 +2226,7 @@ export type Database = {
           supplier_tier?: Database["public"]["Enums"]["supplier_tier"] | null
           supplier_type?: string | null
           updated_at?: string
+          webhook_enabled?: boolean
           website?: string | null
         }
         Relationships: []
@@ -1769,10 +2340,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      approve_quote_for_manufacturing: {
-        Args: { _approval_id: string; _decided_by?: string; _notes?: string }
-        Returns: Json
-      }
       generate_order_number: { Args: never; Returns: string }
       generate_requisition_number: { Args: never; Returns: string }
       has_role: {
