@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -144,12 +144,9 @@ function SuppliersList() {
                 {rows.map((s: any) => (
                   <tr key={s.id} className="border-t hover:bg-secondary/30">
                     <td className="p-3">
-                      <Link
-                        to={`/suppliers/${s.id}`}
-                        className="text-accent hover:underline font-medium"
-                      >
+                      <span className="text-accent font-medium">
                         {s.name_ar}
-                      </Link>
+                      </span>
                       <div className="text-xs text-muted-foreground mt-0.5">{s.name_en}</div>
                     </td>
                     <td className="p-3 text-xs num" dir="ltr">

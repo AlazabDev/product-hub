@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -220,12 +220,9 @@ function RequestsPage() {
               {data?.rows.map((req: any) => (
                 <tr key={req.id} className="border-t hover:bg-secondary/30 cursor-pointer">
                   <td className="p-3">
-                    <Link
-                      to={`/requests/${req.id}`}
-                      className="text-accent hover:underline font-medium"
-                    >
+                    <span className="text-accent font-medium">
                       {req.title}
-                    </Link>
+                    </span>
                   </td>
                   <td className="p-3 text-xs">
                     {req.request_type === "new_product"

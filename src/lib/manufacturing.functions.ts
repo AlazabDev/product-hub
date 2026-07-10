@@ -79,7 +79,7 @@ export const fetchAllowedTransitions = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase } = context;
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from("manufacturing_order_status_transitions")
       .select("from_status, to_status");
     if (error) throw new Error(error.message);
