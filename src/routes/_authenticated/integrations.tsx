@@ -323,12 +323,14 @@ function IntegrationsPage() {
             <p className="text-sm text-muted-foreground mb-4">
               راجع دليل التكاملات الشامل لفهم كيفية توصيل كل نظام والتعامل مع الأخطاء.
             </p>
-            <Link
-              to="/docs/INTEGRATIONS"
+            <a
+              href="https://github.com/AlazabDev/product-hub/blob/main/docs/INTEGRATIONS.md"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-accent hover:underline font-medium text-sm"
             >
               اقرأ دليل التكاملات الكامل →
-            </Link>
+            </a>
           </div>
         </div>
       </Card>
