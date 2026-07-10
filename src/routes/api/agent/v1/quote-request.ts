@@ -90,20 +90,22 @@ export const Route = createFileRoute("/api/agent/v1/quote-request")({
         }
 
         try {
-          const body = await request.json();
-
-          // التحقق من البيانات المطلوبة
-          if (!body.request_id || !body.design_data) {
+          const raw = await request.json();
+          const parsed = QuoteRequestSchema.safeParse(raw);
+          if (!parsed.success) {
             return json(
               {
                 success: false,
-                error: "Missing required fields: request_id, design_data",
+                error: "Invalid request payload",
+                code: "invalid_payload",
+                details: parsed.error.flatten(),
               },
               400,
             );
           }
+          const body = parsed.data;
 
-          const designData: DesignData = body.design_data;
+          const designData: DesignData = body.design_data as DesignData;
 
           // حساب التسعير
           const pricing = await calculateQuotePrice(designData, body.quantity || 1);
