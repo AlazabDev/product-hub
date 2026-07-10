@@ -247,3 +247,41 @@ function getStatusArabic(status: string): string {
   };
   return statusMap[status] || status;
 }
+
+function formatOrder(order: any) {
+  return {
+    order_id: order.id,
+    order_number: order.order_number,
+    status: order.status,
+    status_ar: getStatusArabic(order.status),
+    priority: order.priority,
+    dates: {
+      created: order.created_at,
+      estimated_start: order.estimated_start_date,
+      estimated_completion: order.estimated_completion_date,
+      actual_start: order.actual_start_date,
+      actual_completion: order.actual_completion_date,
+      delivery: order.delivery_date,
+    },
+    pricing: {
+      unit_price: order.unit_price,
+      quantity: order.quantity,
+      total_price: order.total_price,
+      discount: order.discount_amount,
+      final_price: order.final_price,
+      currency: order.currency,
+    },
+    payment: {
+      status: order.payment_status,
+      amount_paid: order.amount_paid,
+      remaining: (order.final_price ?? 0) - (order.amount_paid ?? 0),
+    },
+    materials: order.material_requisitions?.[0]
+      ? {
+          requisition_number: order.material_requisitions[0].requisition_number,
+          status: order.material_requisitions[0].status,
+        }
+      : null,
+    design_preview: order.quote_requests?.design_preview_url,
+  };
+}
