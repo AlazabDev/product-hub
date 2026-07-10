@@ -10,8 +10,62 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { CORS, json, logCall, requireApiKey } from "@/lib/api-auth";
+
+const DimensionsSchema = z
+  .object({
+    length: z.number().finite().nonnegative().max(1e6).optional(),
+    width: z.number().finite().nonnegative().max(1e6).optional(),
+    height: z.number().finite().nonnegative().max(1e6).optional(),
+    depth: z.number().finite().nonnegative().max(1e6).optional(),
+    diameter: z.number().finite().nonnegative().max(1e6).optional(),
+    unit: z.string().max(16).optional(),
+  })
+  .catchall(z.union([z.number().finite(), z.string().max(64)]));
+
+const ComponentSchema = z
+  .object({
+    name: z.string().max(200).optional(),
+    type: z.string().max(100).optional(),
+    quantity: z.number().finite().nonnegative().max(1e6).optional(),
+    material: z.string().max(200).optional(),
+    unit_price: z.number().finite().nonnegative().max(1e9).optional(),
+  })
+  .catchall(z.union([z.string().max(500), z.number().finite(), z.boolean(), z.null()]));
+
+const DesignDataSchema = z
+  .object({
+    dimensions: DimensionsSchema.optional(),
+    components: z.array(ComponentSchema).max(200).optional(),
+    finishes: z.array(z.string().max(200)).max(50).optional(),
+    accessories: z.array(z.string().max(200)).max(50).optional(),
+    materials: z.array(z.string().max(200)).max(100).optional(),
+    notes: z.string().max(2000).optional(),
+  })
+  .catchall(z.unknown());
+
+const QuoteRequestSchema = z
+  .object({
+    request_id: z.string().min(1).max(128),
+    session_id: z.string().max(128).optional(),
+    customer_id: z.string().uuid().optional(),
+    customer_name: z.string().max(200).optional(),
+    customer_phone: z.string().max(32).optional(),
+    customer_email: z.string().email().max(255).optional(),
+    design_file_url: z.string().url().max(2048).optional(),
+    design_file_type: z.string().max(32).optional(),
+    design_data: DesignDataSchema,
+    design_preview_url: z.string().url().max(2048).optional(),
+    quantity: z.number().int().positive().max(1_000_000).optional(),
+    currency: z.string().length(3).optional(),
+    customer_notes: z.string().max(2000).optional(),
+    special_requirements: z
+      .union([z.string().max(2000), z.record(z.string(), z.unknown())])
+      .optional(),
+  })
+  .strict();
 import { calculateQuotePrice, type DesignData } from "@/lib/pricing-engine";
 
 export const Route = createFileRoute("/api/agent/v1/quote-request")({
