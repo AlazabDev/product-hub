@@ -50,12 +50,30 @@ export const Route = createFileRoute("/api/agent/v1/order-status")({
         const orderId = url.searchParams.get("order_id");
         const orderNumber = url.searchParams.get("order_number");
         const customerId = url.searchParams.get("customer_id");
+        // Object-level authorization: caller must prove knowledge of a
+        // customer-specific secret (phone OR email) tied to the order/customer.
+        // This prevents enumeration of sequential order numbers by any holder
+        // of a valid channel API key.
+        const verifyPhone = (url.searchParams.get("customer_phone") ?? "").trim();
+        const verifyEmail = (url.searchParams.get("customer_email") ?? "").trim().toLowerCase();
 
         if (!orderId && !orderNumber && !customerId) {
           return json(
             {
               success: false,
               error: "Missing order_id, order_number, or customer_id",
+            },
+            400,
+          );
+        }
+
+        if (!verifyPhone && !verifyEmail) {
+          return json(
+            {
+              success: false,
+              error:
+                "Missing verification. Provide customer_phone or customer_email matching the order.",
+              code: "verification_required",
             },
             400,
           );
@@ -85,6 +103,37 @@ export const Route = createFileRoute("/api/agent/v1/order-status")({
           return json({ success: false, error: "Order not found" }, 404);
         }
 
+        // Enforce ownership match — filter records to only those where the
+        // provided verification matches. Do NOT reveal whether a specific
+        // order exists on mismatch.
+        const matches = (row: any) => {
+          const phone = String(row?.customer_phone ?? "").trim();
+          const email = String(row?.customer_email ?? "").trim().toLowerCase();
+          if (verifyPhone && phone && phone === verifyPhone) return true;
+          if (verifyEmail && email && email === verifyEmail) return true;
+          return false;
+        };
+
+        if (Array.isArray(data)) {
+          const filtered = data.filter(matches);
+          if (filtered.length === 0) {
+            return json({ success: false, error: "Order not found" }, 404);
+          }
+          await logCall({
+            consumer: auth.consumer,
+            request,
+            endpoint: "/api/agent/v1/order-status",
+            status: 200,
+            startedAt: started,
+          });
+          return json({ success: true, data: filtered.map(formatOrder) });
+        }
+
+        if (!matches(data)) {
+          return json({ success: false, error: "Order not found" }, 404);
+        }
+
+
         await logCall({
           consumer: auth.consumer,
           request,
@@ -93,47 +142,12 @@ export const Route = createFileRoute("/api/agent/v1/order-status")({
           startedAt: started,
         });
 
-        const formatOrder = (order: any) => ({
-          order_id: order.id,
-          order_number: order.order_number,
-          status: order.status,
-          status_ar: getStatusArabic(order.status),
-          priority: order.priority,
-          dates: {
-            created: order.created_at,
-            estimated_start: order.estimated_start_date,
-            estimated_completion: order.estimated_completion_date,
-            actual_start: order.actual_start_date,
-            actual_completion: order.actual_completion_date,
-            delivery: order.delivery_date,
-          },
-          pricing: {
-            unit_price: order.unit_price,
-            quantity: order.quantity,
-            total_price: order.total_price,
-            discount: order.discount_amount,
-            final_price: order.final_price,
-            currency: order.currency,
-          },
-          payment: {
-            status: order.payment_status,
-            amount_paid: order.amount_paid,
-            remaining: order.final_price - order.amount_paid,
-          },
-          materials: order.material_requisitions?.[0]
-            ? {
-                requisition_number: order.material_requisitions[0].requisition_number,
-                status: order.material_requisitions[0].status,
-              }
-            : null,
-          design_preview: order.quote_requests?.design_preview_url,
-        });
-
         return json({
           success: true,
-          data: Array.isArray(data) ? data.map(formatOrder) : formatOrder(data),
+          data: formatOrder(data),
         });
       },
+
 
       // PATCH - تحديث حالة الطلب (للاستخدام الداخلي)
       PATCH: async ({ request }) => {
@@ -232,4 +246,42 @@ function getStatusArabic(status: string): string {
     cancelled: "ملغي",
   };
   return statusMap[status] || status;
+}
+
+function formatOrder(order: any) {
+  return {
+    order_id: order.id,
+    order_number: order.order_number,
+    status: order.status,
+    status_ar: getStatusArabic(order.status),
+    priority: order.priority,
+    dates: {
+      created: order.created_at,
+      estimated_start: order.estimated_start_date,
+      estimated_completion: order.estimated_completion_date,
+      actual_start: order.actual_start_date,
+      actual_completion: order.actual_completion_date,
+      delivery: order.delivery_date,
+    },
+    pricing: {
+      unit_price: order.unit_price,
+      quantity: order.quantity,
+      total_price: order.total_price,
+      discount: order.discount_amount,
+      final_price: order.final_price,
+      currency: order.currency,
+    },
+    payment: {
+      status: order.payment_status,
+      amount_paid: order.amount_paid,
+      remaining: (order.final_price ?? 0) - (order.amount_paid ?? 0),
+    },
+    materials: order.material_requisitions?.[0]
+      ? {
+          requisition_number: order.material_requisitions[0].requisition_number,
+          status: order.material_requisitions[0].status,
+        }
+      : null,
+    design_preview: order.quote_requests?.design_preview_url,
+  };
 }
