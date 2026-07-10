@@ -50,12 +50,30 @@ export const Route = createFileRoute("/api/agent/v1/order-status")({
         const orderId = url.searchParams.get("order_id");
         const orderNumber = url.searchParams.get("order_number");
         const customerId = url.searchParams.get("customer_id");
+        // Object-level authorization: caller must prove knowledge of a
+        // customer-specific secret (phone OR email) tied to the order/customer.
+        // This prevents enumeration of sequential order numbers by any holder
+        // of a valid channel API key.
+        const verifyPhone = (url.searchParams.get("customer_phone") ?? "").trim();
+        const verifyEmail = (url.searchParams.get("customer_email") ?? "").trim().toLowerCase();
 
         if (!orderId && !orderNumber && !customerId) {
           return json(
             {
               success: false,
               error: "Missing order_id, order_number, or customer_id",
+            },
+            400,
+          );
+        }
+
+        if (!verifyPhone && !verifyEmail) {
+          return json(
+            {
+              success: false,
+              error:
+                "Missing verification. Provide customer_phone or customer_email matching the order.",
+              code: "verification_required",
             },
             400,
           );
@@ -84,6 +102,37 @@ export const Route = createFileRoute("/api/agent/v1/order-status")({
         if (!data || (Array.isArray(data) && data.length === 0)) {
           return json({ success: false, error: "Order not found" }, 404);
         }
+
+        // Enforce ownership match — filter records to only those where the
+        // provided verification matches. Do NOT reveal whether a specific
+        // order exists on mismatch.
+        const matches = (row: any) => {
+          const phone = String(row?.customer_phone ?? "").trim();
+          const email = String(row?.customer_email ?? "").trim().toLowerCase();
+          if (verifyPhone && phone && phone === verifyPhone) return true;
+          if (verifyEmail && email && email === verifyEmail) return true;
+          return false;
+        };
+
+        if (Array.isArray(data)) {
+          const filtered = data.filter(matches);
+          if (filtered.length === 0) {
+            return json({ success: false, error: "Order not found" }, 404);
+          }
+          await logCall({
+            consumer: auth.consumer,
+            request,
+            endpoint: "/api/agent/v1/order-status",
+            status: 200,
+            startedAt: started,
+          });
+          return json({ success: true, data: filtered.map(formatOrder) });
+        }
+
+        if (!matches(data)) {
+          return json({ success: false, error: "Order not found" }, 404);
+        }
+
 
         await logCall({
           consumer: auth.consumer,
