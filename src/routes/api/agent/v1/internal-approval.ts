@@ -119,7 +119,7 @@ export const Route = createFileRoute("/api/agent/v1/internal-approval")({
           }
 
           // ---------- Approved branch: delegate to atomic RPC ----------
-          const { data: rpcResult, error: rpcErr } = await supabaseAdmin.rpc(
+          const { data: rpcResult, error: rpcErr } = await (supabaseAdmin.rpc as any)(
             "approve_quote_for_manufacturing",
             {
               _approval_id: body.approval_id,
@@ -151,7 +151,7 @@ export const Route = createFileRoute("/api/agent/v1/internal-approval")({
             );
           }
 
-          const result = rpcResult as {
+          const result = rpcResult as unknown as {
             approval_id: string;
             manufacturing_order_id: string;
             order_number: string;

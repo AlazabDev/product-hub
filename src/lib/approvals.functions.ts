@@ -103,7 +103,7 @@ export const decideApproval = createServerFn({ method: "POST" })
 
     // ---------- Special path: quote_request -> atomic RPC ----------
     if (appr.entity_type === "quote_request" && data.decision === "approved") {
-      const { data: rpcResult, error: rpcErr } = await supabase.rpc(
+      const { data: rpcResult, error: rpcErr } = await (supabase.rpc as any)(
         "approve_quote_for_manufacturing",
         {
           _approval_id: data.approvalId,
